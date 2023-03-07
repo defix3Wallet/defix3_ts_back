@@ -3,7 +3,6 @@ import { CredentialInterface } from "../interfaces/credential.interface";
 import { WalletInterface } from "../interfaces/wallet.interface";
 import { UserService } from "../../users/services/user.service";
 import { WalletEntity } from "../entities/wallet.entity";
-import { User } from "../../users/entities/user.entity";
 
 export class WalletService {
   private userService: UserService;
@@ -40,20 +39,24 @@ export class WalletService {
   };
 
   private saveWallet = async (mnemonic: string, wallet: WalletInterface) => {
-    const nearId = await UtilsShared.getIdNear(mnemonic);
+    try {
+      const nearId = await UtilsShared.getIdNear(mnemonic);
 
-    const user = await this.userService.createUser(wallet.defixId, nearId);
+      const user = await this.userService.createUser(wallet.defixId, nearId);
 
-    if (!user) return false;
+      if (!user) return false;
 
-    for (let credential of wallet.credentials) {
-      const walletAddress = new WalletEntity();
-      walletAddress.user = user;
-      walletAddress.blockchain = credential.name;
-      walletAddress.address = credential.address;
-      await walletAddress.save();
+      for (let credential of wallet.credentials) {
+        const walletAddress = new WalletEntity();
+        walletAddress.user = user;
+        walletAddress.blockchain = credential.name;
+        walletAddress.address = credential.address;
+        await walletAddress.save();
+      }
+
+      return user;
+    } catch (err) {
+      throw new Error(`Failed to save wallet addresses: ${err}`);
     }
-
-    return user;
   };
 }

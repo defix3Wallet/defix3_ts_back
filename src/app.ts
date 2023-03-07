@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import { UsersModule } from "./modules/users/init";
+import { WalletsModule } from "./modules/wallets/init";
 
 class App {
   public app: express.Express;
@@ -24,6 +25,7 @@ class App {
   }
 
   private initModules() {
+    new WalletsModule(this.router);
     new UsersModule(this.router);
   }
 }

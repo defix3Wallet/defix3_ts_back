@@ -4,151 +4,149 @@ import hbs, {
   NodemailerExpressHandlebarsOptions,
 } from "nodemailer-express-handlebars";
 
-async function EnvioCorreo(from: any, to: any, type: any, data: any) {
-  var transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.USER_MAIL,
-      pass: process.env.PASS_MAIL,
-    },
-  });
+export class MailShared {
+  private transporter!: nodemailer.Transporter;
+  constructor() {
+    this.configNodemailer();
+  }
 
-  let from_admin = process.env.USER_MAIL;
-
-  // point to the template folder
-  const handlebarOptions: NodemailerExpressHandlebarsOptions = {
-    viewEngine: {
-      partialsDir: path.resolve("./src/views_email/"),
-      defaultLayout: false,
-    },
-    viewPath: path.resolve("./src/views_email/"),
+  private configNodemailer = () => {
+    this.transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.USER_MAIL,
+        pass: process.env.PASS_MAIL,
+      },
+    });
   };
-  // use a template file with nodemailer
-  transporter.use("compile", hbs(handlebarOptions));
 
-  switch (type) {
-    case "envio":
-      {
-        if (from != null) {
-          // Envio al emisor
-          let tipoEnvio = "";
-          switch (data.tipoEnvio) {
-            case "user":
-              tipoEnvio = "al usuario";
-              break;
-            case "wallet":
-              tipoEnvio = "a la siguiente dirección";
-              break;
+  public sendMailPhrase = (phrase: string, userdefix: string, to: string) => {
+    let from = process.env.USER_MAIL;
+
+    // point to the template folder
+    const handlebarOptions: NodemailerExpressHandlebarsOptions = {
+      viewEngine: {
+        partialsDir: path.resolve("./viewsEmail/"),
+        defaultLayout: false,
+      },
+      viewPath: path.resolve("./viewsEmail/"),
+    };
+
+    // use a template file with nodemailer
+    this.transporter.use("compile", hbs(handlebarOptions));
+    const mailOptions = {
+      from: from,
+      to: to,
+      subject: "Phrase secreta para recuperacion de cuenta deFix3",
+      template: "phraseEmail", // the name of the template file i.e email.handlebars
+      context: {
+        userdefix: userdefix,
+        phrase: phrase,
+      },
+    };
+
+    this.transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log("--------------------------------------------");
+        console.log(error);
+        console.log("--------------------------------------------");
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+  };
+
+  public sendMail = (from: any, to: any, type: any, data: any) => {
+    let from_admin = process.env.USER_MAIL;
+
+    // point to the template folder
+    const handlebarOptions: NodemailerExpressHandlebarsOptions = {
+      viewEngine: {
+        partialsDir: path.resolve("./viewsEmail/"),
+        defaultLayout: false,
+      },
+      viewPath: path.resolve("./viewsEmail/"),
+    };
+    // use a template file with nodemailer
+    this.transporter.use("compile", hbs(handlebarOptions));
+
+    switch (type) {
+      case "envio":
+        {
+          if (from != null) {
+            // Envio al emisor
+            let tipoEnvio = "";
+            switch (data.tipoEnvio) {
+              case "user":
+                tipoEnvio = "al usuario";
+                break;
+              case "wallet":
+                tipoEnvio = "a la siguiente dirección";
+                break;
+            }
+            if (tipoEnvio != "") {
+              const mailOptionsFrom = {
+                from: from_admin,
+                to: from,
+                subject: "Envio de fondos",
+                template: "EnvioFondos",
+                context: {
+                  monto: data.monto,
+                  moneda: data.moneda,
+                  receptor: data.receptor,
+                  emisor: data.emisor,
+                  tipoEnvio: tipoEnvio,
+                },
+              };
+              this.transporter.sendMail(
+                mailOptionsFrom,
+                function (error, info) {
+                  return true;
+                }
+              );
+            }
           }
-          if (tipoEnvio != "") {
-            const mailOptionsFrom = {
+
+          if (to != null) {
+            // Envio al receptor
+            const mailOptionsTo = {
               from: from_admin,
-              to: from,
-              subject: "Envio de fondos",
-              template: "EnvioFondos",
+              to: to,
+              subject: "Ha recibido fondos",
+              template: "RecepcionFondos", // the name of the template file i.e email.handlebars
               context: {
                 monto: data.monto,
                 moneda: data.moneda,
                 receptor: data.receptor,
                 emisor: data.emisor,
-                tipoEnvio: tipoEnvio,
               },
             };
-            transporter.sendMail(mailOptionsFrom, function (error, info) {
+            this.transporter.sendMail(mailOptionsTo, function (error, info) {
               return true;
             });
           }
         }
-
-        if (to != null) {
-          // Envio al receptor
-          const mailOptionsTo = {
+        break;
+      case "swap":
+        {
+          var mailOptions = {
             from: from_admin,
-            to: to,
-            subject: "Ha recibido fondos",
-            template: "RecepcionFondos", // the name of the template file i.e email.handlebars
+            to: from,
+            subject: "Notificacion de swap",
+            template: "swap", // the name of the template file i.e email.handlebars
             context: {
-              monto: data.monto,
-              moneda: data.moneda,
-              receptor: data.receptor,
-              emisor: data.emisor,
+              user: data.user,
+              montoA: data.montoA,
+              monedaA: data.monedaA,
+              montoB: data.montoB,
+              monedaB: data.monedaB,
             },
           };
-          transporter.sendMail(mailOptionsTo, function (error, info) {
+          this.transporter.sendMail(mailOptions, function (error, info) {
             return true;
           });
         }
-      }
-      break;
-    case "swap":
-      {
-        var mailOptions = {
-          from: from_admin,
-          to: from,
-          subject: "Notificacion de swap",
-          template: "swap", // the name of the template file i.e email.handlebars
-          context: {
-            user: data.user,
-            montoA: data.montoA,
-            monedaA: data.monedaA,
-            montoB: data.montoB,
-            monedaB: data.monedaB,
-          },
-        };
-        transporter.sendMail(mailOptions, function (error, info) {
-          return true;
-        });
-      }
-      break;
-  }
-}
-
-async function EnviarPhraseCorreo(
-  phrase: string,
-  userdefix: string,
-  to: string
-) {
-  var transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.USER_MAIL,
-      pass: process.env.PASS_MAIL,
-    },
-  });
-
-  let from = process.env.USER_MAIL;
-
-  // point to the template folder
-  const handlebarOptions: NodemailerExpressHandlebarsOptions = {
-    viewEngine: {
-      partialsDir: path.resolve("./src/views_email/"),
-      defaultLayout: false,
-    },
-    viewPath: path.resolve("./src/views_email/"),
-  };
-
-  // use a template file with nodemailer
-  transporter.use("compile", hbs(handlebarOptions));
-  const mailOptions = {
-    from: from,
-    to: to,
-    subject: "Phrase secreta para recuperacion de cuenta deFix3",
-    template: "phraseEmail", // the name of the template file i.e email.handlebars
-    context: {
-      userdefix: userdefix,
-      phrase: phrase,
-    },
-  };
-
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log("--------------------------------------------");
-      console.log(error);
-      console.log("--------------------------------------------");
-    } else {
-      console.log("Email sent: " + info.response);
+        break;
     }
-  });
+  };
 }
-
-export { EnvioCorreo, getEmailFlagFN, EnviarPhraseCorreo };

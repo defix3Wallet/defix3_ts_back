@@ -1,12 +1,16 @@
 import { Request, Response } from "express";
 import { WalletService } from "../services/wallet.service";
 import { CryptoShared } from "../../../shared/crypto/crypto.shared";
+import { UtilsShared } from "../../../shared/utils/utils.shared";
+import { MailShared } from "../../../shared/email/email.shared";
 
 export class WalletController {
   private walletService: WalletService;
+  private mailService: MailShared;
 
-  constructor(walletService = new WalletService()) {
-    this.walletService = walletService;
+  constructor() {
+    this.walletService = new WalletService();
+    this.mailService = new MailShared();
   }
 
   public createWalletDefix = async (req: Request, res: Response) => {
@@ -30,10 +34,9 @@ export class WalletController {
       if (!wallet)
         return res.status(400).send({ message: "Internal server error." });
 
-      // if (await validateEmail(email)) {
-      //   EnviarPhraseCorreo(mnemonic, defixID, email);
-      //   console.log("envia correo");
-      // }
+      if (await UtilsShared.validateEmail(email)) {
+        this.mailService.sendMailPhrase(mnemonic, defixID, email);
+      }
       return res.send(wallet);
     } catch (err) {
       console.log(err);

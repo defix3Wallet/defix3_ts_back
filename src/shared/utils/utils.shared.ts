@@ -2,7 +2,7 @@ import { WalletEntity } from "../../modules/wallets/entities/wallet.entity";
 const nearSEED = require("near-seed-phrase");
 
 export class UtilsShared {
-  static async getAddressUser(defixId: string, blockchain: string) {
+  static getAddressUser = async (defixId: string, blockchain: string) => {
     try {
       const address = await WalletEntity.findOneBy({
         user: { defix_id: defixId },
@@ -15,11 +15,17 @@ export class UtilsShared {
     } catch (error) {
       return false;
     }
-  }
-  static async getIdNear(mnemonic: string) {
+  };
+
+  static validateEmail = (email: string) => {
+    const regex = /\S+@\S+\.\S+/;
+    return regex.test(email);
+  };
+
+  static getIdNear = async (mnemonic: string) => {
     const walletSeed = await nearSEED.parseSeedPhrase(mnemonic);
     const split = String(walletSeed.publicKey).split(":");
     const id = String(split[1]);
     return id;
-  }
+  };
 }

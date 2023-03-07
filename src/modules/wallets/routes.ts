@@ -10,6 +10,6 @@ export class Routes {
   }
 
   private configureRoutes(router: Router) {
-    router.post("/users", this.routeController.getUser);
+    router.post("/create-wallet/", this.routeController.createWalletDefix);
   }
 }
