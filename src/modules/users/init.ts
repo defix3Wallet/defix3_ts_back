@@ -1,11 +1,11 @@
-import { Express } from "express";
-import { UserController } from "./controllers/userController";
+import { Express, Router } from "express";
+import { UserController } from "./controllers/user.controller";
 import { Routes } from "./routes";
 
 export class UsersModule {
   public routes: Routes;
 
-  constructor(app: Express) {
-    this.routes = new Routes(app, new UserController());
+  constructor(router: Router) {
+    this.routes = new Routes(router, new UserController());
   }
 }

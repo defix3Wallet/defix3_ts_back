@@ -7,9 +7,11 @@ import { UsersModule } from "./modules/users/init";
 
 class App {
   public app: express.Express;
+  public router: express.Router;
 
   constructor() {
     this.app = express();
+    this.router = express.Router();
     this.config();
     this.initModules();
   }
@@ -18,10 +20,11 @@ class App {
     this.app.use(morgan("dev"));
     this.app.use(cors());
     this.app.use(express.json());
+    this.app.use("/api/v2", this.router);
   }
 
   private initModules() {
-    new UsersModule(this.app);
+    new UsersModule(this.router);
   }
 }
 

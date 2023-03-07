@@ -1,10 +1,10 @@
 import { Express, Router } from "express";
-import { UserController } from "./controllers/user.controller";
+import { WalletController } from "./controllers/wallet.controller";
 
 export class Routes {
-  private routeController: UserController;
+  private routeController: WalletController;
 
-  constructor(router: Router, routeController: UserController) {
+  constructor(router: Router, routeController: WalletController) {
     this.routeController = routeController;
     this.configureRoutes(router);
   }

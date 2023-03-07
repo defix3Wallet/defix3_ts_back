@@ -4,13 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon ./src/app.ts",
+    "dev": "nodemon ./src/server.ts",
     "build": "rm -rf dist/* && tsc",
     "start": "npm run build && node ./dist/app.js",
     "defix": "export NODE_ENV=production && node ./dist/app.js",
-    "typeorm": "ts-node ./node_modules/typeorm/cli.js -d ./src/config/data.source.ts",
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js -d ./src/config/dataSource.ts",
     "create": "typeorm migration:create ./src/migrations/migration",
-    "migrate": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run -d ./src/config/data.source.ts",
+    "migrate": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run -d ./src/config/dataSource.ts",
     "generate": "npm run typeorm -d migration:generate ./src/migrations/migration"
   },
   "keywords": [],
