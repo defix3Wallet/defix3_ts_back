@@ -1,67 +1,59 @@
-import { Wallet } from "../entities/wallet.entity";
+import { UtilsShared } from "../../../shared/utils/utils.shared";
+import { CredentialInterface } from "../interfaces/credential.interface";
+import { WalletInterface } from "../interfaces/wallet.interface";
+import { UserService } from "../../users/services/user.service";
+import { WalletEntity } from "../entities/wallet.entity";
+import { User } from "../../users/entities/user.entity";
 
 export class WalletService {
-  public createWallet = async (req: Request, res: Response) => {
+  private userService: UserService;
+
+  constructor(userService: UserService = new UserService()) {
+    this.userService = userService;
+  }
+
+  public createWalletDefix = async (defixId: string, mnemonic: string) => {
     try {
-      const { defixId, seedPhrase, email } = req.body;
-      const mnemonic = new Crypto.decrypt(seedPhrase);
+      const credentials: CredentialInterface[] = [
+        await createWalletBTC(mnemonic),
+        await createWalletETH(mnemonic),
+        await createWalletNEAR(mnemonic),
+        await createWalletTRON(mnemonic),
+        await createWalletBNB(mnemonic),
+      ];
 
-      if (
-        !defixId ||
-        !defixId.includes(".defix3") ||
-        defixId.includes(" ") ||
-        !mnemonic
-      )
-        return res.status(400).send();
+      const wallet: WalletInterface = {
+        defixId: defixId,
+        credentials: credentials,
+      };
 
-      const DefixId = defixId.toLowerCase();
+      const saved = await this.saveWallet(mnemonic, wallet);
 
-      const exists: boolean = await validateDefixId(defixId.toLowerCase());
-
-      if (!exists) {
-        const credentials: Array<Credential> = [];
-
-        credentials.push(await createWalletBTC(mnemonic));
-        credentials.push(await createWalletETH(mnemonic));
-        credentials.push(await createWalletNEAR(mnemonic));
-        credentials.push(await createWalletTRON(mnemonic));
-        credentials.push(await createWalletBNB(mnemonic));
-
-        const wallet: Wallet = {
-          defixId: DefixId,
-          credentials: credentials,
-        };
-
-        const nearId = await getIdNear(mnemonic);
-
-        const save = await saveUser(nearId, wallet);
-
-        if (save) {
-          if (await validateEmail(email)) {
-            EnviarPhraseCorreo(mnemonic, DefixId, email);
-            console.log("envia correo");
-          }
-          return res.send(wallet);
-        }
-        return res.status(400).send();
-      } else {
-        return res.status(405).send();
+      if (!saved) {
+        throw new Error("Failed to save wallet to user");
       }
+
+      return wallet;
     } catch (err) {
-      console.log(err);
-      res.status(500).send({ err });
+      throw new Error(`Failed to create wallet: ${err}`);
     }
   };
-  public async createNewUser(user: User): Promise<User> {
-    this.userRepository.addNewUserToDb(user);
+
+  private saveWallet = async (mnemonic: string, wallet: WalletInterface) => {
+    const nearId = await UtilsShared.getIdNear(mnemonic);
+
+    const user = await this.userService.createUser(wallet.defixId, nearId);
+
+    if (!user) return false;
+
+    for (let credential of wallet.credentials) {
+      const walletAddress = new WalletEntity();
+      walletAddress.user = user;
+      walletAddress.blockchain = credential.name;
+      walletAddress.address = credential.address;
+      await walletAddress.save();
+    }
+
     return user;
-  }
-
-  public async getUserById(userid: string): Promise<User> {
-    return this.userRepository.getUserById(userid);
-  }
-
-  public async getUserProposals(userid: string): Promise<User[]> {
-    return this.userRepository.getUserProposals(userid);
-  }
+  };
 }

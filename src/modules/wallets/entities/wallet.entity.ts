@@ -11,17 +11,17 @@ import {
 import { User } from "../../users/entities/user.entity";
 
 @Entity({ name: "wallets" })
-export class Wallet extends BaseEntity {
+export class WalletEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => User, (user) => user.defix_id)
+  @ManyToOne(() => User)
   user!: User;
 
   @Column({
     nullable: true,
   })
-  name!: string;
+  blockchain!: string;
 
   @Column({
     nullable: true,

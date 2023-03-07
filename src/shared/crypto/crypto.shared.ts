@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
-class Crypto {
-  public decrypt(text: string) {
+export class CryptoShared {
+  static decrypt(text: string) {
     try {
       const cipheredBytes = Buffer.from(text, "base64");
       const decoded = crypto
@@ -20,7 +20,7 @@ class Crypto {
       return false;
     }
   }
-  public encrypt(text: string) {
+  static encrypt(text: string) {
     try {
       const encrypted = crypto.publicEncrypt(
         {
@@ -36,5 +36,3 @@ class Crypto {
     }
   }
 }
-
-export default new Crypto();

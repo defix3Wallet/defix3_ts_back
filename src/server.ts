@@ -19,7 +19,7 @@ class Server {
   private port: number = Number(process.env.PORT) || 3000;
   private server!: http.Server | https.Server;
   public io!: socketIo.Server;
-
+  
   constructor() {
     this.initTypeORM();
     this.connectDatabase();

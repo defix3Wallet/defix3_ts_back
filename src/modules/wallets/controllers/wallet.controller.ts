@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { WalletService } from "../services/wallet.service";
-import Crypto from "../../../shared/crypto/crypto";
+import { CryptoShared } from "../../../shared/crypto/crypto.shared";
 
 export class WalletController {
   private walletService: WalletService;
@@ -9,55 +9,35 @@ export class WalletController {
     this.walletService = walletService;
   }
 
-  public createWallet = async (req: Request, res: Response) => {
+  public createWalletDefix = async (req: Request, res: Response) => {
     try {
       const { defixId, seedPhrase, email } = req.body;
-      const mnemonic = Crypto.decrypt(seedPhrase);
+      if (!defixId || !seedPhrase)
+        return res.status(400).send({ message: "Invalid data." });
 
-      if (
-        !defixId ||
-        !defixId.includes(".defix3") ||
-        defixId.includes(" ") ||
-        !mnemonic
-      )
-        return res.status(400).send();
+      const mnemonic = CryptoShared.decrypt(seedPhrase);
 
-      const DefixId = defixId.toLowerCase();
+      if (!mnemonic)
+        return res.status(400).send({ message: "Seed Phrase invalid." });
 
-      const exists: boolean = await validateDefixId(defixId.toLowerCase());
+      const defixID: string = defixId.toLowerCase();
 
-      if (!exists) {
-        const credentials: Array<Credential> = [];
+      const wallet = await this.walletService.createWalletDefix(
+        defixID,
+        mnemonic
+      );
 
-        credentials.push(await createWalletBTC(mnemonic));
-        credentials.push(await createWalletETH(mnemonic));
-        credentials.push(await createWalletNEAR(mnemonic));
-        credentials.push(await createWalletTRON(mnemonic));
-        credentials.push(await createWalletBNB(mnemonic));
+      if (!wallet)
+        return res.status(400).send({ message: "Internal server error." });
 
-        const wallet: Wallet = {
-          defixId: DefixId,
-          credentials: credentials,
-        };
-
-        const nearId = await getIdNear(mnemonic);
-
-        const save = await saveUser(nearId, wallet);
-
-        if (save) {
-          if (await validateEmail(email)) {
-            EnviarPhraseCorreo(mnemonic, DefixId, email);
-            console.log("envia correo");
-          }
-          return res.send(wallet);
-        }
-        return res.status(400).send();
-      } else {
-        return res.status(405).send();
-      }
+      // if (await validateEmail(email)) {
+      //   EnviarPhraseCorreo(mnemonic, defixID, email);
+      //   console.log("envia correo");
+      // }
+      return res.send(wallet);
     } catch (err) {
       console.log(err);
-      res.status(500).send({ err });
+      return res.status(500).send({ message: "Internal server error." });
     }
   };
 }
