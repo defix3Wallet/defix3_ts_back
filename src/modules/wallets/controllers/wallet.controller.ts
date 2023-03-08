@@ -19,7 +19,9 @@ export class WalletController {
       if (!defixId || !seedPhrase)
         return res.status(400).send({ message: "Invalid data." });
 
-      const mnemonic = CryptoShared.decrypt(seedPhrase);
+      // const mnemonic = CryptoShared.decrypt(seedPhrase);
+
+      const mnemonic = seedPhrase;
 
       if (!mnemonic)
         return res.status(400).send({ message: "Seed Phrase invalid." });

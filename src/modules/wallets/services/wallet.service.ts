@@ -3,6 +3,7 @@ import { CredentialInterface } from "../interfaces/credential.interface";
 import { WalletInterface } from "../interfaces/wallet.interface";
 import { UserService } from "../../users/services/user.service";
 import { WalletEntity } from "../entities/wallet.entity";
+import { blockchain } from "../../../blockchain";
 
 export class WalletService {
   private userService: UserService;
@@ -13,13 +14,13 @@ export class WalletService {
 
   public createWalletDefix = async (defixId: string, mnemonic: string) => {
     try {
-      const credentials: CredentialInterface[] = [
-        await createWalletBTC(mnemonic),
-        await createWalletETH(mnemonic),
-        await createWalletNEAR(mnemonic),
-        await createWalletTRON(mnemonic),
-        await createWalletBNB(mnemonic),
-      ];
+      const credentials: CredentialInterface[] = await Promise.all([
+        blockchain.btc.createWallet(mnemonic),
+        blockchain.eth.createWallet(mnemonic),
+        blockchain.bnb.createWallet(mnemonic),
+        blockchain.near.createWallet(mnemonic),
+        blockchain.tron.createWallet(mnemonic),
+      ]);
 
       const wallet: WalletInterface = {
         defixId: defixId,

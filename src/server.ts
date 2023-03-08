@@ -1,13 +1,9 @@
 import "dotenv/config";
 import "reflect-metadata";
-import express from "express";
-import morgan from "morgan";
-import cors from "cors";
 import AppDataSource from "./config/dataSource";
 import * as http from "http";
 import * as https from "https";
 import dbConnect from "./config/postgres";
-import WebSocketServer from "./config/webSockets";
 import App from "./app";
 import socketIo from "socket.io";
 import NodeCache from "node-cache";
@@ -19,7 +15,7 @@ class Server {
   private port: number = Number(process.env.PORT) || 3000;
   private server!: http.Server | https.Server;
   public io!: socketIo.Server;
-  
+
   constructor() {
     this.initTypeORM();
     this.connectDatabase();
