@@ -21,7 +21,7 @@ const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 const NETWORK = process.env.NETWORK;
 
 export class BitcoinService implements BlockchainService {
-  async createWallet(mnemonic: string): Promise<CredentialInterface> {
+  async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     let network;
     let path;
     if (NETWORK === "mainnet") {
@@ -52,6 +52,50 @@ export class BitcoinService implements BlockchainService {
     };
 
     return credential;
+  }
+  async fromPrivateKey(
+    privateKey: string
+  ): Promise<CredentialInterface | null> {
+    try {
+      let network;
+      let path;
+      if (NETWORK === "mainnet") {
+        network = networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
+        path = `m/49'/0'/0'/0`; // Use m/49'/1'/0'/0 for testnet mainnet `m/49'/0'/0'/0
+      } else {
+        network = networks.testnet; //use networks.testnet networks.bitcoin for testnet;
+        path = `m/49'/1/0'/0`;
+      }
+
+      const keyPair = ECPair.fromWIF(privateKey, network);
+      if (!keyPair.privateKey) return null;
+
+      const chainCode = Buffer.alloc(32);
+      const root: BIP32Interface = bip32.fromPrivateKey(
+        keyPair.privateKey,
+        chainCode
+      );
+
+      const { address } = payments.p2pkh({
+        pubkey: root.publicKey,
+        network: network,
+      });
+
+      if (!address) return null;
+
+      const credential: CredentialInterface = {
+        name: "BTC",
+        address: address,
+        privateKey: keyPair.toWIF(),
+      };
+
+      return credential;
+    } catch (error) {
+      return null;
+    }
+  }
+  async isAddress(address: string): Promise<boolean> {
+    return await WAValidator.validate(address, "BTC");
   }
   async getBalance(address: string): Promise<number> {
     try {

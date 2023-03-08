@@ -1,4 +1,5 @@
-import { WalletEntity } from "../../modules/wallets/entities/wallet.entity";
+import { AddressEntity } from "../../modules/address/entities/address.entity";
+
 const nearSEED = require("near-seed-phrase");
 
 const NETWORK = process.env.NETWORK || "testnet";
@@ -6,7 +7,7 @@ const NETWORK = process.env.NETWORK || "testnet";
 export class UtilsShared {
   static getAddressUser = async (defixId: string, blockchain: string) => {
     try {
-      const address = await WalletEntity.findOneBy({
+      const address = await AddressEntity.findOneBy({
         user: { defix_id: defixId },
         blockchain: blockchain,
       });

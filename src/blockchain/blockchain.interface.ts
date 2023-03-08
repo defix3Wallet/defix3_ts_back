@@ -1,5 +1,7 @@
 import { CredentialInterface } from "../interfaces/credential.interface";
 export interface BlockchainService {
-  createWallet(mnemonic: string): Promise<CredentialInterface>;
+  fromMnemonic(mnemonic: string): Promise<CredentialInterface>;
+  fromPrivateKey(privateKey: string): Promise<CredentialInterface | null>;
+  isAddress(address: string): Promise<boolean>;
   getBalance(address: string): Promise<number>;
 }

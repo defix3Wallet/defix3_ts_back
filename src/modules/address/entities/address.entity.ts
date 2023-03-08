@@ -3,20 +3,17 @@ import {
   Column,
   PrimaryGeneratedColumn,
   BaseEntity,
-  OneToOne,
-  JoinColumn,
-  OneToMany,
   ManyToOne,
 } from "typeorm";
-import { User } from "../../users/entities/user.entity";
+import { UserEntity } from "../../users/entities/user.entity";
 
-@Entity({ name: "wallets" })
-export class WalletEntity extends BaseEntity {
+@Entity({ name: "adresses" })
+export class AddressEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => User)
-  user!: User;
+  @ManyToOne(() => UserEntity)
+  user!: UserEntity;
 
   @Column({
     nullable: true,

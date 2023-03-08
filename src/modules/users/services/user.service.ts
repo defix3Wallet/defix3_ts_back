@@ -1,5 +1,5 @@
 import { UtilsShared } from "../../../shared/utils/utils.shared";
-import { User } from "../entities/user.entity";
+import { UserEntity } from "../entities/user.entity";
 
 export class UserService {
   public createUser = async (
@@ -8,7 +8,7 @@ export class UserService {
     email?: string
   ) => {
     try {
-      const user = new User();
+      const user = new UserEntity();
 
       user.defix_id = defixId;
       user.import_id = importId;
@@ -20,5 +20,17 @@ export class UserService {
     } catch (err) {
       throw new Error(`Failed to create user: ${err}`);
     }
+  };
+
+  public getUserByImportId = async (import_id: string) => {
+    return await UserEntity.findOneBy({ import_id });
+  };
+
+  public getUserByDefixId = async (defix_id: string) => {
+    return await UserEntity.findOneBy({ defix_id });
+  };
+
+  public getUsers = async () => {
+    return await UserEntity.find({ select: ["defix_id", "id"] });
   };
 }

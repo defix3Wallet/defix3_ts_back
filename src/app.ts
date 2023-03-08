@@ -5,6 +5,9 @@ import cors from "cors";
 import morgan from "morgan";
 import { UsersModule } from "./modules/users/init";
 import { WalletsModule } from "./modules/wallets/init";
+import { AddressModule } from "./modules/address/init";
+import swaggerUi from "swagger-ui-express";
+import swaggerSetup from "./config/swagger";
 
 class App {
   public app: express.Express;
@@ -22,9 +25,11 @@ class App {
     this.app.use(cors());
     this.app.use(express.json());
     this.app.use("/api/v2", this.router);
+    this.app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerSetup));
   }
 
   private initModules() {
+    new AddressModule(this.router);
     new WalletsModule(this.router);
     new UsersModule(this.router);
   }

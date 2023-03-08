@@ -42,7 +42,7 @@ if (process.env.NEAR_ENV === "testnet") {
 }
 
 export class NearService implements BlockchainService {
-  async createWallet(mnemonic: string): Promise<CredentialInterface> {
+  async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     const walletSeed = await nearSEED.parseSeedPhrase(mnemonic);
     const keyPair = KeyPair.fromString(walletSeed.secretKey);
     const implicitAccountId = Buffer.from(keyPair.getPublicKey().data).toString(
@@ -56,6 +56,54 @@ export class NearService implements BlockchainService {
     };
 
     return credential;
+  }
+  async fromPrivateKey(
+    privateKey: string
+  ): Promise<CredentialInterface | null> {
+    try {
+      if (!privateKey.includes("ed25519:")) return null;
+      const keyPair = KeyPair.fromString(privateKey);
+      const implicitAccountId = Buffer.from(
+        keyPair.getPublicKey().data
+      ).toString("hex");
+
+      const credential: CredentialInterface = {
+        name: "NEAR",
+        address: implicitAccountId,
+        privateKey: privateKey,
+      };
+
+      return credential;
+    } catch (error) {
+      return null;
+    }
+  }
+  async importWallet(
+    nearId: string,
+    mnemonic: string
+  ): Promise<CredentialInterface> {
+    const walletSeed = await nearSEED.parseSeedPhrase(mnemonic);
+    const credential: CredentialInterface = {
+      name: "NEAR",
+      address: nearId,
+      privateKey: walletSeed.secretKey,
+    };
+
+    return credential;
+  }
+  async isAddress(address: string): Promise<boolean> {
+    const keyStore = new keyStores.InMemoryKeyStore();
+    const near = new Near(UtilsShared.ConfigNEAR(keyStore));
+    const account = new Account(near.connection, address);
+    const is_address = await account
+      .state()
+      .then((response) => {
+        return true;
+      })
+      .catch((error) => {
+        return false;
+      });
+    return is_address;
   }
   async getBalance(address: string): Promise<number> {
     try {

@@ -18,7 +18,7 @@ const web3 = new Web3(
 );
 
 export class EthereumService implements BlockchainService {
-  async createWallet(mnemonic: string): Promise<CredentialInterface> {
+  async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     const wallet = ethers.Wallet.fromMnemonic(mnemonic);
 
     const credential: CredentialInterface = {
@@ -28,6 +28,25 @@ export class EthereumService implements BlockchainService {
     };
 
     return credential;
+  }
+  async fromPrivateKey(
+    privateKey: string
+  ): Promise<CredentialInterface | null> {
+    try {
+      const wallet = web3.eth.accounts.privateKeyToAccount(privateKey);
+      const credential: CredentialInterface = {
+        name: "ETH",
+        address: wallet.address,
+        privateKey: privateKey,
+      };
+
+      return credential;
+    } catch (error) {
+      return null;
+    }
+  }
+  async isAddress(address: string): Promise<boolean> {
+    return await web3.utils.isAddress(address);
   }
   async getBalance(address: string): Promise<number> {
     try {

@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from "typeorm";
 
 @Entity({ name: "users" })
-export class User extends BaseEntity {
+export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -35,18 +35,19 @@ export class User extends BaseEntity {
 
   @Column({
     nullable: true,
-    default: true,
+    default: false,
   })
   close_sessions!: boolean;
 
   @Column({
     nullable: true,
-    default: true,
+    default: false,
   })
   dosfa!: boolean;
 
   @Column({
     nullable: true,
+    unique: true,
   })
   legal_document!: string;
 

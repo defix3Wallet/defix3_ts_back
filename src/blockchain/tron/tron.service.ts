@@ -17,7 +17,7 @@ const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
 tronWeb.setHeader({ "TRON-PRO-API-KEY": TRON_PRO_API_KEY });
 
 export class TronService implements BlockchainService {
-  async createWallet(mnemonic: string): Promise<CredentialInterface> {
+  async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     const account = await tronWeb.fromMnemonic(mnemonic);
     let privateKey;
 
@@ -34,6 +34,28 @@ export class TronService implements BlockchainService {
     };
 
     return credential;
+  }
+  async fromPrivateKey(
+    privateKey: string
+  ): Promise<CredentialInterface | null> {
+    try {
+      const address = tronWeb.address.fromPrivateKey(privateKey);
+
+      if (!address) return null;
+
+      const credential: CredentialInterface = {
+        name: "TRX",
+        address: address,
+        privateKey: privateKey,
+      };
+
+      return credential;
+    } catch (error) {
+      return null;
+    }
+  }
+  async isAddress(address: string): Promise<boolean> {
+    return await tronWeb.isAddress(address);
   }
   async getBalance(address: string): Promise<number> {
     try {

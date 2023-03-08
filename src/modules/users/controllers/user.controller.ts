@@ -1,12 +1,33 @@
 import { Request, Response } from "express";
+import { UserService } from "../services/user.service";
 
 export class UserController {
-  public getUser = async (req: Request, res: Response) => {
-    const userId = req.params.userid;
+  private userService: UserService;
+
+  constructor() {
+    this.userService = new UserService();
+  }
+
+  public validateDefixId = async (req: Request, res: Response) => {
     try {
-      return res.status(200).send({ message: "FINE" });
+      const { defixId } = req.body;
+
+      const user = await this.userService.getUserByDefixId(defixId);
+
+      if (!user) return res.send(false);
+
+      return res.send(true);
     } catch (error) {
-      return res.status(400).send({ message: error });
+      return res.status(500).send({ message: error });
+    }
+  };
+
+  public getUsers = async (req: Request, res: Response) => {
+    try {
+      const users = await this.userService.getUsers();
+      res.send(users);
+    } catch (error) {
+      return res.status(500).send({ message: error });
     }
   };
 }

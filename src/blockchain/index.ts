@@ -9,5 +9,5 @@ export const blockchain = {
   eth: new EthereumService(),
   bnb: new BinanceService(),
   near: new NearService(),
-  tron: new TronService(),
+  trx: new TronService(),
 };
