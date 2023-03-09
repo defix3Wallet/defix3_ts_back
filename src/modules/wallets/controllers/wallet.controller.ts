@@ -3,7 +3,6 @@ import { WalletService } from "../services/wallet.service";
 import { CryptoShared } from "../../../shared/crypto/crypto.shared";
 import { UtilsShared } from "../../../shared/utils/utils.shared";
 import { MailShared } from "../../../shared/email/email.shared";
-import { blockchain } from "../../../blockchain/index";
 
 export class WalletController {
   private walletService: WalletService;

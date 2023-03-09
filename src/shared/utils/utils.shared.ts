@@ -1,3 +1,4 @@
+import dbConnect from "../../config/postgres";
 import { AddressEntity } from "../../modules/address/entities/address.entity";
 
 const nearSEED = require("near-seed-phrase");
@@ -17,6 +18,31 @@ export class UtilsShared {
       return address.address;
     } catch (error) {
       return false;
+    }
+  };
+
+  static getCryptos = async () => {
+    try {
+      const conexion = await dbConnect();
+      const cryptocurrencys = await conexion.query(
+        "select * from backend_cryptocurrency"
+      );
+
+      const cryptos = [];
+
+      for (let cryptocurrency of cryptocurrencys.rows) {
+        const tokens = await conexion.query(
+          "select * from backend_token where cryptocurrency_id = $1",
+          [cryptocurrency.id]
+        );
+        cryptocurrency.tokens = tokens.rows;
+        cryptos.push(cryptocurrency);
+      }
+
+      return cryptos;
+    } catch (error) {
+      console.log(error);
+      return [];
     }
   };
 

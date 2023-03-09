@@ -9,8 +9,26 @@ export class SharedMiddleware {
         return res.status(400).send({ message: "Error DefixId." });
       const user = await UserEntity.findOneBy({ defix_id: defixId });
 
-      if (!user)
-        return res.status(400).send({ message: "User already exists." });
+      if (user) {
+        return res.status(405).send({ message: "User already exists." });
+      }
+
+      next();
+    } catch (err) {
+      res.status(500).send({ message: "Internal server error." });
+    }
+  }
+
+  async defixIdValid(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { defixId } = req.body;
+      if (!defixId || !defixId.includes(".defix3") || defixId.includes(" "))
+        return res.status(400).send({ message: "Error DefixId." });
+      const user = await UserEntity.findOneBy({ defix_id: defixId });
+
+      if (!user) {
+        return res.status(405).send({ message: "User already exists." });
+      }
 
       next();
     } catch (err) {

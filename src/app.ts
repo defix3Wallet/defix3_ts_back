@@ -8,6 +8,7 @@ import { WalletsModule } from "./modules/wallets/init";
 import { AddressModule } from "./modules/address/init";
 import swaggerUi from "swagger-ui-express";
 import swaggerSetup from "./config/swagger";
+import { BalanceModule } from "./modules/balance/init";
 
 class App {
   public app: express.Express;
@@ -32,6 +33,7 @@ class App {
     new AddressModule(this.router);
     new WalletsModule(this.router);
     new UsersModule(this.router);
+    new BalanceModule(this.router);
   }
 }
 
