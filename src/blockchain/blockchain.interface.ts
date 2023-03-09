@@ -4,4 +4,9 @@ export interface BlockchainService {
   fromPrivateKey(privateKey: string): Promise<CredentialInterface | null>;
   isAddress(address: string): Promise<boolean>;
   getBalance(address: string): Promise<number>;
+  getBalanceToken(
+    address: string,
+    contract: string,
+    decimals: number
+  ): Promise<number>;
 }
