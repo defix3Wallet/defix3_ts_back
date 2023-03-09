@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  BaseEntity,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from "typeorm";
 
 @Entity({ name: "users" })
 export class UserEntity extends BaseEntity {
@@ -6,10 +13,11 @@ export class UserEntity extends BaseEntity {
   id!: number;
 
   @Column({
+    name: "defix_id",
     nullable: false,
     unique: true,
   })
-  defix_id!: string;
+  defixId!: string;
 
   @Column({
     nullable: true,
@@ -18,10 +26,11 @@ export class UserEntity extends BaseEntity {
   email!: string;
 
   @Column({
+    name: "import_id",
     nullable: false,
     unique: true,
   })
-  import_id!: string;
+  importId!: string;
 
   @Column({
     nullable: true,
@@ -34,10 +43,11 @@ export class UserEntity extends BaseEntity {
   lastname!: string;
 
   @Column({
+    name: "close_sessions",
     nullable: true,
     default: false,
   })
-  close_sessions!: boolean;
+  closeSessions!: boolean;
 
   @Column({
     nullable: true,
@@ -46,15 +56,17 @@ export class UserEntity extends BaseEntity {
   dosfa!: boolean;
 
   @Column({
+    name: "legal_document",
     nullable: true,
     unique: true,
   })
-  legal_document!: string;
+  legalDocument!: string;
 
   @Column({
+    name: "type_document",
     nullable: true,
   })
-  type_document!: string;
+  typeDocument!: string;
 
   @Column({
     nullable: true,
@@ -62,22 +74,36 @@ export class UserEntity extends BaseEntity {
   secret!: string;
 
   @Column({
+    name: "flag_send",
     nullable: true,
   })
-  flag_send!: boolean;
+  flagSend!: boolean;
 
   @Column({
+    name: "flag_receive",
     nullable: true,
   })
-  flag_receive!: boolean;
+  flagReceive!: boolean;
 
   @Column({
+    name: "flag_dex",
     nullable: true,
   })
-  flag_dex!: boolean;
+  flagDex!: boolean;
 
   @Column({
+    name: "flag_fiat",
     nullable: true,
   })
-  flag_fiat!: boolean;
+  flagFiat!: boolean;
+
+  @CreateDateColumn({
+    name: "created_at",
+  })
+  createdAt!: Date;
+
+  @UpdateDateColumn({
+    name: "updated_at",
+  })
+  updatedAt!: Date;
 }

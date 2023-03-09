@@ -9,7 +9,7 @@ export class UtilsShared {
   static getAddressUser = async (defixId: string, blockchain: string) => {
     try {
       const address = await AddressEntity.findOneBy({
-        user: { defix_id: defixId },
+        user: { defixId: defixId },
         blockchain: blockchain,
       });
 

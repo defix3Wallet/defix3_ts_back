@@ -24,7 +24,7 @@ export class AddressService {
   public getAddressByDefixId = async (defixId: string, blockchain: string) => {
     try {
       return await AddressEntity.findOneBy({
-        user: { defix_id: defixId },
+        user: { defixId: defixId },
         blockchain,
       });
     } catch (err) {
@@ -35,7 +35,7 @@ export class AddressService {
   public getAddressesByDefixId = async (defixId: string) => {
     try {
       return await AddressEntity.findBy({
-        user: { defix_id: defixId },
+        user: { defixId: defixId },
       });
     } catch (err) {
       throw new Error(`Failed to get addresses: ${err}`);

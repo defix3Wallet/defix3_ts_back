@@ -11,8 +11,8 @@ export class UserService {
     try {
       const user = new UserEntity();
 
-      user.defix_id = defixId;
-      user.import_id = importId;
+      user.defixId = defixId;
+      user.importId = importId;
       email ? (user.email = email) : undefined;
 
       const userSaved = await user.save();
@@ -23,59 +23,45 @@ export class UserService {
     }
   };
 
-  public getUserByImportId = async (import_id: string) => {
-    return await UserEntity.findOneBy({ import_id });
+  public getUserByImportId = async (importId: string) => {
+    return await UserEntity.findOneBy({ importId });
   };
 
-  public getUserByDefixId = async (defix_id: string) => {
-    return await UserEntity.findOneBy({ defix_id });
+  public getUserByDefixId = async (defixId: string) => {
+    return await UserEntity.findOneBy({ defixId });
   };
 
   public getUsers = async () => {
-    return await UserEntity.find({ select: ["defix_id", "id"] });
+    return await UserEntity.find({ select: ["defixId", "id"] });
   };
 
   public getUserDataByDefixId = async (defixId: string) => {
     const userData = await UserEntity.createQueryBuilder("user")
       .select([
-        "user.defix_id",
+        "user.defixId",
         "user.email",
-        "user.flag_send",
-        "user.flag_receive",
-        "user.flag_dex",
-        "user.flag_fiat",
+        "user.flagSend",
+        "user.flagReceive",
+        "user.flagDex",
+        "user.flagFiat",
         "user.name",
         "user.lastname",
-        "user.legal_document",
-        "user.type_document",
+        "user.legalDocument",
+        "user.typeDocument",
         "user.dosfa",
-        "user.close_sessions",
+        "user.closeSessions",
       ])
-      .where("user.defix_id = :defixId", { defixId: defixId })
+      .where("user.defixId = :defixId", { defixId: defixId })
       .getOne();
 
     return userData;
   };
 
-  public closeAllSessions = async (defixId: string) => {
-    try {
-      const user = await this.getUserByDefixId(defixId);
-      if (!user) throw new Error(`User not exists.`);
+  public updateUser = async (defixId: string, body: any) => {
+    const result = await UserEntity.update({ defixId: defixId }, body);
 
-      const result = await UserEntity.update(
-        { defix_id: defixId },
-        { close_sessions: true }
-      );
+    if (result.affected === 0) throw new Error(`Failed to updated user.`);
 
-      if (result.affected === 0)
-        throw new Error(`Failed to close all sessions.`);
-
-      return result;
-    } catch (error) {
-      console.log(error);
-      throw new Error(`Failed to close all sessions.`);
-    }
+    return result;
   };
-
-  public updateUser = async (user: UserEntity) => {};
 }

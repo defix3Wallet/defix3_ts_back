@@ -7,7 +7,7 @@ export class SharedMiddleware {
       const { defixId } = req.body;
       if (!defixId || !defixId.includes(".defix3") || defixId.includes(" "))
         return res.status(400).send({ message: "Error DefixId." });
-      const user = await UserEntity.findOneBy({ defix_id: defixId });
+      const user = await UserEntity.findOneBy({ defixId: defixId });
 
       if (user) {
         return res.status(400).send({ message: "User already exists." });
@@ -24,7 +24,7 @@ export class SharedMiddleware {
       const { defixId } = req.body;
       if (!defixId || !defixId.includes(".defix3") || defixId.includes(" "))
         return res.status(400).send({ message: "Error DefixId." });
-      const user = await UserEntity.findOneBy({ defix_id: defixId });
+      const user = await UserEntity.findOneBy({ defixId: defixId });
 
       if (!user) {
         return res.status(400).send({ message: "User not found." });
@@ -32,6 +32,7 @@ export class SharedMiddleware {
 
       next();
     } catch (err) {
+      console.log(err);
       res.status(500).send({ message: "Internal server error." });
     }
   }

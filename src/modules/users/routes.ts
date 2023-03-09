@@ -52,7 +52,7 @@ export class Routes {
      * /get-users:
      *    get:
      *      tags:
-     *        - Wallet
+     *        - User
      *      summary: Lista los username de los usuarios registrados.
      *      description: Responde solo el defixId de los usuarios.
      *      responses:
@@ -102,7 +102,7 @@ export class Routes {
     /**
      * Post track
      * @swagger
-     * /close-all-sessions/:
+     * /update-user/:
      *    post:
      *      tags:
      *        - User
@@ -125,12 +125,12 @@ export class Routes {
      *        '400':
      *          description: Bad Request.
      *        '500':
-     *          description: Bad Request.
+     *          description: Internal server error.
      */
-    router.post(
-      "/close-all-sessions/",
+    router.put(
+      "/update-user/",
       this.middleware.defixIdValid,
-      this.controller.closeAllSessions
+      this.controller.updateUser
     );
   }
 }

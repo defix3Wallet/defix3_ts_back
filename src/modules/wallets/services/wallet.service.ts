@@ -47,7 +47,7 @@ export class WalletService {
 
       if (!user) throw new Error("Wallet does not exist in Defix3");
 
-      const defixId = user.defix_id;
+      const defixId = user.defixId;
 
       // const walletNear = (
       //   await WalletEntity.findOneBy({
@@ -149,7 +149,7 @@ export class WalletService {
   ) => {
     try {
       const walletsUser = await this.addressService.getAddressesByDefixId(
-        user.defix_id
+        user.defixId
       );
 
       for (let credential of wallet.credentials) {

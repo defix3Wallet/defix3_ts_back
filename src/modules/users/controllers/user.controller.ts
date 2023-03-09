@@ -32,15 +32,6 @@ export class UserController {
     }
   };
 
-  public setUserData = async (req: Request, res: Response) => {
-    try {
-      const users = await this.userService.getUsers();
-      res.send(users);
-    } catch (error) {
-      return res.status(500).send({ message: error });
-    }
-  };
-
   public getUserData = async (req: Request, res: Response) => {
     try {
       const { defixId } = req.body;
@@ -53,16 +44,14 @@ export class UserController {
     }
   };
 
-  public closeAllSessions = async (req: Request, res: Response) => {
+  public updateUser = async (req: Request, res: Response) => {
     try {
       const { defixId } = req.body;
-      const result = await this.userService.closeAllSessions(defixId);
+      const result = await this.userService.updateUser(defixId, req.body);
       res.send(result);
     } catch (error) {
       console.log(error);
       return res.status(500).send({ message: error });
     }
   };
-
-  public updateUser = async (user: UserEntity) => {};
 }
