@@ -64,5 +64,73 @@ export class Routes {
      *          description: Bad Request.
      */
     router.get("/get-users", this.controller.getUsers);
+
+    /**
+     * Post track
+     * @swagger
+     * /get-user-data/:
+     *    post:
+     *      tags:
+     *        - User
+     *      summary: Obtiene la data de configuracion del usuario.
+     *      description: Obtiene data del defixId enviado.
+     *      requestBody:
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: "object"
+     *                required: [defixId]
+     *                properties: {
+     *                  defixId: {
+     *                    type: "string"
+     *                  }
+     *                }
+     *      responses:
+     *        '200':
+     *          description: Responde objeto con la data.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Bad Request.
+     */
+    router.post(
+      "/get-user-data/",
+      this.middleware.defixIdValid,
+      this.controller.getUserData
+    );
+
+    /**
+     * Post track
+     * @swagger
+     * /close-all-sessions/:
+     *    post:
+     *      tags:
+     *        - User
+     *      summary: Cerrar todas las sesiones abiertas.
+     *      description: Manda el defixId y el SeedPhrase para mandar a cerrar todas las sesiones.
+     *      requestBody:
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: "object"
+     *                required: [defixId]
+     *                properties: {
+     *                  defixId: {
+     *                    type: "string"
+     *                  },
+     *                }
+     *      responses:
+     *        '200':
+     *          description: Buena respuesta.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Bad Request.
+     */
+    router.post(
+      "/close-all-sessions/",
+      this.middleware.defixIdValid,
+      this.controller.closeAllSessions
+    );
   }
 }

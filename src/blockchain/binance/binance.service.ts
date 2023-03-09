@@ -1,10 +1,12 @@
 import { BlockchainService } from "../blockchain.interface";
 import { ethers, Wallet } from "ethers";
 import Web3 from "web3";
+import web3Utils from "web3-utils";
 import { AbiItem } from "web3-utils";
 import { CredentialInterface } from "../../interfaces/credential.interface";
 import axios from "axios";
 import { constructSimpleSDK, OptimalRate } from "@paraswap/sdk";
+import abi from "../abi.json";
 
 const ETHEREUM_NETWORK = process.env.ETHEREUM_NETWORK;
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
@@ -55,6 +57,36 @@ export class BinanceService implements BlockchainService {
       if (balance) {
         let value = Math.pow(10, 18);
         balanceTotal = Number(balance) / value;
+        if (!balanceTotal) {
+          balanceTotal = 0;
+        }
+        return balanceTotal;
+      } else {
+        return balanceTotal;
+      }
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  async getBalanceToken(
+    address: string,
+    srcContract: string,
+    decimals: number
+  ): Promise<number> {
+    try {
+      let contract = new web3.eth.Contract(
+        abi as web3Utils.AbiItem[],
+        srcContract
+      );
+
+      const balance = await contract.methods.balanceOf(address).call();
+
+      let balanceTotal = 0;
+
+      if (balance) {
+        let value = Math.pow(10, decimals);
+        balanceTotal = balance / value;
         if (!balanceTotal) {
           balanceTotal = 0;
         }

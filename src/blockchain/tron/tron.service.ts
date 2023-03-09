@@ -75,4 +75,31 @@ export class TronService implements BlockchainService {
       return 0;
     }
   }
+  async getBalanceToken(
+    address: string,
+    srcContract: string,
+    decimals: number
+  ): Promise<number> {
+    try {
+      tronWeb.setAddress(srcContract);
+      const contract = await tronWeb.contract().at(srcContract);
+
+      const balance = await contract.balanceOf(address).call();
+
+      let balanceTotal = 0;
+
+      if (balance) {
+        let value = Math.pow(10, decimals);
+        balanceTotal = balance / value;
+        if (!balanceTotal) {
+          balanceTotal = 0;
+        }
+        return balanceTotal;
+      } else {
+        return balanceTotal;
+      }
+    } catch (error) {
+      return 0;
+    }
+  }
 }

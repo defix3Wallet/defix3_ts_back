@@ -129,4 +129,28 @@ export class NearService implements BlockchainService {
       return 0;
     }
   }
+  async getBalanceToken(
+    address: string,
+    srcContract: string,
+    decimals: number
+  ): Promise<number> {
+    try {
+      const keyStore = new keyStores.InMemoryKeyStore();
+      const near = new Near(UtilsShared.ConfigNEAR(keyStore));
+
+      const account = new Account(near.connection, address);
+
+      const balance = await account.viewFunction({
+        contractId: srcContract,
+        methodName: "ft_balance_of",
+        args: { account_id: address },
+      });
+
+      if (!balance) return 0;
+
+      return balance / Math.pow(10, decimals);
+    } catch (error) {
+      return 0;
+    }
+  }
 }

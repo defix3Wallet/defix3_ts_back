@@ -21,6 +21,13 @@ const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 const NETWORK = process.env.NETWORK;
 
 export class BitcoinService implements BlockchainService {
+  async getBalanceToken(
+    address: string,
+    contract: string,
+    decimals: number
+  ): Promise<number> {
+    return 0;
+  }
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     let network;
     let path;

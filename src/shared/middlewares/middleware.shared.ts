@@ -10,7 +10,7 @@ export class SharedMiddleware {
       const user = await UserEntity.findOneBy({ defix_id: defixId });
 
       if (user) {
-        return res.status(405).send({ message: "User already exists." });
+        return res.status(400).send({ message: "User already exists." });
       }
 
       next();
@@ -27,7 +27,7 @@ export class SharedMiddleware {
       const user = await UserEntity.findOneBy({ defix_id: defixId });
 
       if (!user) {
-        return res.status(405).send({ message: "User already exists." });
+        return res.status(400).send({ message: "User not found." });
       }
 
       next();
