@@ -13,10 +13,42 @@ export class Routes {
   }
 
   private configureRoutes(router: Router) {
-    router.post(
-      "/get-balance/",
-      this.middleware.defixIdValid,
-      this.controller.getBalance
-    );
+    /**
+     * Post track
+     * @swagger
+     * /get-cryptos:
+     *    get:
+     *      tags:
+     *        - General
+     *      summary: Obtiene las Cryptos y Tokens permitidos en Defix3.
+     *      description: Te da un array con las cryptos y tokens.
+     *      responses:
+     *        '200':
+     *          description: Array con las cryptos y tokens.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Internal Server Error.
+     */
+    router.get("/get-cryptos", this.controller.getCryptos);
+
+    /**
+     * Post track
+     * @swagger
+     * /get-cryptos-swap:
+     *    get:
+     *      tags:
+     *        - General
+     *      summary: Obtiene las Cryptos y Tokens permitidos en Defix3.
+     *      description: Te da un array con las cryptos y tokens.
+     *      responses:
+     *        '200':
+     *          description: Array con las cryptos y tokens.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Internal Server Error.
+     */
+    router.get("/get-cryptos-swap/", this.controller.getCryptosSwap);
   }
 }

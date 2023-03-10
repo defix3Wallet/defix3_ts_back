@@ -18,7 +18,7 @@ export class Routes {
      * /validate-defix3/:
      *    post:
      *      tags:
-     *        - Wallet
+     *        - User
      *      summary: Validar si un usuario defix3 existe.
      *      description: Response un Boolean si el usuario existe o no.
      *      requestBody:

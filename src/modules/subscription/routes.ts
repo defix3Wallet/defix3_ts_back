@@ -16,7 +16,7 @@ export class Routes {
      * /create-subscription/:
      *    post:
      *      tags:
-     *        - Subscribe
+     *        - Subscription
      *      summary: Enviar correo para subscribirse a Defix3.
      *      description: Registrar correo.
      *      requestBody:

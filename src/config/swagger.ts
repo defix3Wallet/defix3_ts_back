@@ -31,17 +31,16 @@ const swaggerDefinition: OAS3Definition = {
         "EndPoints asociados a la configuracion del perfil de los usuarios.",
     },
     {
-      name: "Subscribe",
-      description:
-        "EndPoint para guardar correo de usuario que quiera recibir notificaciones de Defix3",
+      name: "2FA",
+      description: "EndPoints asociados al 2FA.",
     },
     {
       name: "Balance",
       description: "EndPoints asociados al balance y Cryptomonedas",
     },
     {
-      name: "2FA",
-      description: "EndPoints asociados al 2FA.",
+      name: "General",
+      description: "EndPoints variados",
     },
     {
       name: "Transaction",
@@ -50,6 +49,11 @@ const swaggerDefinition: OAS3Definition = {
     {
       name: "Swap",
       description: "EndPoints asociados a al Swap. Solo ETH y BSC",
+    },
+    {
+      name: "Subscription",
+      description:
+        "EndPoint para guardar correo de usuario que quiera recibir notificaciones de Defix3",
     },
   ],
   components: {
