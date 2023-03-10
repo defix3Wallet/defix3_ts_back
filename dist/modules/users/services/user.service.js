@@ -16,8 +16,8 @@ class UserService {
         this.createUser = (defixId, importId, email) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const user = new user_entity_1.UserEntity();
-                user.defix_id = defixId;
-                user.import_id = importId;
+                user.defixId = defixId;
+                user.importId = importId;
                 email ? (user.email = email) : undefined;
                 const userSaved = yield user.save();
                 return userSaved;
@@ -26,14 +26,40 @@ class UserService {
                 throw new Error(`Failed to create user: ${err}`);
             }
         });
-        this.getUserByImportId = (import_id) => __awaiter(this, void 0, void 0, function* () {
-            return yield user_entity_1.UserEntity.findOneBy({ import_id });
+        this.getUserByImportId = (importId) => __awaiter(this, void 0, void 0, function* () {
+            return yield user_entity_1.UserEntity.findOneBy({ importId });
         });
-        this.getUserByDefixId = (defix_id) => __awaiter(this, void 0, void 0, function* () {
-            return yield user_entity_1.UserEntity.findOneBy({ defix_id });
+        this.getUserByDefixId = (defixId) => __awaiter(this, void 0, void 0, function* () {
+            return yield user_entity_1.UserEntity.findOneBy({ defixId });
         });
         this.getUsers = () => __awaiter(this, void 0, void 0, function* () {
-            return yield user_entity_1.UserEntity.find({ select: ["defix_id", "id"] });
+            return yield user_entity_1.UserEntity.find({ select: ["defixId", "id"] });
+        });
+        this.getUserDataByDefixId = (defixId) => __awaiter(this, void 0, void 0, function* () {
+            const userData = yield user_entity_1.UserEntity.createQueryBuilder("user")
+                .select([
+                "user.defixId",
+                "user.email",
+                "user.flagSend",
+                "user.flagReceive",
+                "user.flagDex",
+                "user.flagFiat",
+                "user.name",
+                "user.lastname",
+                "user.legalDocument",
+                "user.typeDocument",
+                "user.dosfa",
+                "user.closeSessions",
+            ])
+                .where("user.defixId = :defixId", { defixId: defixId })
+                .getOne();
+            return userData;
+        });
+        this.updateUser = (defixId, body) => __awaiter(this, void 0, void 0, function* () {
+            const result = yield user_entity_1.UserEntity.update({ defixId: defixId }, body);
+            if (result.affected === 0)
+                throw new Error(`Failed to updated user.`);
+            return result;
         });
     }
 }

@@ -85,5 +85,29 @@ class TronService {
             }
         });
     }
+    getBalanceToken(address, srcContract, decimals) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                tronWeb.setAddress(srcContract);
+                const contract = yield tronWeb.contract().at(srcContract);
+                const balance = yield contract.balanceOf(address).call();
+                let balanceTotal = 0;
+                if (balance) {
+                    let value = Math.pow(10, decimals);
+                    balanceTotal = balance / value;
+                    if (!balanceTotal) {
+                        balanceTotal = 0;
+                    }
+                    return balanceTotal;
+                }
+                else {
+                    return balanceTotal;
+                }
+            }
+            catch (error) {
+                return 0;
+            }
+        });
+    }
 }
 exports.TronService = TronService;

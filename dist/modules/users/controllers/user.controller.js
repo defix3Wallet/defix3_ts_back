@@ -34,6 +34,30 @@ class UserController {
                 return res.status(500).send({ message: error });
             }
         });
+        this.getUserData = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { defixId } = req.body;
+                const user = yield this.userService.getUserDataByDefixId(defixId);
+                if (!user)
+                    return res.status(400).send({ message: "User not exists." });
+                res.send(user);
+            }
+            catch (error) {
+                console.log(error);
+                return res.status(500).send({ message: error });
+            }
+        });
+        this.updateUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { defixId } = req.body;
+                const result = yield this.userService.updateUser(defixId, req.body);
+                res.send(result);
+            }
+            catch (error) {
+                console.log(error);
+                return res.status(500).send({ message: error });
+            }
+        });
         this.userService = new user_service_1.UserService();
     }
 }

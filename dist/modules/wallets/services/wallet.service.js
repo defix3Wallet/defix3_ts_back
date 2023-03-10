@@ -43,7 +43,7 @@ class WalletService {
                 const user = yield this.userService.getUserByImportId(importId);
                 if (!user)
                     throw new Error("Wallet does not exist in Defix3");
-                const defixId = user.defix_id;
+                const defixId = user.defixId;
                 // const walletNear = (
                 //   await WalletEntity.findOneBy({
                 //     user: { defix_id: user.defix_id },
@@ -121,7 +121,7 @@ class WalletService {
         });
         this.validateWalletsUser = (user, wallet) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const walletsUser = yield this.addressService.getAddressesByDefixId(user.defix_id);
+                const walletsUser = yield this.addressService.getAddressesByDefixId(user.defixId);
                 for (let credential of wallet.credentials) {
                     if (!walletsUser.find((element) => element.blockchain === credential.name)) {
                         this.addressService.createAddress(user, credential.name, credential.address);

@@ -105,5 +105,25 @@ class NearService {
             }
         });
     }
+    getBalanceToken(address, srcContract, decimals) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
+                const near = new near_api_js_1.Near(utils_shared_1.UtilsShared.ConfigNEAR(keyStore));
+                const account = new near_api_js_1.Account(near.connection, address);
+                const balance = yield account.viewFunction({
+                    contractId: srcContract,
+                    methodName: "ft_balance_of",
+                    args: { account_id: address },
+                });
+                if (!balance)
+                    return 0;
+                return balance / Math.pow(10, decimals);
+            }
+            catch (error) {
+                return 0;
+            }
+        });
+    }
 }
 exports.NearService = NearService;

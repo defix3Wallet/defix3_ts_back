@@ -49,7 +49,7 @@ _a = UtilsShared;
 UtilsShared.getAddressUser = (defixId, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const address = yield address_entity_1.AddressEntity.findOneBy({
-            user: { defix_id: defixId },
+            user: { defixId: defixId },
             blockchain: blockchain,
         });
         if (!address)

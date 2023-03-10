@@ -49,6 +49,6 @@ export class Routes {
      *        '500':
      *          description: Internal Server Error.
      */
-    router.get("/get-cryptos-swap/", this.controller.getCryptosSwap);
+    router.get("/get-cryptos-swap", this.controller.getCryptosSwap);
   }
 }

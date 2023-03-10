@@ -1,43 +1,41 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Routes = void 0;
-const middleware_shared_1 = require("../../shared/middlewares/middleware.shared");
 class Routes {
     constructor(router, controller) {
         this.controller = controller;
-        this.middleware = new middleware_shared_1.SharedMiddleware();
         this.configureRoutes(router);
     }
     configureRoutes(router) {
         /**
          * Post track
          * @swagger
-         * /get-balance/:
+         * /create-subscription/:
          *    post:
          *      tags:
-         *        - Balance
-         *      summary: Obtener balance de un Usuario.
-         *      description: Mandar defixId y te dara el balance de ese usuario, con todos las cryptos y tokens.
+         *        - Subscription
+         *      summary: Enviar correo para subscribirse a Defix3.
+         *      description: Registrar correo.
          *      requestBody:
          *          content:
          *            application/json:
          *              schema:
          *                type: "object"
-         *                required: [defixId]
+         *                required: [email]
          *                properties: {
-         *                  defixId: {
+         *                  email: {
          *                    type: "string"
          *                  }
          *                }
          *      responses:
          *        '200':
-         *          description: Array con balance de todas las cryptos del usuario.
+         *          description: Success.
          *        '400':
          *          description: Bad Request.
          *        '500':
-         *          description: Internal Server Error.
+         *          description: Bad Request.
          */
-        router.post("/get-balance/", this.middleware.defixIdValid, this.controller.getBalance);
+        router.post("/create-subscription/", this.controller.setEmailSubscription);
     }
 }
 exports.Routes = Routes;

@@ -19,11 +19,12 @@ __decorate([
 ], UserEntity.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        name: "defix_id",
         nullable: false,
         unique: true,
     }),
     __metadata("design:type", String)
-], UserEntity.prototype, "defix_id", void 0);
+], UserEntity.prototype, "defixId", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
@@ -33,11 +34,12 @@ __decorate([
 ], UserEntity.prototype, "email", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        name: "import_id",
         nullable: false,
         unique: true,
     }),
     __metadata("design:type", String)
-], UserEntity.prototype, "import_id", void 0);
+], UserEntity.prototype, "importId", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
@@ -52,11 +54,12 @@ __decorate([
 ], UserEntity.prototype, "lastname", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        name: "close_sessions",
         nullable: true,
         default: false,
     }),
     __metadata("design:type", Boolean)
-], UserEntity.prototype, "close_sessions", void 0);
+], UserEntity.prototype, "closeSessions", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
@@ -66,17 +69,19 @@ __decorate([
 ], UserEntity.prototype, "dosfa", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        name: "legal_document",
         nullable: true,
         unique: true,
     }),
     __metadata("design:type", String)
-], UserEntity.prototype, "legal_document", void 0);
+], UserEntity.prototype, "legalDocument", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        name: "type_document",
         nullable: true,
     }),
     __metadata("design:type", String)
-], UserEntity.prototype, "type_document", void 0);
+], UserEntity.prototype, "typeDocument", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         nullable: true,
@@ -85,28 +90,44 @@ __decorate([
 ], UserEntity.prototype, "secret", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        name: "flag_send",
         nullable: true,
     }),
     __metadata("design:type", Boolean)
-], UserEntity.prototype, "flag_send", void 0);
+], UserEntity.prototype, "flagSend", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        name: "flag_receive",
         nullable: true,
     }),
     __metadata("design:type", Boolean)
-], UserEntity.prototype, "flag_receive", void 0);
+], UserEntity.prototype, "flagReceive", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        name: "flag_dex",
         nullable: true,
     }),
     __metadata("design:type", Boolean)
-], UserEntity.prototype, "flag_dex", void 0);
+], UserEntity.prototype, "flagDex", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        name: "flag_fiat",
         nullable: true,
     }),
     __metadata("design:type", Boolean)
-], UserEntity.prototype, "flag_fiat", void 0);
+], UserEntity.prototype, "flagFiat", void 0);
+__decorate([
+    (0, typeorm_1.CreateDateColumn)({
+        name: "created_at",
+    }),
+    __metadata("design:type", Date)
+], UserEntity.prototype, "createdAt", void 0);
+__decorate([
+    (0, typeorm_1.UpdateDateColumn)({
+        name: "updated_at",
+    }),
+    __metadata("design:type", Date)
+], UserEntity.prototype, "updatedAt", void 0);
 UserEntity = __decorate([
     (0, typeorm_1.Entity)({ name: "users" })
 ], UserEntity);

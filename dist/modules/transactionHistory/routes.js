@@ -1,23 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Routes = void 0;
-const middleware_shared_1 = require("../../shared/middlewares/middleware.shared");
 class Routes {
     constructor(router, controller) {
         this.controller = controller;
-        this.middleware = new middleware_shared_1.SharedMiddleware();
         this.configureRoutes(router);
     }
     configureRoutes(router) {
         /**
-         * Post track
          * @swagger
-         * /get-balance/:
+         * /transaction-history/:
          *    post:
          *      tags:
-         *        - Balance
-         *      summary: Obtener balance de un Usuario.
-         *      description: Mandar defixId y te dara el balance de ese usuario, con todos las cryptos y tokens.
+         *        - TransactionHistory
+         *      summary: Historico de transacciones.
+         *      description: Obtener historico de transacciones de un usuario.
          *      requestBody:
          *          content:
          *            application/json:
@@ -27,17 +24,32 @@ class Routes {
          *                properties: {
          *                  defixId: {
          *                    type: "string"
+         *                  },
+         *                  blockchain: {
+         *                    type: "string"
+         *                  },
+         *                  coin: {
+         *                    type: "string"
+         *                  },
+         *                  hash: {
+         *                    type: "string"
+         *                  },
+         *                  type: {
+         *                    type: "string"
+         *                  },
+         *                  year: {
+         *                    type: "string"
          *                  }
          *                }
          *      responses:
          *        '200':
-         *          description: Array con balance de todas las cryptos del usuario.
+         *          description: Devuelve array de transacciones.
          *        '400':
          *          description: Bad Request.
          *        '500':
          *          description: Internal Server Error.
          */
-        router.post("/get-balance/", this.middleware.defixIdValid, this.controller.getBalance);
+        router.get("/transaction-history/", this.controller.getTransactionHistory);
     }
 }
 exports.Routes = Routes;

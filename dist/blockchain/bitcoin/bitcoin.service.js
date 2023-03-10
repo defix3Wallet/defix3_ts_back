@@ -82,6 +82,11 @@ class BitcoinService {
             }
         });
     }
+    getBalanceToken(address, contract, decimals) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return 0;
+        });
+    }
     fromMnemonic(mnemonic) {
         return __awaiter(this, void 0, void 0, function* () {
             let network;

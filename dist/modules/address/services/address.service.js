@@ -28,7 +28,7 @@ class AddressService {
         this.getAddressByDefixId = (defixId, blockchain) => __awaiter(this, void 0, void 0, function* () {
             try {
                 return yield address_entity_1.AddressEntity.findOneBy({
-                    user: { defix_id: defixId },
+                    user: { defixId: defixId },
                     blockchain,
                 });
             }
@@ -39,7 +39,7 @@ class AddressService {
         this.getAddressesByDefixId = (defixId) => __awaiter(this, void 0, void 0, function* () {
             try {
                 return yield address_entity_1.AddressEntity.findBy({
-                    user: { defix_id: defixId },
+                    user: { defixId: defixId },
                 });
             }
             catch (err) {

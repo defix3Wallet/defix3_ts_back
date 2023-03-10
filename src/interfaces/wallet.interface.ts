@@ -1,6 +1,6 @@
-import { Credential } from "../interfaces/credential.interface";
+import { CredentialInterface } from "../interfaces/credential.interface";
 
-export interface Wallet {
+export interface WalletInterface {
   defixId: string;
-  credentials: Array<Credential>;
+  credentials: Array<CredentialInterface>;
 }

@@ -51,6 +51,10 @@ const swaggerDefinition: OAS3Definition = {
       description: "EndPoints asociados a al Swap. Solo ETH y BSC",
     },
     {
+      name: "TransactionHistory",
+      description: "EndPoint ver el historial de Transactiones",
+    },
+    {
       name: "Subscription",
       description:
         "EndPoint para guardar correo de usuario que quiera recibir notificaciones de Defix3",

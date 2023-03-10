@@ -11,6 +11,7 @@ import swaggerSetup from "./config/swagger";
 import { BalanceModule } from "./modules/balance/init";
 import { SubscriptionModule } from "./modules/subscription/init";
 import { GeneralModule } from "./modules/general/init";
+import { TransactionHistoryModule } from "./modules/transactionHistory/init";
 
 class App {
   public app: express.Express;
@@ -38,6 +39,7 @@ class App {
     new BalanceModule(this.router);
     new SubscriptionModule(this.router);
     new GeneralModule(this.router);
+    new TransactionHistoryModule(this.router);
   }
 }
 

@@ -23,6 +23,8 @@ const init_3 = require("./modules/address/init");
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_1 = __importDefault(require("./config/swagger"));
 const init_4 = require("./modules/balance/init");
+const init_5 = require("./modules/subscription/init");
+const init_6 = require("./modules/general/init");
 class App {
     constructor() {
         this.app = (0, express_1.default)();
@@ -44,6 +46,8 @@ class App {
         new init_2.WalletsModule(this.router);
         new init_1.UsersModule(this.router);
         new init_4.BalanceModule(this.router);
+        new init_5.SubscriptionModule(this.router);
+        new init_6.GeneralModule(this.router);
     }
 }
 exports.default = new App().app;

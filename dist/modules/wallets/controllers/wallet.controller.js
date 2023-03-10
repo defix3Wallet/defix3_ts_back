@@ -21,8 +21,8 @@ class WalletController {
                 const { defixId, seedPhrase, email } = req.body;
                 if (!defixId || !seedPhrase)
                     return res.status(400).send({ message: "Invalid data." });
-                const mnemonic = crypto_shared_1.CryptoShared.decrypt(seedPhrase);
-                // const mnemonic = seedPhrase;
+                // const mnemonic = CryptoShared.decrypt(seedPhrase);
+                const mnemonic = seedPhrase;
                 if (!mnemonic)
                     return res.status(400).send({ message: "Seed Phrase invalid." });
                 const defixID = defixId.toLowerCase();
