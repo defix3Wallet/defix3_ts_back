@@ -50,21 +50,20 @@ export class TransactionHistoryService {
           AND (transaction.coin = :coin IS NULL OR transaction.coin = :coin) \
           AND (transaction.blockchain = :blockchain IS NULL OR transaction.blockchain = :blockchain) \
           AND (transaction.hash = :hash IS NULL OR transaction.hash = :hash) \
-          AND (transaction.typeTxn = :typeTxn IS NULL OR transaction.typeTxn = :typeTxn) \
-          AND DATE(createdAt) < '2023-01-01'",
+          AND (transaction.typeTxn = :typeTxn IS NULL OR transaction.typeTxn = :typeTxn)",
           {
             defixId,
             coin,
             blockchain,
             hash,
             typeTxn,
-            year,
           }
         )
         .getMany();
 
       return transactions;
     } catch (err) {
+      console.log(err);
       throw new Error(`Failed to get address: ${err}`);
     }
   };

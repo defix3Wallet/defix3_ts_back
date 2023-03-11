@@ -12,8 +12,8 @@ export class BalanceController {
       const { defixId } = req.body;
       const balance = await this.balanceService.getBalance(defixId);
       res.send(balance);
-    } catch (error) {
-      return res.status(500).send({ message: error });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 }

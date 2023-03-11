@@ -18,8 +18,8 @@ export class UserController {
       if (!user) return res.send(false);
 
       return res.send(true);
-    } catch (error) {
-      return res.status(500).send({ message: error });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 
@@ -27,8 +27,8 @@ export class UserController {
     try {
       const users = await this.userService.getUsers();
       res.send(users);
-    } catch (error) {
-      return res.status(500).send({ message: error });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 
@@ -38,9 +38,8 @@ export class UserController {
       const user = await this.userService.getUserDataByDefixId(defixId);
       if (!user) return res.status(400).send({ message: "User not exists." });
       res.send(user);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).send({ message: error });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 
@@ -49,9 +48,8 @@ export class UserController {
       const { defixId } = req.body;
       const result = await this.userService.updateUser(defixId, req.body);
       res.send(result);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).send({ message: error });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 }

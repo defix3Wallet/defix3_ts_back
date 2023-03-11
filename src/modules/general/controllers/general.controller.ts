@@ -11,16 +11,16 @@ export class GeneralController {
     try {
       const cryptos = await this.generalService.getCryptos();
       res.send(cryptos);
-    } catch (error) {
-      return res.status(500).send({ message: error });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
   public getCryptosSwap = async (req: Request, res: Response) => {
     try {
       const cryptos = await this.generalService.getCryptosSwap();
       res.send(cryptos);
-    } catch (error) {
-      return res.status(500).send({ message: error });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 }

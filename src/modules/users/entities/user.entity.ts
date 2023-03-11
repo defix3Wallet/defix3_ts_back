@@ -53,7 +53,7 @@ export class UserEntity extends BaseEntity {
     nullable: true,
     default: false,
   })
-  dosfa!: boolean;
+  twofa!: boolean;
 
   @Column({
     name: "legal_document",

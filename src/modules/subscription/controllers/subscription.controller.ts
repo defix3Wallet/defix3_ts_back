@@ -13,8 +13,8 @@ export class SubscriptionController {
       const { email } = req.body;
       if (!email) return res.status(400).send({ message: "Invalid data." });
       return await this.subscriptionService.createSubscription(email);
-    } catch (error) {
-      return res.status(500).send({ message: error });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 }

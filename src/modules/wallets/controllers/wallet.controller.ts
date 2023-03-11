@@ -40,9 +40,8 @@ export class WalletController {
         this.mailService.sendMailPhrase(mnemonic, defixID, email);
       }
       return res.send(wallet);
-    } catch (err) {
-      console.log(err);
-      return res.status(500).send({ message: "Internal server error." });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 
@@ -62,11 +61,8 @@ export class WalletController {
       const wallet = await this.walletService.importWalletDefix(mnemonic);
 
       return res.send(wallet);
-    } catch (err) {
-      console.log(err);
-      return res
-        .status(500)
-        .send({ message: "Internal server error.", error: err });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 
@@ -84,11 +80,8 @@ export class WalletController {
       const wallet = await this.walletService.importFromPrivateKey(privateKey);
 
       return res.send(wallet);
-    } catch (err) {
-      console.log(err);
-      return res
-        .status(500)
-        .send({ message: "Internal server error.", error: err });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 
@@ -99,11 +92,8 @@ export class WalletController {
         return res.status(400).send({ message: "Invalid data." });
 
       res.send(await this.walletService.validateAddress(address, blockchain));
-    } catch (err) {
-      console.log(err);
-      return res
-        .status(500)
-        .send({ message: "Internal server error.", error: err });
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
     }
   };
 }

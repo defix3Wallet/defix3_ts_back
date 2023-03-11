@@ -40,9 +40,6 @@ export class Routes {
      *                  type: {
      *                    type: "string"
      *                  },
-     *                  year: {
-     *                    type: "string"
-     *                  }
      *                }
      *      responses:
      *        '200':

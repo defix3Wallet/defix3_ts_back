@@ -10,6 +10,7 @@ export class BalanceService {
   constructor() {
     this.addressService = new AddressService();
   }
+
   public getBalance = async (defixId: string) => {
     try {
       const addresses = await this.addressService.getAddressesByDefixId(

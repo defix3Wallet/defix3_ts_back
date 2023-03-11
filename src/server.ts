@@ -7,6 +7,7 @@ import dbConnect from "./config/postgres";
 import App from "./app";
 import socketIo from "socket.io";
 import NodeCache from "node-cache";
+import { startProcess } from "./process";
 const nodeCache = new NodeCache();
 const fs = require("fs");
 
@@ -52,6 +53,8 @@ class Server {
         this.io.emit("getRanking", data);
       }
     });
+
+    startProcess(this.io, nodeCache);
   }
 
   public listen() {
