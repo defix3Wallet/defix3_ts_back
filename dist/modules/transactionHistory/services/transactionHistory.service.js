@@ -13,7 +13,7 @@ exports.TransactionHistoryService = void 0;
 const transactionHistory_entity_1 = require("../entities/transactionHistory.entity");
 class TransactionHistoryService {
     constructor() {
-        this.createTransactionHistory = ({ fromDefix, toDefix, fromAddress, toAddress, blockchain, coin, amount, hash, type, }) => __awaiter(this, void 0, void 0, function* () {
+        this.createTransactionHistory = ({ fromDefix, toDefix, fromAddress, toAddress, blockchain, coin, amount, hash, typeTxn, }) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const transactionHistory = new transactionHistory_entity_1.TransactionHistoryEntity();
                 transactionHistory.fromDefix = fromDefix;
@@ -24,35 +24,32 @@ class TransactionHistoryService {
                 transactionHistory.coin = coin;
                 transactionHistory.amount = amount;
                 transactionHistory.hash = hash;
-                transactionHistory.type = type;
+                transactionHistory.typeTxn = typeTxn;
                 return yield transactionHistory.save();
             }
             catch (err) {
                 throw new Error(`Failed to create address: ${err}`);
             }
         });
-        this.getTransactionHistory = (defixId, blockchain, coin, hash, type, year) => __awaiter(this, void 0, void 0, function* () {
+        this.getTransactionHistory = (defixId, coin = null, blockchain = null, hash = null, typeTxn = null, year = null) => __awaiter(this, void 0, void 0, function* () {
             try {
-                coin = "NEAR";
                 const transactions = yield transactionHistory_entity_1.TransactionHistoryEntity.createQueryBuilder("transaction")
-                    .where("transaction.coin = :coin", { coin })
+                    .where("(transaction.fromDefix = :defixId OR transaction.toDefix = :defixId) \
+          AND (transaction.coin = :coin IS NULL OR transaction.coin = :coin) \
+          AND (transaction.blockchain = :blockchain IS NULL OR transaction.blockchain = :blockchain) \
+          AND (transaction.hash = :hash IS NULL OR transaction.hash = :hash) \
+          AND (transaction.typeTxn = :typeTxn IS NULL OR transaction.typeTxn = :typeTxn)", {
+                    defixId,
+                    coin,
+                    blockchain,
+                    hash,
+                    typeTxn,
+                })
                     .getMany();
-                // const transactions = await (
-                //   await Transaction.find({
-                //     where: {
-                //       coin: coin ? coin : undefined,
-                //       blockchain: blockchain ? blockchain : undefined,
-                //       date_year: date_year ? date_year : undefined,
-                //       date_month: date_month ? date_month : undefined,
-                //       tipo: tipo ? tipo : undefined,
-                //     },
-                //   })
-                // ).filter(function (element) {
-                //   return element.from_defix === defixId || element.to_defix === defixId;
-                // });
                 return transactions;
             }
             catch (err) {
+                console.log(err);
                 throw new Error(`Failed to get address: ${err}`);
             }
         });

@@ -15,12 +15,12 @@ class TransactionHistoryController {
     constructor() {
         this.getTransactionHistory = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const { defixId, blockchain, coin, hash, type, year } = req.body;
-                const transactions = yield this.transactionHistory.getTransactionHistory(defixId, blockchain, coin, hash, type, year);
+                const { defixId, blockchain, coin, hash, typeTxn } = req.body;
+                const transactions = yield this.transactionHistory.getTransactionHistory(defixId, coin, blockchain, hash, typeTxn);
                 res.send(transactions);
             }
             catch (error) {
-                return res.status(500).send({ message: error });
+                return res.status(500).send({ message: error.message });
             }
         });
         this.transactionHistory = new transactionHistory_service_1.TransactionHistoryService();

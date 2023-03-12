@@ -37,9 +37,6 @@ class Routes {
          *                  type: {
          *                    type: "string"
          *                  },
-         *                  year: {
-         *                    type: "string"
-         *                  }
          *                }
          *      responses:
          *        '200':
@@ -49,7 +46,7 @@ class Routes {
          *        '500':
          *          description: Internal Server Error.
          */
-        router.get("/transaction-history/", this.controller.getTransactionHistory);
+        router.post("/transaction-history/", this.controller.getTransactionHistory);
     }
 }
 exports.Routes = Routes;

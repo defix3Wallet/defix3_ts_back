@@ -153,4 +153,46 @@ export class NearService implements BlockchainService {
       return 0;
     }
   }
+
+  async sendTransfer(
+    fromAddress: string,
+    privateKey: string,
+    toAddress: string,
+    amount: number,
+    coin: string
+  ): Promise<string> {
+    try {
+      const balance = await this.getBalance(fromAddress);
+
+      if (balance < amount)
+        throw new Error(
+          `Error: You do not have enough funds to make the transfer`
+        );
+
+      const keyStore = new keyStores.InMemoryKeyStore();
+
+      const keyPair = KeyPair.fromString(privateKey);
+      keyStore.setKey(NETWORK, fromAddress, keyPair);
+
+      const near = new Near(UtilsShared.ConfigNEAR(keyStore));
+
+      const account = new Account(near.connection, fromAddress);
+
+      const amountInYocto = utils.format.parseNearAmount(String(amount));
+
+      if (!amountInYocto) throw new Error(`Failed to send transfer.`);
+
+      const response = await account.sendMoney(
+        toAddress,
+        new BN(amountInYocto)
+      );
+
+      if (!response.transaction.hash)
+        throw new Error(`Failed to send transfer.`);
+
+      return response.transaction.hash as string;
+    } catch (err: any) {
+      throw new Error(`Failed to send transfer, ${err.message}`);
+    }
+  }
 }

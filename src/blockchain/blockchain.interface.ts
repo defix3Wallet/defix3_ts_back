@@ -9,4 +9,18 @@ export interface BlockchainService {
     contract: string,
     decimals: number
   ): Promise<number>;
+  sendTransfer(
+    fromAddress: string,
+    privateKey: string,
+    toAddress: string,
+    amount: number,
+    coin: string
+  ): Promise<string>;
+  sendTransferToken(
+    fromAddress: string,
+    privateKey: string,
+    toAddress: string,
+    amount: number,
+    srcToken: any
+  ): Promise<string>;
 }

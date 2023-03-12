@@ -9,22 +9,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SubscriptionController = void 0;
-const subscription_service_1 = require("../services/subscription.service");
-class SubscriptionController {
+exports.migration1678486318270 = void 0;
+class migration1678486318270 {
     constructor() {
-        this.setEmailSubscription = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { email } = req.body;
-                if (!email)
-                    return res.status(400).send({ message: "Invalid data." });
-                return yield this.subscriptionService.createSubscription(email);
-            }
-            catch (error) {
-                return res.status(500).send({ message: error.message });
-            }
+        this.name = 'migration1678486318270';
+    }
+    up(queryRunner) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield queryRunner.query(`ALTER TABLE "users" RENAME COLUMN "dosfa" TO "twofa"`);
         });
-        this.subscriptionService = new subscription_service_1.SubscriptionService();
+    }
+    down(queryRunner) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield queryRunner.query(`ALTER TABLE "users" RENAME COLUMN "twofa" TO "dosfa"`);
+        });
     }
 }
-exports.SubscriptionController = SubscriptionController;
+exports.migration1678486318270 = migration1678486318270;

@@ -20,7 +20,7 @@ class BalanceController {
                 res.send(balance);
             }
             catch (error) {
-                return res.status(500).send({ message: error });
+                return res.status(500).send({ message: error.message });
             }
         });
         this.balanceService = new balance_service_1.BalanceService();

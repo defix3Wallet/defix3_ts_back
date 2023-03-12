@@ -2,7 +2,7 @@ import { UtilsShared } from "../../../shared/utils/utils.shared";
 import { CredentialInterface } from "../interfaces/credential.interface";
 import { WalletInterface } from "../interfaces/wallet.interface";
 import { UserService } from "../../users/services/user.service";
-import { blockchain } from "../../../blockchain";
+import { blockchainService } from "../../../blockchain";
 import { UserEntity } from "../../users/entities/user.entity";
 import { AddressService } from "../../address/services/address.service";
 
@@ -18,11 +18,11 @@ export class WalletService {
   public createWalletDefix = async (defixId: string, mnemonic: string) => {
     try {
       const credentials: CredentialInterface[] = await Promise.all([
-        blockchain.btc.fromMnemonic(mnemonic),
-        blockchain.eth.fromMnemonic(mnemonic),
-        blockchain.bnb.fromMnemonic(mnemonic),
-        blockchain.near.fromMnemonic(mnemonic),
-        blockchain.trx.fromMnemonic(mnemonic),
+        blockchainService.btc.fromMnemonic(mnemonic),
+        blockchainService.eth.fromMnemonic(mnemonic),
+        blockchainService.bnb.fromMnemonic(mnemonic),
+        blockchainService.near.fromMnemonic(mnemonic),
+        blockchainService.trx.fromMnemonic(mnemonic),
       ]);
 
       const wallet: WalletInterface = {
@@ -59,11 +59,11 @@ export class WalletService {
       // if (!walletNear) throw new Error("Failed to import wallet.");
 
       const credentials: CredentialInterface[] = await Promise.all([
-        blockchain.btc.fromMnemonic(mnemonic),
-        blockchain.eth.fromMnemonic(mnemonic),
-        blockchain.bnb.fromMnemonic(mnemonic),
-        blockchain.near.fromMnemonic(mnemonic),
-        blockchain.trx.fromMnemonic(mnemonic),
+        blockchainService.btc.fromMnemonic(mnemonic),
+        blockchainService.eth.fromMnemonic(mnemonic),
+        blockchainService.bnb.fromMnemonic(mnemonic),
+        blockchainService.near.fromMnemonic(mnemonic),
+        blockchainService.trx.fromMnemonic(mnemonic),
       ]);
 
       const wallet: WalletInterface = {
@@ -82,7 +82,7 @@ export class WalletService {
   public importFromPrivateKey = async (privateKey: string) => {
     try {
       const credentials: CredentialInterface[] = [];
-      for (const service of Object.values(blockchain)) {
+      for (const service of Object.values(blockchainService)) {
         const credential = await service.fromPrivateKey(privateKey);
         if (credential) {
           credentials.push(credential);
@@ -104,9 +104,11 @@ export class WalletService {
 
   public validateAddress = async (address: string, coin: string) => {
     try {
-      if (Object.keys(blockchain).find((key) => key === coin.toLowerCase())) {
-        return blockchain[
-          coin.toLowerCase() as keyof typeof blockchain
+      if (
+        Object.keys(blockchainService).find((key) => key === coin.toLowerCase())
+      ) {
+        return blockchainService[
+          coin.toLowerCase() as keyof typeof blockchainService
         ].isAddress(address);
       }
       throw new Error(`Invalid coin`);

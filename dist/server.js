@@ -35,6 +35,7 @@ const postgres_1 = __importDefault(require("./config/postgres"));
 const app_1 = __importDefault(require("./app"));
 const socket_io_1 = __importDefault(require("socket.io"));
 const node_cache_1 = __importDefault(require("node-cache"));
+const process_1 = require("./process");
 const nodeCache = new node_cache_1.default();
 const fs = require("fs");
 class Server {
@@ -71,6 +72,7 @@ class Server {
                 this.io.emit("getRanking", data);
             }
         });
+        (0, process_1.startProcess)(this.io, nodeCache);
     }
     listen() {
         if (process.env.NODE_ENV === "production") {

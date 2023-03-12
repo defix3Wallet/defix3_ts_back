@@ -6,6 +6,26 @@ const nearSEED = require("near-seed-phrase");
 const NETWORK = process.env.NETWORK || "testnet";
 
 export class UtilsShared {
+  static getTokenContract = async (token: string, blockchain: string) => {
+    try {
+      const conexion = await dbConnect();
+      const response = await conexion.query(
+        "SELECT *\
+        FROM backend_token a\
+        inner join backend_cryptocurrency b on b.id = a.cryptocurrency_id\
+        where a.coin = $1 and b.coin = $2",
+        [token, blockchain]
+      );
+
+      if (response.rows.length === 0)
+        throw new Error(`Failed to get token contract.`);
+
+      return response.rows[0];
+    } catch (error) {
+      throw new Error(`Failed to get token contract.`);
+    }
+  };
+
   static getAddressUser = async (defixId: string, blockchain: string) => {
     try {
       const address = await AddressEntity.findOneBy({

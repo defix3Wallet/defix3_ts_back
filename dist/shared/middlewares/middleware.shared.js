@@ -42,8 +42,7 @@ class SharedMiddleware {
                 next();
             }
             catch (err) {
-                console.log(err);
-                res.status(500).send({ message: "Internal server error." });
+                res.status(500).send({ message: "Internal server error in Valid." });
             }
         });
     }

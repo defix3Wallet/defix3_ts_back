@@ -19,7 +19,7 @@ class GeneralController {
                 res.send(cryptos);
             }
             catch (error) {
-                return res.status(500).send({ message: error });
+                return res.status(500).send({ message: error.message });
             }
         });
         this.getCryptosSwap = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -28,7 +28,7 @@ class GeneralController {
                 res.send(cryptos);
             }
             catch (error) {
-                return res.status(500).send({ message: error });
+                return res.status(500).send({ message: error.message });
             }
         });
         this.generalService = new general_service_1.GeneralService();

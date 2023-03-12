@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Routes = void 0;
+exports.RoutesUser = void 0;
 const middleware_shared_1 = require("../../shared/middlewares/middleware.shared");
-class Routes {
+class RoutesUser {
     constructor(router, controller) {
         this.controller = controller;
         this.middleware = new middleware_shared_1.SharedMiddleware();
@@ -116,4 +116,4 @@ class Routes {
         router.put("/update-user/", this.middleware.defixIdValid, this.controller.updateUser);
     }
 }
-exports.Routes = Routes;
+exports.RoutesUser = RoutesUser;

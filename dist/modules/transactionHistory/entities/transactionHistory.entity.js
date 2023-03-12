@@ -40,7 +40,7 @@ __decorate([
 ], TransactionHistoryEntity.prototype, "fromAddress", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        name: "to_defix",
+        name: "to_address",
         nullable: false,
     }),
     __metadata("design:type", String)
@@ -72,10 +72,11 @@ __decorate([
 ], TransactionHistoryEntity.prototype, "hash", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        name: "type_txn",
         nullable: false,
     }),
     __metadata("design:type", String)
-], TransactionHistoryEntity.prototype, "type", void 0);
+], TransactionHistoryEntity.prototype, "typeTxn", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({
         name: "created_at",

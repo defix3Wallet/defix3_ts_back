@@ -13,7 +13,7 @@ export class TransactionHistoryService {
     amount,
     hash,
     typeTxn,
-  }: TransactionHistoryEntity) => {
+  }: any) => {
     try {
       const transactionHistory = new TransactionHistoryEntity();
 

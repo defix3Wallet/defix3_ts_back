@@ -102,4 +102,58 @@ export class TronService implements BlockchainService {
       return 0;
     }
   }
+
+  async sendTransfer(
+    fromAddress: string,
+    privateKey: string,
+    toAddress: string,
+    amount: number,
+    coin: string
+  ): Promise<string> {
+    try {
+      const balance = await this.getBalance(fromAddress);
+      if (balance < amount) {
+        throw new Error(
+          `Error: You do not have enough funds to make the transfer`
+        );
+      }
+
+      tronWeb.setAddress(fromAddress);
+
+      let value = Math.pow(10, 6);
+      let srcAmount = parseInt(String(amount * value));
+
+      const tx = await tronWeb.transactionBuilder
+        .sendTrx(toAddress, srcAmount)
+        .then(function (response: any) {
+          return response;
+        })
+        .catch(function (error: any) {
+          return false;
+        });
+
+      if (!tx) throw new Error(`Error to do build transaction`);
+
+      const signedTxn = await tronWeb.trx
+        .sign(tx, privateKey)
+        .then(function (response: any) {
+          return response;
+        })
+        .catch(function (error: any) {
+          return false;
+        });
+
+      if (!signedTxn.signature) {
+        throw new Error(`Error to sign transaction`);
+      }
+
+      const result = await tronWeb.trx.sendRawTransaction(signedTxn);
+
+      if (!result.txid) throw new Error(`Failed to send raw tx.`);
+
+      return result.txid as string;
+    } catch (err: any) {
+      throw new Error(`Failed to send transfer, ${err.message}`);
+    }
+  }
 }

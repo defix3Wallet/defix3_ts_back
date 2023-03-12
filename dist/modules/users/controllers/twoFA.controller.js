@@ -9,54 +9,55 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserController = void 0;
-const user_service_1 = require("../services/user.service");
-class UserController {
+exports.TwoFAController = void 0;
+const twoFA_service_1 = require("../services/twoFA.service");
+class TwoFAController {
     constructor() {
-        this.validateDefixId = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.generateTwoFA = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { defixId } = req.body;
-                const user = yield this.userService.getUserByDefixId(defixId);
-                if (!user)
-                    return res.send(false);
-                return res.send(true);
+                const response = yield this.twoFAService.generateTwoFA(defixId);
+                return res.send(response);
             }
             catch (error) {
                 return res.status(500).send({ message: error.message });
             }
         });
-        this.getUsers = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.activateTwoFA = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const users = yield this.userService.getUsers();
-                res.send(users);
+                const { defixId, code2fa } = req.body;
+                if (!code2fa)
+                    return res.status(400).send({ message: "Invalid data." });
+                yield this.twoFAService.activateTwoFA(defixId, code2fa);
+                return res.status(204).send();
             }
             catch (error) {
                 return res.status(500).send({ message: error.message });
             }
         });
-        this.getUserData = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.deactivateTwoFA = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { defixId, code2fa } = req.body;
+                if (!code2fa)
+                    return res.status(400).send({ message: "Invalid data." });
+                yield this.twoFAService.deactivateTwoFA(defixId, code2fa);
+                return res.status(204).send();
+            }
+            catch (error) {
+                return res.status(500).send({ message: error.message });
+            }
+        });
+        this.statusTwoFA = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { defixId } = req.body;
-                const user = yield this.userService.getUserDataByDefixId(defixId);
-                if (!user)
-                    return res.status(400).send({ message: "User not exists." });
-                res.send(user);
+                const response = yield this.twoFAService.statusTwoFA(defixId);
+                return res.send(response);
             }
             catch (error) {
                 return res.status(500).send({ message: error.message });
             }
         });
-        this.updateUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { defixId } = req.body;
-                const result = yield this.userService.updateUser(defixId, req.body);
-                res.send(result);
-            }
-            catch (error) {
-                return res.status(500).send({ message: error.message });
-            }
-        });
-        this.userService = new user_service_1.UserService();
+        this.twoFAService = new twoFA_service_1.TwoFAService();
     }
 }
-exports.UserController = UserController;
+exports.TwoFAController = TwoFAController;

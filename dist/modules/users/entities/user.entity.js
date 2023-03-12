@@ -66,7 +66,7 @@ __decorate([
         default: false,
     }),
     __metadata("design:type", Boolean)
-], UserEntity.prototype, "dosfa", void 0);
+], UserEntity.prototype, "twofa", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         name: "legal_document",

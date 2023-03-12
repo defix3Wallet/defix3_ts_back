@@ -23,10 +23,11 @@ export class AddressService {
 
   public getAddressByDefixId = async (defixId: string, blockchain: string) => {
     try {
-      return await AddressEntity.findOneBy({
+      const address = await AddressEntity.findOneBy({
         user: { defixId: defixId },
         blockchain,
       });
+      return address;
     } catch (err) {
       throw new Error(`Failed to get address: ${err}`);
     }

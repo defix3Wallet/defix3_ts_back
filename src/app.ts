@@ -12,6 +12,8 @@ import { BalanceModule } from "./modules/balance/init";
 import { SubscriptionModule } from "./modules/subscription/init";
 import { GeneralModule } from "./modules/general/init";
 import { TransactionHistoryModule } from "./modules/transactionHistory/init";
+import { TransferModule } from "./modules/transfer/init";
+import { FrequentModule } from "./modules/frequent/init";
 
 class App {
   public app: express.Express;
@@ -40,6 +42,8 @@ class App {
     new SubscriptionModule(this.router);
     new GeneralModule(this.router);
     new TransactionHistoryModule(this.router);
+    new TransferModule(this.router);
+    new FrequentModule(this.router);
   }
 }
 

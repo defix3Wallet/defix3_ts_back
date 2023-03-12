@@ -1,4 +1,4 @@
-import { blockchain } from "../../../blockchain";
+import { blockchainService } from "../../../blockchain";
 import { Balance } from "../../../interfaces/balance.interface";
 import { BalanceCrypto } from "../../../interfaces/balance_crypto.interface";
 import { UtilsShared } from "../../../shared/utils/utils.shared";
@@ -38,8 +38,8 @@ export class BalanceService {
 
         const address = addressItem.address || "";
 
-        balanceCrypto.balance = await blockchain[
-          crypto.coin.toLowerCase() as keyof typeof blockchain
+        balanceCrypto.balance = await blockchainService[
+          crypto.coin.toLowerCase() as keyof typeof blockchainService
         ].getBalance(address);
 
         for (let token of crypto.tokens) {
@@ -49,8 +49,8 @@ export class BalanceService {
             icon: token.icon,
           };
 
-          itemToken.balance = await blockchain[
-            crypto.coin.toLowerCase() as keyof typeof blockchain
+          itemToken.balance = await blockchainService[
+            crypto.coin.toLowerCase() as keyof typeof blockchainService
           ].getBalanceToken(address, token.contract, token.decimals);
 
           balanceCrypto.tokens.push(itemToken);

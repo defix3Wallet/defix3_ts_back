@@ -34,9 +34,8 @@ class WalletController {
                 }
                 return res.send(wallet);
             }
-            catch (err) {
-                console.log(err);
-                return res.status(500).send({ message: "Internal server error." });
+            catch (error) {
+                return res.status(500).send({ message: error.message });
             }
         });
         this.importWalletDefix = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -51,11 +50,8 @@ class WalletController {
                 const wallet = yield this.walletService.importWalletDefix(mnemonic);
                 return res.send(wallet);
             }
-            catch (err) {
-                console.log(err);
-                return res
-                    .status(500)
-                    .send({ message: "Internal server error.", error: err });
+            catch (error) {
+                return res.status(500).send({ message: error.message });
             }
         });
         this.importFromPrivateKey = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -70,11 +66,8 @@ class WalletController {
                 const wallet = yield this.walletService.importFromPrivateKey(privateKey);
                 return res.send(wallet);
             }
-            catch (err) {
-                console.log(err);
-                return res
-                    .status(500)
-                    .send({ message: "Internal server error.", error: err });
+            catch (error) {
+                return res.status(500).send({ message: error.message });
             }
         });
         this.validateAddress = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -84,11 +77,8 @@ class WalletController {
                     return res.status(400).send({ message: "Invalid data." });
                 res.send(yield this.walletService.validateAddress(address, blockchain));
             }
-            catch (err) {
-                console.log(err);
-                return res
-                    .status(500)
-                    .send({ message: "Internal server error.", error: err });
+            catch (error) {
+                return res.status(500).send({ message: error.message });
             }
         });
         this.walletService = new wallet_service_1.WalletService();

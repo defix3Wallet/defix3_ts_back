@@ -72,6 +72,6 @@ const swaggerDefinition = {
 };
 const swaggerOptions = {
     swaggerDefinition,
-    apis: [path_1.default.join(__dirname, "../modules/**/routes{.ts,.js}")],
+    apis: [path_1.default.join(__dirname, "../modules/**/{routes,routes.*}{.ts,.js}")],
 };
 exports.default = (0, swagger_jsdoc_1.default)(swaggerOptions);
