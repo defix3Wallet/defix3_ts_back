@@ -10,6 +10,6 @@ export class Routes {
   }
 
   private configureRoutes(router: Router) {
-    // router.post("/create-subscription/", this.controller.setEmailSubscription);
+    router.post("/send-transfer/", this.controller.sendTransfer);
   }
 }

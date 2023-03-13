@@ -19,9 +19,7 @@ export class WalletController {
       if (!defixId || !seedPhrase)
         return res.status(400).send({ message: "Invalid data." });
 
-      // const mnemonic = CryptoShared.decrypt(seedPhrase);
-
-      const mnemonic = seedPhrase;
+      const mnemonic = CryptoShared.decrypt(seedPhrase);
 
       if (!mnemonic)
         return res.status(400).send({ message: "Seed Phrase invalid." });
@@ -53,8 +51,6 @@ export class WalletController {
 
       const mnemonic = CryptoShared.decrypt(seedPhrase);
 
-      // const mnemonic = seedPhrase;
-
       if (!mnemonic)
         return res.status(400).send({ message: "Seed Phrase invalid." });
 
@@ -72,7 +68,6 @@ export class WalletController {
       if (!pkEncript) return res.status(400).send({ message: "Invalid data." });
 
       const privateKey = CryptoShared.decrypt(pkEncript);
-      // const privateKey = pkEncript;
 
       if (!privateKey)
         return res.status(400).send({ message: "Invalid data." });

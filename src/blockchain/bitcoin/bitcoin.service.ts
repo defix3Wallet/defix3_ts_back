@@ -21,13 +21,6 @@ const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 const NETWORK = process.env.NETWORK;
 
 export class BitcoinService implements BlockchainService {
-  async getBalanceToken(
-    address: string,
-    contract: string,
-    decimals: number
-  ): Promise<number> {
-    return 0;
-  }
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     let network;
     let path;
@@ -134,6 +127,13 @@ export class BitcoinService implements BlockchainService {
       const item = await this.getBalanceBTC_Cypher(address);
       return item;
     }
+  }
+  async getBalanceToken(
+    address: string,
+    contract: string,
+    decimals: number
+  ): Promise<number> {
+    return 0;
   }
   private getBalanceBTC_Cypher = async (address: string) => {
     try {
@@ -266,5 +266,14 @@ export class BitcoinService implements BlockchainService {
     } catch (err: any) {
       throw new Error(`Failed to send transfer, ${err.message}`);
     }
+  }
+  sendTransferToken(
+    fromAddress: string,
+    privateKey: string,
+    toAddress: string,
+    amount: number,
+    srcToken: any
+  ): Promise<string> {
+    throw new Error("Method not implemented.");
   }
 }

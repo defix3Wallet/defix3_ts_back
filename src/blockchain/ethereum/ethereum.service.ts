@@ -173,6 +173,7 @@ export class EthereumService implements BlockchainService {
 
       // return transactionHash.transactionHash as string;
     } catch (err: any) {
+      console.log(err);
       throw new Error(`Failed to send transfer, ${err.message}`);
     }
   }

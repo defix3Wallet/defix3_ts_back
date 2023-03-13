@@ -195,4 +195,14 @@ export class NearService implements BlockchainService {
       throw new Error(`Failed to send transfer, ${err.message}`);
     }
   }
+
+  sendTransferToken(
+    fromAddress: string,
+    privateKey: string,
+    toAddress: string,
+    amount: number,
+    srcToken: any
+  ): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
 }

@@ -3,11 +3,15 @@ import path from "path";
 import hbs, {
   NodemailerExpressHandlebarsOptions,
 } from "nodemailer-express-handlebars";
+import { UserService } from "../../modules/users/services/user.service";
 
 export class MailShared {
   private transporter!: nodemailer.Transporter;
+  private userService: UserService;
+
   constructor() {
     this.configNodemailer();
+    this.userService = new UserService();
   }
 
   private configNodemailer = () => {
@@ -56,10 +60,17 @@ export class MailShared {
     });
   };
 
-  public sendMail = (from: any, to: any, type: any, data: any) => {
+  public sendMail = async (
+    fromDefix: string,
+    toDefix: string,
+    type: string,
+    data: any
+  ) => {
+    const from = await this.getEmailFlag(fromDefix, "SEND");
+    const to = await this.getEmailFlag(toDefix, "RECEIVE");
+
     let from_admin = process.env.USER_MAIL;
 
-    // point to the template folder
     const handlebarOptions: NodemailerExpressHandlebarsOptions = {
       viewEngine: {
         partialsDir: path.resolve("./viewsEmail/"),
@@ -73,7 +84,7 @@ export class MailShared {
     switch (type) {
       case "envio":
         {
-          if (from != null) {
+          if (from) {
             // Envio al emisor
             let tipoEnvio = "";
             switch (data.tipoEnvio) {
@@ -107,7 +118,7 @@ export class MailShared {
             }
           }
 
-          if (to != null) {
+          if (to) {
             // Envio al receptor
             const mailOptionsTo = {
               from: from_admin,
@@ -147,6 +158,22 @@ export class MailShared {
           });
         }
         break;
+    }
+  };
+
+  public getEmailFlag = async (defixId: string, flag: string) => {
+    try {
+      const user = await this.userService.getUserByDefixId(defixId);
+
+      if (!user) return;
+
+      if (flag === "SEND" && user.flagSend) {
+        return user.email;
+      } else if (flag === "RECEIVE" && user.flagReceive) {
+        return user.email;
+      }
+    } catch (error) {
+      return;
     }
   };
 }

@@ -19,7 +19,9 @@ export class FrequentService extends UserService {
 
       return await frequent.save();
     } catch (err: any) {
-      throw new Error(`Failed to create frequent user: ${err.message}`);
+      console.log(`Failed to create frequent user: ${err.message}`);
+      return;
+      // throw new Error(`Failed to create frequent user: ${err.message}`);
     }
   };
 

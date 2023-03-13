@@ -39,7 +39,7 @@ export class TransferService extends TransactionHistoryService {
 
       if (toDefix.includes(".defix3")) {
         toAddress = (
-          await this.addressService.getAddressByDefixId(fromDefix, blockchain)
+          await this.addressService.getAddressByDefixId(toDefix, blockchain)
         )?.address;
         tipoEnvio = "user";
       } else {
@@ -102,7 +102,7 @@ export class TransferService extends TransactionHistoryService {
       // };
       // EnvioCorreo(resSend, resReceive, "envio", item);
     } catch (err) {
-      throw new Error(`Failed to create subscription: ${err}`);
+      throw new Error(`Failed to send transfer, ${err}`);
     }
   };
 }
