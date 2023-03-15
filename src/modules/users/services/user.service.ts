@@ -28,6 +28,7 @@ export class UserService {
   };
 
   public getUserByDefixId = async (defixId: string) => {
+
     return await UserEntity.findOneBy({ defixId });
   };
 

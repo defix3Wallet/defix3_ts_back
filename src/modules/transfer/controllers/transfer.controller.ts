@@ -14,25 +14,20 @@ export class TransferController {
 
   public sendTransfer = async (req: Request, res: Response) => {
     try {
-      const { fromDefix, pkEncript, toDefix, coin, amount, blockchain } =
+      const { defixId, pkEncrypt, toDefix, coin, amount, blockchain } =
         req.body;
-      if (
-        !fromDefix ||
-        !pkEncript ||
-        !toDefix ||
-        !coin ||
-        !amount ||
-        !blockchain
-      )
+
+      console.log(defixId, pkEncrypt, toDefix, coin, amount, blockchain);
+      if (!defixId || !pkEncrypt || !toDefix || !coin || !amount || !blockchain)
         return res.status(400).send({ message: "Invalid data." });
 
-      const privateKey = CryptoShared.decrypt(pkEncript);
+      const privateKey = CryptoShared.decrypt(pkEncrypt);
 
       if (!privateKey)
         return res.status(400).send({ message: "privateKey invalid." });
 
       const transaction = await this.transferService.sendTransfer(
-        fromDefix,
+        defixId,
         privateKey,
         toDefix,
         coin,
@@ -40,11 +35,11 @@ export class TransferController {
         blockchain
       );
 
-      this.mailService.sendMail(fromDefix, toDefix, "envio", {
+      this.mailService.sendMail(defixId, toDefix, "envio", {
         monto: amount,
         moneda: coin,
         receptor: toDefix,
-        emisor: fromDefix,
+        emisor: defixId,
         tipoEnvio: toDefix.includes(".defix3") ? "user" : "wallet",
       });
       res.send(transaction);

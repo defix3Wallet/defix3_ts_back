@@ -64,10 +64,10 @@ export class WalletController {
 
   public importFromPrivateKey = async (req: Request, res: Response) => {
     try {
-      const { pkEncript } = req.body;
-      if (!pkEncript) return res.status(400).send({ message: "Invalid data." });
+      const { pkEncrypt } = req.body;
+      if (!pkEncrypt) return res.status(400).send({ message: "Invalid data." });
 
-      const privateKey = CryptoShared.decrypt(pkEncript);
+      const privateKey = CryptoShared.decrypt(pkEncrypt);
 
       if (!privateKey)
         return res.status(400).send({ message: "Invalid data." });

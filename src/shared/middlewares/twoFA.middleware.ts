@@ -3,18 +3,25 @@ import { UserService } from "../../modules/users/services/user.service";
 import { TwoFAService } from "../../modules/users/services/twoFA.service";
 
 export class TwoFAMiddleware {
-  private userService: UserService;
   private twoFAService: TwoFAService;
 
   constructor() {
-    this.userService = new UserService();
     this.twoFAService = new TwoFAService();
   }
 
-  async validateTwoFA(req: Request, res: Response, next: NextFunction) {
+  public validateTwoFA = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const { defixId, code2fa } = req.body;
-      const user = await this.userService.getUserByDefixId(defixId);
+
+      if (defixId && !defixId.includes(".defix3")) {
+        return next();
+      }
+
+      const user = await this.twoFAService.getUserByDefixId(defixId);
 
       if (!user) return res.status(404).send({ message: `User not exists.` });
 
@@ -25,13 +32,15 @@ export class TwoFAMiddleware {
           .status(404)
           .send({ message: `Invalid data, Error: code2fa.` });
 
+      console.log(code2fa, user.secret);
+
       const auth = await this.twoFAService.checkTwoFA(code2fa, user.secret);
 
       if (!auth) return res.status(401).send({ message: "code 2fa invalid" });
 
-      next();
+      return next();
     } catch (error: any) {
       return res.status(500).send({ message: error.message });
     }
-  }
+  };
 }

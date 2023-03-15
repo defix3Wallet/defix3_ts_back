@@ -1,12 +1,12 @@
 import { Express, Router } from "express";
 import { TransferController } from "./controllers/transfer.controller";
-import { TwoFAMiddleware } from "../../shared/middlewares/twofa.middleware";
+import { TwoFAMiddleware } from "../../shared/middlewares/twoFA.middleware";
 
 export class Routes {
   private controller: TransferController;
   private middleware2fa: TwoFAMiddleware;
 
-  constructor(router: Router, controller: UserController) {
+  constructor(router: Router, controller: TransferController) {
     this.controller = controller;
     this.middleware2fa = new TwoFAMiddleware();
     this.configureRoutes(router);
@@ -26,9 +26,9 @@ export class Routes {
      *            application/json:
      *              schema:
      *                type: "object"
-     *                required: [fromDefix, pkEncript, toDefix, coin, amount, blockchain, code2fa]
+     *                required: [defixId, pkEncrypt, toDefix, coin, amount, blockchain, code2fa]
      *                properties: {
-     *                  fromDefix: {
+     *                  defixId: {
      *                    type: "string"
      *                  },
      *                  pkEncrypt: {
@@ -58,6 +58,10 @@ export class Routes {
      *        '500':
      *          description: Internal Server Error.
      */
-    router.post("/send-transfer/", this.controller.sendTransfer);
+    router.post(
+      "/send-transfer/",
+      this.middleware2fa.validateTwoFA,
+      this.controller.sendTransfer
+    );
   }
 }
