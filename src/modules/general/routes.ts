@@ -1,6 +1,6 @@
 import { Express, Router } from "express";
 import { GeneralController } from "./controllers/general.controller";
-import { SharedMiddleware } from "../../shared/middlewares/middleware.shared";
+import { SharedMiddleware } from "../../shared/middlewares/shared.middleware";
 
 export class Routes {
   private controller: GeneralController;

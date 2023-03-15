@@ -43,8 +43,8 @@ const swaggerDefinition: OAS3Definition = {
       description: "EndPoints variados",
     },
     {
-      name: "Transaction",
-      description: "EndPoints asociados a las transacciones.",
+      name: "Transfer",
+      description: "EndPoints asociados a las transferencias.",
     },
     {
       name: "Swap",

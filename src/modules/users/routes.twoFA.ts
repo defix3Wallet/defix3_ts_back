@@ -1,5 +1,5 @@
 import { Express, Router } from "express";
-import { SharedMiddleware } from "../../shared/middlewares/middleware.shared";
+import { SharedMiddleware } from "../../shared/middlewares/shared.middleware";
 import { TwoFAController } from "./controllers/twoFA.controller";
 export class RoutesTwoFA {
   private controller: TwoFAController;

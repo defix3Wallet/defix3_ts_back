@@ -20,8 +20,7 @@ class TwoFAService extends user_service_1.UserService {
                 const user = yield this.getUserByDefixId(defixId);
                 if (!user)
                     throw new Error(`User not exists.`);
-                if (user.twofa)
-                    throw new Error(`2fa is already active.`);
+                // if (user.twofa) throw new Error(`2fa is already active.`);
                 let secret;
                 if (!user.secret) {
                     secret = otplib_1.authenticator.generateSecret();
@@ -56,7 +55,7 @@ class TwoFAService extends user_service_1.UserService {
                 return;
             }
             catch (err) {
-                throw new Error(`Failed to generate 2fa, ${err}`);
+                throw new Error(`Failed to activate 2fa, ${err}`);
             }
         });
         this.deactivateTwoFA = (defixId, code2fa) => __awaiter(this, void 0, void 0, function* () {

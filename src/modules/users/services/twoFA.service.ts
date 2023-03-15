@@ -16,7 +16,7 @@ export class TwoFAService extends UserService {
 
       if (!user) throw new Error(`User not exists.`);
 
-      if (user.twofa) throw new Error(`2fa is already active.`);
+      // if (user.twofa) throw new Error(`2fa is already active.`);
 
       let secret;
 
@@ -34,6 +34,8 @@ export class TwoFAService extends UserService {
       const codeAuth = authenticator.keyuri(defixId, "Defix3 App", secret);
 
       // const qr = await QRCode.toDataURL(codigo);
+
+      console.log("QR", await QRCode.toDataURL(codeAuth));
 
       return { codeAuth, secret };
     } catch (err) {
@@ -58,7 +60,7 @@ export class TwoFAService extends UserService {
 
       return;
     } catch (err) {
-      throw new Error(`Failed to generate 2fa, ${err}`);
+      throw new Error(`Failed to activate 2fa, ${err}`);
     }
   };
 
@@ -82,7 +84,17 @@ export class TwoFAService extends UserService {
 
       return;
     } catch (err) {
-      throw new Error(`Failed to generate 2fa, ${err}`);
+      throw new Error(`Failed to deactivate 2fa, ${err}`);
+    }
+  };
+
+  public checkTwoFA = async (code2fa: string, secret: string) => {
+    try {
+      const auth = authenticator.check(code2fa, secret);
+
+      return auth;
+    } catch (err) {
+      throw new Error(`Failed to validate 2fa, ${err}`);
     }
   };
 

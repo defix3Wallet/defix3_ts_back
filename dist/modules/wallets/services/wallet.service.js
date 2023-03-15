@@ -18,13 +18,10 @@ class WalletService {
     constructor() {
         this.createWalletDefix = (defixId, mnemonic) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const credentials = yield Promise.all([
-                    blockchain_1.blockchainService.btc.fromMnemonic(mnemonic),
-                    blockchain_1.blockchainService.eth.fromMnemonic(mnemonic),
-                    blockchain_1.blockchainService.bnb.fromMnemonic(mnemonic),
-                    blockchain_1.blockchainService.near.fromMnemonic(mnemonic),
-                    blockchain_1.blockchainService.trx.fromMnemonic(mnemonic),
-                ]);
+                const credentials = [];
+                for (const service of Object.values(blockchain_1.blockchainService)) {
+                    credentials.push(yield service.fromMnemonic(mnemonic));
+                }
                 const wallet = {
                     defixId: defixId,
                     credentials: credentials,
@@ -44,20 +41,10 @@ class WalletService {
                 if (!user)
                     throw new Error("Wallet does not exist in Defix3");
                 const defixId = user.defixId;
-                // const walletNear = (
-                //   await WalletEntity.findOneBy({
-                //     user: { defix_id: user.defix_id },
-                //     blockchain: "NEAR",
-                //   })
-                // )?.address;
-                // if (!walletNear) throw new Error("Failed to import wallet.");
-                const credentials = yield Promise.all([
-                    blockchain_1.blockchainService.btc.fromMnemonic(mnemonic),
-                    blockchain_1.blockchainService.eth.fromMnemonic(mnemonic),
-                    blockchain_1.blockchainService.bnb.fromMnemonic(mnemonic),
-                    blockchain_1.blockchainService.near.fromMnemonic(mnemonic),
-                    blockchain_1.blockchainService.trx.fromMnemonic(mnemonic),
-                ]);
+                const credentials = [];
+                for (const service of Object.values(blockchain_1.blockchainService)) {
+                    credentials.push(yield service.fromMnemonic(mnemonic));
+                }
                 const wallet = {
                     defixId: defixId,
                     credentials: credentials,
