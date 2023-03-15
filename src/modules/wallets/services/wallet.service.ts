@@ -17,13 +17,10 @@ export class WalletService {
 
   public createWalletDefix = async (defixId: string, mnemonic: string) => {
     try {
-      const credentials: CredentialInterface[] = await Promise.all([
-        blockchainService.btc.fromMnemonic(mnemonic),
-        blockchainService.eth.fromMnemonic(mnemonic),
-        blockchainService.bnb.fromMnemonic(mnemonic),
-        blockchainService.near.fromMnemonic(mnemonic),
-        blockchainService.trx.fromMnemonic(mnemonic),
-      ]);
+      const credentials: CredentialInterface[] = [];
+      for (const service of Object.values(blockchainService)) {
+        credentials.push(await service.fromMnemonic(mnemonic));
+      }
 
       const wallet: WalletInterface = {
         defixId: defixId,
@@ -49,22 +46,10 @@ export class WalletService {
 
       const defixId = user.defixId;
 
-      // const walletNear = (
-      //   await WalletEntity.findOneBy({
-      //     user: { defix_id: user.defix_id },
-      //     blockchain: "NEAR",
-      //   })
-      // )?.address;
-
-      // if (!walletNear) throw new Error("Failed to import wallet.");
-
-      const credentials: CredentialInterface[] = await Promise.all([
-        blockchainService.btc.fromMnemonic(mnemonic),
-        blockchainService.eth.fromMnemonic(mnemonic),
-        blockchainService.bnb.fromMnemonic(mnemonic),
-        blockchainService.near.fromMnemonic(mnemonic),
-        blockchainService.trx.fromMnemonic(mnemonic),
-      ]);
+      const credentials: CredentialInterface[] = [];
+      for (const service of Object.values(blockchainService)) {
+        credentials.push(await service.fromMnemonic(mnemonic));
+      }
 
       const wallet: WalletInterface = {
         defixId: defixId,
