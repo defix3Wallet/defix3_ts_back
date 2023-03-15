@@ -109,5 +109,70 @@ class TronService {
             }
         });
     }
+    sendTransfer(fromAddress, privateKey, toAddress, amount, coin) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const balance = yield this.getBalance(fromAddress);
+                if (balance < amount) {
+                    throw new Error(`Error: You do not have enough funds to make the transfer`);
+                }
+                tronWeb.setAddress(fromAddress);
+                let value = Math.pow(10, 6);
+                let srcAmount = parseInt(String(amount * value));
+                const tx = yield tronWeb.transactionBuilder
+                    .sendTrx(toAddress, srcAmount)
+                    .then(function (response) {
+                    return response;
+                })
+                    .catch(function (error) {
+                    return false;
+                });
+                if (!tx)
+                    throw new Error(`Error to do build transaction`);
+                const signedTxn = yield tronWeb.trx
+                    .sign(tx, privateKey)
+                    .then(function (response) {
+                    return response;
+                })
+                    .catch(function (error) {
+                    return false;
+                });
+                if (!signedTxn.signature) {
+                    throw new Error(`Error to sign transaction`);
+                }
+                const result = yield tronWeb.trx.sendRawTransaction(signedTxn);
+                if (!result.txid)
+                    throw new Error(`Failed to send raw tx.`);
+                return result.txid;
+            }
+            catch (err) {
+                throw new Error(`Failed to send transfer, ${err.message}`);
+            }
+        });
+    }
+    sendTransferToken(fromAddress, privateKey, toAddress, amount, srcToken) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const balance = yield this.getBalanceToken(fromAddress, srcToken.contract, srcToken.decimals);
+                if (balance < amount) {
+                    throw new Error(`Error: You do not have enough funds to make the transfer`);
+                }
+                tronWeb.setAddress(fromAddress);
+                let value = Math.pow(10, srcToken.decimals);
+                let srcAmount = parseInt(String(amount * value));
+                const contract = yield tronWeb.contract().at(srcToken.contract);
+                const transaction = yield contract.transfer(toAddress, srcAmount).send({
+                    callValue: 0,
+                    shouldPollResponse: true,
+                    privateKey: privateKey,
+                });
+                console.log("TRANSACTION: ", transaction);
+                return transaction;
+            }
+            catch (err) {
+                throw new Error(`Failed to send transfer, ${err.message}`);
+            }
+        });
+    }
 }
 exports.TronService = TronService;

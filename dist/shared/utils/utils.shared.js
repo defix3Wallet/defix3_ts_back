@@ -46,6 +46,21 @@ class UtilsShared {
 }
 exports.UtilsShared = UtilsShared;
 _a = UtilsShared;
+UtilsShared.getTokenContract = (token, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const conexion = yield (0, postgres_1.default)();
+        const response = yield conexion.query("SELECT *\
+        FROM backend_token a\
+        inner join backend_cryptocurrency b on b.id = a.cryptocurrency_id\
+        where a.coin = $1 and b.coin = $2", [token, blockchain]);
+        if (response.rows.length === 0)
+            throw new Error(`Failed to get token contract.`);
+        return response.rows[0];
+    }
+    catch (error) {
+        throw new Error(`Failed to get token contract.`);
+    }
+});
 UtilsShared.getAddressUser = (defixId, blockchain) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const address = yield address_entity_1.AddressEntity.findOneBy({

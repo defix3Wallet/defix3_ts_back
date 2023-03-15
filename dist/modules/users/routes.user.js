@@ -92,8 +92,8 @@ class RoutesUser {
          *    post:
          *      tags:
          *        - User
-         *      summary: Cerrar todas las sesiones abiertas.
-         *      description: Manda el defixId y el SeedPhrase para mandar a cerrar todas las sesiones.
+         *      summary: Actualizar data del usuario.
+         *      description: Manda data para actualizar el usuario.
          *      requestBody:
          *          content:
          *            application/json:

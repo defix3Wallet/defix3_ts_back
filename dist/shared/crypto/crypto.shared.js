@@ -8,15 +8,19 @@ const crypto_1 = __importDefault(require("crypto"));
 class CryptoShared {
     static decrypt(text) {
         try {
-            const cipheredBytes = Buffer.from(text, "base64");
-            const decoded = crypto_1.default
-                .privateDecrypt({
-                key: process.env.PRIVATE_KEY,
-                passphrase: process.env.PASSWORD_DB,
-                padding: crypto_1.default.constants.RSA_PKCS1_OAEP_PADDING,
-            }, cipheredBytes)
-                .toString();
-            return decoded;
+            return text;
+            // const cipheredBytes = Buffer.from(text, "base64");
+            // const decoded = crypto
+            //   .privateDecrypt(
+            //     {
+            //       key: process.env.PRIVATE_KEY as string,
+            //       passphrase: process.env.PASSWORD_DB,
+            //       padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            //     },
+            //     cipheredBytes
+            //   )
+            //   .toString();
+            // return decoded;
         }
         catch (error) {
             console.log(error);

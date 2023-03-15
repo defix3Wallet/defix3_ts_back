@@ -26,6 +26,8 @@ const init_4 = require("./modules/balance/init");
 const init_5 = require("./modules/subscription/init");
 const init_6 = require("./modules/general/init");
 const init_7 = require("./modules/transactionHistory/init");
+const init_8 = require("./modules/transfer/init");
+const init_9 = require("./modules/frequent/init");
 class App {
     constructor() {
         this.app = (0, express_1.default)();
@@ -50,6 +52,8 @@ class App {
         new init_5.SubscriptionModule(this.router);
         new init_6.GeneralModule(this.router);
         new init_7.TransactionHistoryModule(this.router);
+        new init_8.TransferModule(this.router);
+        new init_9.FrequentModule(this.router);
     }
 }
 exports.default = new App().app;

@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -7,6 +16,7 @@ exports.MailShared = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const path_1 = __importDefault(require("path"));
 const nodemailer_express_handlebars_1 = __importDefault(require("nodemailer-express-handlebars"));
+const user_service_1 = require("../../modules/users/services/user.service");
 class MailShared {
     constructor() {
         this.configNodemailer = () => {
@@ -51,9 +61,10 @@ class MailShared {
                 }
             });
         };
-        this.sendMail = (from, to, type, data) => {
+        this.sendMail = (fromDefix, toDefix, type, data) => __awaiter(this, void 0, void 0, function* () {
+            const from = yield this.getEmailFlag(fromDefix, "SEND");
+            const to = yield this.getEmailFlag(toDefix, "RECEIVE");
             let from_admin = process.env.USER_MAIL;
-            // point to the template folder
             const handlebarOptions = {
                 viewEngine: {
                     partialsDir: path_1.default.resolve("./viewsEmail/"),
@@ -66,7 +77,7 @@ class MailShared {
             switch (type) {
                 case "envio":
                     {
-                        if (from != null) {
+                        if (from) {
                             // Envio al emisor
                             let tipoEnvio = "";
                             switch (data.tipoEnvio) {
@@ -96,7 +107,7 @@ class MailShared {
                                 });
                             }
                         }
-                        if (to != null) {
+                        if (to) {
                             // Envio al receptor
                             const mailOptionsTo = {
                                 from: from_admin,
@@ -137,8 +148,25 @@ class MailShared {
                     }
                     break;
             }
-        };
+        });
+        this.getEmailFlag = (defixId, flag) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const user = yield this.userService.getUserByDefixId(defixId);
+                if (!user)
+                    return;
+                if (flag === "SEND" && user.flagSend) {
+                    return user.email;
+                }
+                else if (flag === "RECEIVE" && user.flagReceive) {
+                    return user.email;
+                }
+            }
+            catch (error) {
+                return;
+            }
+        });
         this.configNodemailer();
+        this.userService = new user_service_1.UserService();
     }
 }
 exports.MailShared = MailShared;

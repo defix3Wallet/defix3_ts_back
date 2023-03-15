@@ -19,11 +19,11 @@ class WalletService {
         this.createWalletDefix = (defixId, mnemonic) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const credentials = yield Promise.all([
-                    blockchain_1.blockchain.btc.fromMnemonic(mnemonic),
-                    blockchain_1.blockchain.eth.fromMnemonic(mnemonic),
-                    blockchain_1.blockchain.bnb.fromMnemonic(mnemonic),
-                    blockchain_1.blockchain.near.fromMnemonic(mnemonic),
-                    blockchain_1.blockchain.trx.fromMnemonic(mnemonic),
+                    blockchain_1.blockchainService.btc.fromMnemonic(mnemonic),
+                    blockchain_1.blockchainService.eth.fromMnemonic(mnemonic),
+                    blockchain_1.blockchainService.bnb.fromMnemonic(mnemonic),
+                    blockchain_1.blockchainService.near.fromMnemonic(mnemonic),
+                    blockchain_1.blockchainService.trx.fromMnemonic(mnemonic),
                 ]);
                 const wallet = {
                     defixId: defixId,
@@ -52,11 +52,11 @@ class WalletService {
                 // )?.address;
                 // if (!walletNear) throw new Error("Failed to import wallet.");
                 const credentials = yield Promise.all([
-                    blockchain_1.blockchain.btc.fromMnemonic(mnemonic),
-                    blockchain_1.blockchain.eth.fromMnemonic(mnemonic),
-                    blockchain_1.blockchain.bnb.fromMnemonic(mnemonic),
-                    blockchain_1.blockchain.near.fromMnemonic(mnemonic),
-                    blockchain_1.blockchain.trx.fromMnemonic(mnemonic),
+                    blockchain_1.blockchainService.btc.fromMnemonic(mnemonic),
+                    blockchain_1.blockchainService.eth.fromMnemonic(mnemonic),
+                    blockchain_1.blockchainService.bnb.fromMnemonic(mnemonic),
+                    blockchain_1.blockchainService.near.fromMnemonic(mnemonic),
+                    blockchain_1.blockchainService.trx.fromMnemonic(mnemonic),
                 ]);
                 const wallet = {
                     defixId: defixId,
@@ -72,7 +72,7 @@ class WalletService {
         this.importFromPrivateKey = (privateKey) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const credentials = [];
-                for (const service of Object.values(blockchain_1.blockchain)) {
+                for (const service of Object.values(blockchain_1.blockchainService)) {
                     const credential = yield service.fromPrivateKey(privateKey);
                     if (credential) {
                         credentials.push(credential);
@@ -92,8 +92,8 @@ class WalletService {
         });
         this.validateAddress = (address, coin) => __awaiter(this, void 0, void 0, function* () {
             try {
-                if (Object.keys(blockchain_1.blockchain).find((key) => key === coin.toLowerCase())) {
-                    return blockchain_1.blockchain[coin.toLowerCase()].isAddress(address);
+                if (Object.keys(blockchain_1.blockchainService).find((key) => key === coin.toLowerCase())) {
+                    return blockchain_1.blockchainService[coin.toLowerCase()].isAddress(address);
                 }
                 throw new Error(`Invalid coin`);
             }

@@ -82,11 +82,6 @@ class BitcoinService {
             }
         });
     }
-    getBalanceToken(address, contract, decimals) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return 0;
-        });
-    }
     fromMnemonic(mnemonic) {
         return __awaiter(this, void 0, void 0, function* () {
             let network;
@@ -188,6 +183,96 @@ class BitcoinService {
                 return item;
             }
         });
+    }
+    getBalanceToken(address, contract, decimals) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return 0;
+        });
+    }
+    sendTransfer(fromAddress, privateKey, toAddress, amount, coin) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let network;
+                if (NETWORK === "mainnet") {
+                    network = bitcoinjs_lib_1.networks.bitcoin; //use networks.testnet networks.bitcoin for testnet
+                }
+                else {
+                    network = bitcoinjs_lib_1.networks.testnet; //use networks.testnet networks.bitcoin for testnet
+                }
+                const keys = ECPair.fromWIF(privateKey, network);
+                const value_satoshi = 100000000;
+                const amountSatoshi = amount * value_satoshi;
+                const vaultSatoshi = 0; // parseInt(String(for_vault * value_satoshi));
+                const data = {
+                    inputs: [
+                        {
+                            addresses: [fromAddress],
+                        },
+                    ],
+                    outputs: [
+                        {
+                            addresses: [toAddress],
+                            value: parseInt(String(amountSatoshi)),
+                        },
+                    ],
+                };
+                if (vaultSatoshi !== 0) {
+                    data.outputs.push({
+                        addresses: [fromAddress],
+                        value: parseInt(String(vaultSatoshi)),
+                    });
+                }
+                const config = {
+                    method: "post",
+                    url: "https://api.blockcypher.com/v1/btc/" +
+                        process.env.BLOCKCYPHER +
+                        "/txs/new",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    data: data,
+                };
+                let txHash = null;
+                yield (0, axios_1.default)(config)
+                    .then(function (tmptx) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        tmptx.data.pubkeys = [];
+                        tmptx.data.signatures = tmptx.data.tosign.map(function (tosign, n) {
+                            tmptx.data.pubkeys.push(keys.publicKey.toString("hex"));
+                            return bitcoinjs_lib_1.script.signature
+                                .encode(keys.sign(Buffer.from(tosign, "hex")), 0x01)
+                                .toString("hex")
+                                .slice(0, -2);
+                        });
+                        const result = axios_1.default
+                            .post("https://api.blockcypher.com/v1/btc/" +
+                            process.env.BLOCKCYPHER +
+                            "/txs/send", tmptx.data)
+                            .then(function (finaltx) {
+                            txHash = finaltx.data.tx.hash;
+                            console.log("hash", finaltx.data.tx.hash);
+                            return true;
+                        })
+                            .catch(function (err) {
+                            throw new Error(`Failed to axios, ${err.message}`);
+                        });
+                        return result;
+                    });
+                })
+                    .catch(function (err) {
+                    throw new Error(`Failed to axios, ${err.message}`);
+                });
+                if (!txHash)
+                    throw new Error(`Failed to send btc, hash.`);
+                return txHash;
+            }
+            catch (err) {
+                throw new Error(`Failed to send transfer, ${err.message}`);
+            }
+        });
+    }
+    sendTransferToken(fromAddress, privateKey, toAddress, amount, srcToken) {
+        throw new Error("Method not implemented.");
     }
 }
 exports.BitcoinService = BitcoinService;

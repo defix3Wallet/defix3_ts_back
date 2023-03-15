@@ -57,6 +57,10 @@ const swaggerDefinition = {
             description: "EndPoint ver el historial de Transactiones",
         },
         {
+            name: "Frequent",
+            description: "EndPoints para los usuarios frecuentes al hacer transferencias",
+        },
+        {
             name: "Subscription",
             description: "EndPoint para guardar correo de usuario que quiera recibir notificaciones de Defix3",
         },

@@ -31,11 +31,11 @@ export class TwoFAService extends UserService {
         secret = user.secret;
       }
 
-      const codigo = authenticator.keyuri(defixId, "Defix3 App", secret);
+      const codeAuth = authenticator.keyuri(defixId, "Defix3 App", secret);
 
-      const qr = await QRCode.toDataURL(codigo);
+      // const qr = await QRCode.toDataURL(codigo);
 
-      return { qr, secret };
+      return { codeAuth, secret };
     } catch (err) {
       throw new Error(`Failed to generate 2fa, ${err}`);
     }

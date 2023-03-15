@@ -60,12 +60,12 @@ export class RoutesTwoFA {
      *            application/json:
      *              schema:
      *                type: "object"
-     *                required: [defixId, seedPhrase, code]
+     *                required: [defixId, seedPhrase, code2fa]
      *                properties: {
      *                  defixId: {
      *                    type: "string"
      *                  },
-     *                  code: {
+     *                  code2fa: {
      *                    type: "string"
      *                  }
      *                }
@@ -97,12 +97,12 @@ export class RoutesTwoFA {
      *            application/json:
      *              schema:
      *                type: "object"
-     *                required: [defixId, code]
+     *                required: [defixId, code2fa]
      *                properties: {
      *                  defixId: {
      *                    type: "string"
      *                  },
-     *                  code: {
+     *                  code2fa: {
      *                    type: "string"
      *                  }
      *                }

@@ -8,10 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NearService = void 0;
 const near_api_js_1 = require("near-api-js");
 const nearSEED = require("near-seed-phrase");
+const bn_js_1 = __importDefault(require("bn.js"));
 const utils_shared_1 = require("../../shared/utils/utils.shared");
 const NETWORK = process.env.NETWORK || "testnet";
 const ETHERSCAN = process.env.ETHERSCAN;
@@ -124,6 +128,33 @@ class NearService {
                 return 0;
             }
         });
+    }
+    sendTransfer(fromAddress, privateKey, toAddress, amount, coin) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const balance = yield this.getBalance(fromAddress);
+                if (balance < amount)
+                    throw new Error(`Error: You do not have enough funds to make the transfer`);
+                const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
+                const keyPair = near_api_js_1.KeyPair.fromString(privateKey);
+                keyStore.setKey(NETWORK, fromAddress, keyPair);
+                const near = new near_api_js_1.Near(utils_shared_1.UtilsShared.ConfigNEAR(keyStore));
+                const account = new near_api_js_1.Account(near.connection, fromAddress);
+                const amountInYocto = near_api_js_1.utils.format.parseNearAmount(String(amount));
+                if (!amountInYocto)
+                    throw new Error(`Failed to send transfer.`);
+                const response = yield account.sendMoney(toAddress, new bn_js_1.default(amountInYocto));
+                if (!response.transaction.hash)
+                    throw new Error(`Failed to send transfer.`);
+                return response.transaction.hash;
+            }
+            catch (err) {
+                throw new Error(`Failed to send transfer, ${err.message}`);
+            }
+        });
+    }
+    sendTransferToken(fromAddress, privateKey, toAddress, amount, srcToken) {
+        throw new Error("Method not implemented.");
     }
 }
 exports.NearService = NearService;

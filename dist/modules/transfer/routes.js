@@ -7,7 +7,7 @@ class Routes {
         this.configureRoutes(router);
     }
     configureRoutes(router) {
-        // router.post("/create-subscription/", this.controller.setEmailSubscription);
+        router.post("/send-transfer/", this.controller.sendTransfer);
     }
 }
 exports.Routes = Routes;

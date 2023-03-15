@@ -27,10 +27,11 @@ class AddressService {
         });
         this.getAddressByDefixId = (defixId, blockchain) => __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield address_entity_1.AddressEntity.findOneBy({
+                const address = yield address_entity_1.AddressEntity.findOneBy({
                     user: { defixId: defixId },
                     blockchain,
                 });
+                return address;
             }
             catch (err) {
                 throw new Error(`Failed to get address: ${err}`);

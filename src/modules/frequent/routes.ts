@@ -15,7 +15,7 @@ export class Routes {
      * /get-frequent/:
      *    post:
      *      tags:
-     *        - FrEquent
+     *        - Frequent
      *      summary: Obtener lista de usuarios frequentes.
      *      description: Obtener lista de usuarios frequentes de un usuario.
      *      requestBody:

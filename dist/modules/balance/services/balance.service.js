@@ -33,14 +33,14 @@ class BalanceService {
                     if (!addressItem)
                         throw new Error(`Failed to get balance`);
                     const address = addressItem.address || "";
-                    balanceCrypto.balance = yield blockchain_1.blockchain[crypto.coin.toLowerCase()].getBalance(address);
+                    balanceCrypto.balance = yield blockchain_1.blockchainService[crypto.coin.toLowerCase()].getBalance(address);
                     for (let token of crypto.tokens) {
                         const itemToken = {
                             coin: token.coin,
                             balance: 0,
                             icon: token.icon,
                         };
-                        itemToken.balance = yield blockchain_1.blockchain[crypto.coin.toLowerCase()].getBalanceToken(address, token.contract, token.decimals);
+                        itemToken.balance = yield blockchain_1.blockchainService[crypto.coin.toLowerCase()].getBalanceToken(address, token.contract, token.decimals);
                         balanceCrypto.tokens.push(itemToken);
                     }
                     balances.push(balanceCrypto);
