@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RoutesTwoFA = void 0;
-const middleware_shared_1 = require("../../shared/middlewares/middleware.shared");
+const shared_middleware_1 = require("../../shared/middlewares/shared.middleware");
 class RoutesTwoFA {
     constructor(router, controller) {
         this.controller = controller;
-        this.middleware = new middleware_shared_1.SharedMiddleware();
+        this.middleware = new shared_middleware_1.SharedMiddleware();
         this.configureRoutes(router);
     }
     configureRoutes(router) {

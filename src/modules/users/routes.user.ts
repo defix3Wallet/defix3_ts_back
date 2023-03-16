@@ -1,13 +1,17 @@
 import { Express, Router } from "express";
 import { UserController } from "./controllers/user.controller";
 import { SharedMiddleware } from "../../shared/middlewares/shared.middleware";
+import multer from "multer";
+import { MulterMiddleware } from "../../shared/middlewares/multer. middleware";
 export class RoutesUser {
   private controller: UserController;
   private middleware: SharedMiddleware;
+  private middlewareMulter: MulterMiddleware;
 
   constructor(router: Router, controller: UserController) {
     this.controller = controller;
     this.middleware = new SharedMiddleware();
+    this.middlewareMulter = new MulterMiddleware();
     this.configureRoutes(router);
   }
 
@@ -103,7 +107,7 @@ export class RoutesUser {
      * Post track
      * @swagger
      * /update-user/:
-     *    post:
+     *    patch:
      *      tags:
      *        - User
      *      summary: Actualizar data del usuario.
@@ -127,9 +131,9 @@ export class RoutesUser {
      *        '500':
      *          description: Internal server error.
      */
-    router.put(
+    router.patch(
       "/update-user/",
-      this.middleware.defixIdValid,
+      this.middlewareMulter.multerSingle,
       this.controller.updateUser
     );
   }

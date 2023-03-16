@@ -54,10 +54,10 @@ class WalletController {
         });
         this.importFromPrivateKey = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const { pkEncript } = req.body;
-                if (!pkEncript)
+                const { pkEncrypt } = req.body;
+                if (!pkEncrypt)
                     return res.status(400).send({ message: "Invalid data." });
-                const privateKey = crypto_shared_1.CryptoShared.decrypt(pkEncript);
+                const privateKey = crypto_shared_1.CryptoShared.decrypt(pkEncrypt);
                 if (!privateKey)
                     return res.status(400).send({ message: "Invalid data." });
                 const wallet = yield this.walletService.importFromPrivateKey(privateKey);

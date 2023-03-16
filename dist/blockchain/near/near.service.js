@@ -14,8 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NearService = void 0;
 const near_api_js_1 = require("near-api-js");
+const axios_1 = __importDefault(require("axios"));
 const nearSEED = require("near-seed-phrase");
 const bn_js_1 = __importDefault(require("bn.js"));
+const ref_sdk_1 = require("@ref-finance/ref-sdk");
 const utils_shared_1 = require("../../shared/utils/utils.shared");
 const NETWORK = process.env.NETWORK || "testnet";
 const ETHERSCAN = process.env.ETHERSCAN;
@@ -26,6 +28,10 @@ if (process.env.NEAR_ENV === "testnet") {
 else {
     NEAR = "near";
 }
+const dataToken = {
+    decimals: 24,
+    contract: "wrap.testnet",
+};
 class NearService {
     fromMnemonic(mnemonic) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -155,6 +161,69 @@ class NearService {
     }
     sendTransferToken(fromAddress, privateKey, toAddress, amount, srcToken) {
         throw new Error("Method not implemented.");
+    }
+    previewSwap(fromCoin, toCoin, amount, blockchain, address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let fromToken = yield utils_shared_1.UtilsShared.getTokenContract(fromCoin, blockchain);
+                let toToken = yield utils_shared_1.UtilsShared.getTokenContract(toCoin, blockchain);
+                if (!fromToken) {
+                    fromToken = dataToken;
+                }
+                if (!toToken) {
+                    toToken = dataToken;
+                }
+                const tokenIn = fromToken.contract;
+                const tokenOut = toToken.contract;
+                const tokensMetadata = yield (0, ref_sdk_1.ftGetTokensMetadata)([tokenIn, tokenOut]);
+                const simplePools = (yield (0, ref_sdk_1.fetchAllPools)()).simplePools.filter((pool) => {
+                    return pool.tokenIds[0] === tokenIn && pool.tokenIds[1] === tokenOut;
+                });
+                const swapAlls = yield (0, ref_sdk_1.estimateSwap)({
+                    tokenIn: tokensMetadata[tokenIn],
+                    tokenOut: tokensMetadata[tokenOut],
+                    amountIn: String(amount),
+                    simplePools: simplePools,
+                    options: { enableSmartRouting: true },
+                });
+                const transactionsRef = yield (0, ref_sdk_1.instantSwap)({
+                    tokenIn: tokensMetadata[tokenIn],
+                    tokenOut: tokensMetadata[tokenOut],
+                    amountIn: String(amount),
+                    swapTodos: swapAlls,
+                    slippageTolerance: 0.01,
+                    AccountId: address,
+                });
+                const transaction = transactionsRef.find((element) => element.functionCalls[0].methodName === "ft_transfer_call");
+                if (!transaction)
+                    return false;
+                const transfer = transaction.functionCalls[0].args;
+                const data = JSON.parse(transfer.msg);
+                const comision = yield utils_shared_1.UtilsShared.getComision(blockchain);
+                const nearPrice = yield axios_1.default.get("https://nearblocks.io/api/near-price");
+                let feeTransfer = "0";
+                let porcentFee = 0;
+                console.log(comision);
+                if (comision.swap) {
+                    porcentFee = comision.swap / 100;
+                }
+                let feeDefix = String(Number(amount) * porcentFee);
+                const dataSwap = {
+                    exchange: "Ref Finance" + data.actions[0].pool_id,
+                    fromAmount: data.actions[0].amount_in,
+                    fromDecimals: tokensMetadata[tokenIn].decimals,
+                    toAmount: data.actions[0].min_amount_out,
+                    toDecimals: tokensMetadata[tokenOut].decimals,
+                    fee: String(porcentFee),
+                    feeDefix: feeDefix,
+                    feeTotal: String(Number(feeDefix)),
+                };
+                return { dataSwap, priceRoute: transactionsRef };
+            }
+            catch (error) {
+                throw new Error(`Feiled to get preview swap., ${error.message}`);
+            }
+        });
     }
 }
 exports.NearService = NearService;

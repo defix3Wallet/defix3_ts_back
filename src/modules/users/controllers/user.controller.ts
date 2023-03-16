@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/user.service";
 import { UserEntity } from "../entities/user.entity";
+import multer from "multer";
 
 export class UserController {
   private userService: UserService;
@@ -46,8 +47,15 @@ export class UserController {
   public updateUser = async (req: Request, res: Response) => {
     try {
       const { defixId } = req.body;
-      const result = await this.userService.updateUser(defixId, req.body);
-      res.send(result);
+
+      console.log(defixId);
+
+      if (req.file) {
+        req.body.avatar = req.file.filename;
+      }
+
+      const updatedUser = await this.userService.updateUser(defixId, req.body);
+      res.send(updatedUser);
     } catch (error: any) {
       return res.status(500).send({ message: error.message });
     }

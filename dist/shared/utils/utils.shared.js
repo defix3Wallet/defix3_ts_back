@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UtilsShared = void 0;
+const axios_1 = __importDefault(require("axios"));
 const postgres_1 = __importDefault(require("../../config/postgres"));
 const address_entity_1 = require("../../modules/address/entities/address.entity");
 const nearSEED = require("near-seed-phrase");
@@ -54,11 +55,28 @@ UtilsShared.getTokenContract = (token, blockchain) => __awaiter(void 0, void 0, 
         inner join backend_cryptocurrency b on b.id = a.cryptocurrency_id\
         where a.coin = $1 and b.coin = $2", [token, blockchain]);
         if (response.rows.length === 0)
-            throw new Error(`Failed to get token contract.`);
+            return false;
         return response.rows[0];
     }
     catch (error) {
         throw new Error(`Failed to get token contract.`);
+    }
+});
+UtilsShared.getComision = (coin) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const url = process.env.URL_DJANGO + "api/v1/get-comision/" + coin;
+        const result = axios_1.default
+            .get(url)
+            .then(function (response) {
+            return response.data;
+        })
+            .catch(function (xhr) {
+            throw new Error(`Failed to get comision.`);
+        });
+        return result;
+    }
+    catch (error) {
+        throw new Error(`Failed to get comision.`);
     }
 });
 UtilsShared.getAddressUser = (defixId, blockchain) => __awaiter(void 0, void 0, void 0, function* () {

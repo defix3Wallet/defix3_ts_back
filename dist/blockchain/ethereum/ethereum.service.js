@@ -15,11 +15,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EthereumService = void 0;
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
+const axios_1 = __importDefault(require("axios"));
+const sdk_1 = require("@paraswap/sdk");
 const abi_json_1 = __importDefault(require("../abi.json"));
+const utils_shared_1 = require("../../shared/utils/utils.shared");
 const ETHEREUM_NETWORK = process.env.ETHEREUM_NETWORK;
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
 const ETHERSCAN = process.env.ETHERSCAN;
 const web3 = new web3_1.default(new web3_1.default.providers.HttpProvider(`https://${ETHEREUM_NETWORK}.infura.io/v3/${INFURA_PROJECT_ID}`));
+const dataToken = {
+    decimals: 18,
+    contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+};
 class EthereumService {
     fromMnemonic(mnemonic) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -98,6 +105,36 @@ class EthereumService {
             }
         });
     }
+    // async getFeeTransfer(coin: string, blockchain: string): Promise<any> {
+    //   try {
+    //     let comisionAdmin: any = await UtilsShared.getComision(blockchain);
+    //     const response = await axios.get(
+    //       "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6"
+    //     );
+    //     const wei = response.data.result.SafeGasPrice;
+    //     if (!wei) throw new Error(`Error getting gas price`);
+    //     let fee = {
+    //       coin: coin,
+    //       fee: null,
+    //     };
+    //     if (comisionAdmin.transfer === 0 || comisionAdmin.transfer === 0.0) {
+    //       let fee = web3.utils.fromWei(String(21000 * wei), "gwei");
+    //       eth = {
+    //         coin: "ETH",
+    //         fee: fee,
+    //       };
+    //     } else {
+    //       let fee =
+    //         parseFloat(web3.utils.fromWei(String(21000 * wei), "gwei")) * 2;
+    //       eth = {
+    //         coin: "ETH",
+    //         fee: String(fee),
+    //       };
+    //     }
+    //   } catch (err: any) {
+    //     throw new Error(`Failed to send transfer, ${err.message}`);
+    //   }
+    // }
     sendTransfer(fromAddress, privateKey, toAddress, amount, coin) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -168,6 +205,63 @@ class EthereumService {
                 if (!tx.hash)
                     throw new Error(`Error tx hash.`);
                 return tx.hash;
+            }
+            catch (err) {
+                throw new Error(`Failed to send transfer, ${err.message}`);
+            }
+        });
+    }
+    previewSwap(fromCoin, toCoin, amount, blockchain, address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log("ETH ENTRO");
+                const paraSwap = (0, sdk_1.constructSimpleSDK)({
+                    chainId: Number(process.env.PARASWAP_ETH),
+                    axios: axios_1.default,
+                });
+                let fromToken = yield utils_shared_1.UtilsShared.getTokenContract(fromCoin, blockchain);
+                let toToken = yield utils_shared_1.UtilsShared.getTokenContract(toCoin, blockchain);
+                if (!fromToken) {
+                    fromToken = dataToken;
+                }
+                if (!toToken) {
+                    toToken = dataToken;
+                }
+                let value = Math.pow(10, fromToken.decimals);
+                const srcAmount = amount * value;
+                const priceRoute = yield paraSwap.swap.getRate({
+                    srcToken: fromToken.contract,
+                    destToken: toToken.contract,
+                    amount: String(srcAmount),
+                });
+                const response = yield axios_1.default.get("https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6");
+                let wei = response.data.result.SafeGasPrice;
+                const comision = yield utils_shared_1.UtilsShared.getComision(blockchain);
+                let feeTransfer = "0";
+                let porcentFee = 0;
+                if (comision.swap) {
+                    porcentFee = comision.swap / 100;
+                    if (comision.swap && fromCoin === "ETH") {
+                        feeTransfer = web3.utils.fromWei(String(21000 * wei), "gwei");
+                    }
+                    else {
+                        feeTransfer = web3.utils.fromWei(String(55000 * wei), "gwei");
+                    }
+                }
+                const feeGas = web3.utils.fromWei(String(Number(priceRoute.gasCost) * wei), "gwei");
+                const srcFee = String(Number(feeTransfer) + Number(feeGas));
+                let feeDefix = String(Number(srcFee) * porcentFee);
+                const dataSwap = {
+                    exchange: priceRoute.bestRoute[0].swaps[0].swapExchanges[0].exchange,
+                    fromAmount: priceRoute.srcAmount,
+                    fromDecimals: fromToken.decimals,
+                    toAmount: priceRoute.destAmount,
+                    toDecimals: toToken.decimals,
+                    fee: srcFee,
+                    feeDefix: feeDefix,
+                    feeTotal: String(Number(srcFee) + Number(feeDefix)),
+                };
+                return { dataSwap, priceRoute };
             }
             catch (err) {
                 throw new Error(`Failed to send transfer, ${err.message}`);

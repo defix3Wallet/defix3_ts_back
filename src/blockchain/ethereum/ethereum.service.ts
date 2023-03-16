@@ -106,6 +106,41 @@ export class EthereumService implements BlockchainService {
     }
   }
 
+  // async getFeeTransfer(coin: string, blockchain: string): Promise<any> {
+  //   try {
+  //     let comisionAdmin: any = await UtilsShared.getComision(blockchain);
+
+  //     const response = await axios.get(
+  //       "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6"
+  //     );
+  //     const wei = response.data.result.SafeGasPrice;
+
+  //     if (!wei) throw new Error(`Error getting gas price`);
+
+  //     let fee = {
+  //       coin: coin,
+  //       fee: null,
+  //     };
+
+  //     if (comisionAdmin.transfer === 0 || comisionAdmin.transfer === 0.0) {
+  //       let fee = web3.utils.fromWei(String(21000 * wei), "gwei");
+  //       eth = {
+  //         coin: "ETH",
+  //         fee: fee,
+  //       };
+  //     } else {
+  //       let fee =
+  //         parseFloat(web3.utils.fromWei(String(21000 * wei), "gwei")) * 2;
+  //       eth = {
+  //         coin: "ETH",
+  //         fee: String(fee),
+  //       };
+  //     }
+  //   } catch (err: any) {
+  //     throw new Error(`Failed to send transfer, ${err.message}`);
+  //   }
+  // }
+
   async sendTransfer(
     fromAddress: string,
     privateKey: string,

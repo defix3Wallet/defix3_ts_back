@@ -9,6 +9,7 @@ export interface BlockchainService {
     contract: string,
     decimals: number
   ): Promise<number>;
+  // getFeeTransfer(coin: string, blockchain: string): Promise<any>;
   sendTransfer(
     fromAddress: string,
     privateKey: string,

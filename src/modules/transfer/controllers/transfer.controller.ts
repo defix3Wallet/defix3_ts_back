@@ -12,6 +12,29 @@ export class TransferController {
     this.mailService = new MailShared();
   }
 
+  // public getTransferFee = async (req: Request, res: Response) => {
+  //   try {
+  //     const { defixId, toDefix, coin, amount, blockchain } =
+  //       req.body;
+
+  //     if (!defixId || !toDefix || !coin || !amount || !blockchain)
+  //       return res.status(400).send({ message: "Invalid data." });
+
+  //     const transaction = await this.transferService.sendTransfer(
+  //       defixId,
+  //       privateKey,
+  //       toDefix,
+  //       coin,
+  //       amount,
+  //       blockchain
+  //     );
+
+  //     res.send(transaction);
+  //   } catch (error: any) {
+  //     return res.status(500).send({ message: error.message });
+  //   }
+  // };
+
   public sendTransfer = async (req: Request, res: Response) => {
     try {
       const { defixId, pkEncrypt, toDefix, coin, amount, blockchain } =

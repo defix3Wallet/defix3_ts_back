@@ -274,5 +274,8 @@ class BitcoinService {
     sendTransferToken(fromAddress, privateKey, toAddress, amount, srcToken) {
         throw new Error("Method not implemented.");
     }
+    previewSwap(fromCoin, toCoin, amount, blockchain, address) {
+        throw new Error("Method not implemented.");
+    }
 }
 exports.BitcoinService = BitcoinService;

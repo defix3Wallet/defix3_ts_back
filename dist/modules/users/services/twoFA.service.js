@@ -8,10 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TwoFAService = void 0;
 const user_service_1 = require("./user.service");
 const otplib_1 = require("otplib");
+const qrcode_1 = __importDefault(require("qrcode"));
 class TwoFAService extends user_service_1.UserService {
     constructor() {
         super();
@@ -33,6 +37,7 @@ class TwoFAService extends user_service_1.UserService {
                 }
                 const codeAuth = otplib_1.authenticator.keyuri(defixId, "Defix3 App", secret);
                 // const qr = await QRCode.toDataURL(codigo);
+                console.log("QR", yield qrcode_1.default.toDataURL(codeAuth));
                 return { codeAuth, secret };
             }
             catch (err) {
@@ -77,7 +82,16 @@ class TwoFAService extends user_service_1.UserService {
                 return;
             }
             catch (err) {
-                throw new Error(`Failed to generate 2fa, ${err}`);
+                throw new Error(`Failed to deactivate 2fa, ${err}`);
+            }
+        });
+        this.checkTwoFA = (code2fa, secret) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const auth = otplib_1.authenticator.check(code2fa, secret);
+                return auth;
+            }
+            catch (err) {
+                throw new Error(`Failed to validate 2fa, ${err}`);
             }
         });
         this.statusTwoFA = (defixId) => __awaiter(this, void 0, void 0, function* () {

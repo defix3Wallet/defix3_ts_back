@@ -46,6 +46,8 @@ class TransferService extends transactionHistory_service_1.TransactionHistorySer
                         throw new Error(`Invalid data.`);
                     }
                     const srcContract = yield utils_shared_1.UtilsShared.getTokenContract(coin, blockchain);
+                    if (!srcContract)
+                        throw new Error(`Failed to get token contract.`);
                     transactionHash = yield blockchain_1.blockchainService[blockchain.toLowerCase()].sendTransferToken(fromAddress, privateKey, toAddress, amount, srcContract);
                 }
                 if (!transactionHash)

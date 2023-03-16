@@ -43,6 +43,11 @@ export class UserEntity extends BaseEntity {
   lastname!: string;
 
   @Column({
+    nullable: true,
+  })
+  avatar!: string;
+
+  @Column({
     name: "close_sessions",
     nullable: true,
     default: false,

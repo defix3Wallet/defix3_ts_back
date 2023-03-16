@@ -15,25 +15,40 @@ const crypto_shared_1 = require("../../../shared/crypto/crypto.shared");
 const email_shared_1 = require("../../../shared/email/email.shared");
 class TransferController {
     constructor() {
+        // public getTransferFee = async (req: Request, res: Response) => {
+        //   try {
+        //     const { defixId, toDefix, coin, amount, blockchain } =
+        //       req.body;
+        //     if (!defixId || !toDefix || !coin || !amount || !blockchain)
+        //       return res.status(400).send({ message: "Invalid data." });
+        //     const transaction = await this.transferService.sendTransfer(
+        //       defixId,
+        //       privateKey,
+        //       toDefix,
+        //       coin,
+        //       amount,
+        //       blockchain
+        //     );
+        //     res.send(transaction);
+        //   } catch (error: any) {
+        //     return res.status(500).send({ message: error.message });
+        //   }
+        // };
         this.sendTransfer = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const { fromDefix, pkEncript, toDefix, coin, amount, blockchain } = req.body;
-                if (!fromDefix ||
-                    !pkEncript ||
-                    !toDefix ||
-                    !coin ||
-                    !amount ||
-                    !blockchain)
+                const { defixId, pkEncrypt, toDefix, coin, amount, blockchain } = req.body;
+                console.log(defixId, pkEncrypt, toDefix, coin, amount, blockchain);
+                if (!defixId || !pkEncrypt || !toDefix || !coin || !amount || !blockchain)
                     return res.status(400).send({ message: "Invalid data." });
-                const privateKey = crypto_shared_1.CryptoShared.decrypt(pkEncript);
+                const privateKey = crypto_shared_1.CryptoShared.decrypt(pkEncrypt);
                 if (!privateKey)
                     return res.status(400).send({ message: "privateKey invalid." });
-                const transaction = yield this.transferService.sendTransfer(fromDefix, privateKey, toDefix, coin, amount, blockchain);
-                this.mailService.sendMail(fromDefix, toDefix, "envio", {
+                const transaction = yield this.transferService.sendTransfer(defixId, privateKey, toDefix, coin, amount, blockchain);
+                this.mailService.sendMail(defixId, toDefix, "envio", {
                     monto: amount,
                     moneda: coin,
                     receptor: toDefix,
-                    emisor: fromDefix,
+                    emisor: defixId,
                     tipoEnvio: toDefix.includes(".defix3") ? "user" : "wallet",
                 });
                 res.send(transaction);

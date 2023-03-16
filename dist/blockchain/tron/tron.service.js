@@ -174,5 +174,8 @@ class TronService {
             }
         });
     }
+    previewSwap(fromCoin, toCoin, amount, blockchain, address) {
+        throw new Error("Method not implemented.");
+    }
 }
 exports.TronService = TronService;

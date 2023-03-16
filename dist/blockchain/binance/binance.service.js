@@ -15,12 +15,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BinanceService = void 0;
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
+const axios_1 = __importDefault(require("axios"));
+const sdk_1 = require("@paraswap/sdk");
 const abi_json_1 = __importDefault(require("../abi.json"));
+const utils_shared_1 = require("../../shared/utils/utils.shared");
 const ETHEREUM_NETWORK = process.env.ETHEREUM_NETWORK;
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
 const ETHERSCAN = process.env.ETHERSCAN;
 const WEB_BSC = process.env.WEB_BSC;
 const web3 = new web3_1.default(new web3_1.default.providers.HttpProvider(WEB_BSC || ""));
+const dataToken = {
+    decimals: 18,
+    contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+};
 class BinanceService {
     fromMnemonic(mnemonic) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -148,6 +155,62 @@ class BinanceService {
                 if (!tx.hash)
                     throw new Error(`Error tx hash.`);
                 return tx.hash;
+            }
+            catch (err) {
+                throw new Error(`Failed to send transfer, ${err.message}`);
+            }
+        });
+    }
+    previewSwap(fromCoin, toCoin, amount, blockchain, address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const paraSwap = (0, sdk_1.constructSimpleSDK)({
+                    chainId: Number(process.env.PARASWAP_BNB),
+                    axios: axios_1.default,
+                });
+                let fromToken = yield utils_shared_1.UtilsShared.getTokenContract(fromCoin, blockchain);
+                let toToken = yield utils_shared_1.UtilsShared.getTokenContract(toCoin, blockchain);
+                if (!fromToken) {
+                    fromToken = dataToken;
+                }
+                if (!toToken) {
+                    toToken = dataToken;
+                }
+                let value = Math.pow(10, fromToken.decimals);
+                const srcAmount = amount * value;
+                const priceRoute = yield paraSwap.swap.getRate({
+                    srcToken: fromToken.contract,
+                    destToken: toToken.contract,
+                    amount: String(srcAmount),
+                });
+                const response = yield axios_1.default.get("https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=3SU1MAWAPX8X39UD6U8JBGTQ5C67EVVRSM");
+                let wei = response.data.result.SafeGasPrice;
+                const comision = yield utils_shared_1.UtilsShared.getComision(blockchain);
+                let feeTransfer = "0";
+                let porcentFee = 0;
+                if (comision.swap) {
+                    porcentFee = comision.swap / 100;
+                    if (comision.swap && fromCoin === "BNB") {
+                        feeTransfer = web3.utils.fromWei(String(21000 * wei), "gwei");
+                    }
+                    else {
+                        feeTransfer = web3.utils.fromWei(String(55000 * wei), "gwei");
+                    }
+                }
+                const feeGas = web3.utils.fromWei(String(Number(priceRoute.gasCost) * wei), "gwei");
+                const srcFee = String(Number(feeTransfer) + Number(feeGas));
+                let feeDefix = String(Number(srcFee) * porcentFee);
+                const dataSwap = {
+                    exchange: priceRoute.bestRoute[0].swaps[0].swapExchanges[0].exchange,
+                    fromAmount: priceRoute.srcAmount,
+                    fromDecimals: fromToken.decimals,
+                    toAmount: priceRoute.destAmount,
+                    toDecimals: toToken.decimals,
+                    fee: srcFee,
+                    feeDefix: feeDefix,
+                    feeTotal: String(Number(srcFee) + Number(feeDefix)),
+                };
+                return { dataSwap, priceRoute };
             }
             catch (err) {
                 throw new Error(`Failed to send transfer, ${err.message}`);
