@@ -1,12 +1,12 @@
 import { Express, Router } from "express";
-import { TransferController } from "./controllers/transfer.controller";
+import { SwapController } from "./controllers/swap.controller";
 import { TwoFAMiddleware } from "../../shared/middlewares/twoFA.middleware";
 
 export class Routes {
-  private controller: TransferController;
+  private controller: SwapController;
   private middleware2fa: TwoFAMiddleware;
 
-  constructor(router: Router, controller: TransferController) {
+  constructor(router: Router, controller: SwapController) {
     this.controller = controller;
     this.middleware2fa = new TwoFAMiddleware();
     this.configureRoutes(router);
@@ -15,29 +15,23 @@ export class Routes {
   private configureRoutes(router: Router) {
     /**
      * @swagger
-     * /send-transfer/:
+     * /get-preview-swap/:
      *    post:
      *      tags:
-     *        - Transfer
-     *      summary: Hacer transferencia.
-     *      description: Manda campos requeridos para hacer una transaction.
+     *        - Swap
+     *      summary: Obtiene el Preview del swap, Tasa de cambio, hash y monto recibido..
+     *      description: Manda campos requeridos para obtener el priceRoute.
      *      requestBody:
      *          content:
      *            application/json:
      *              schema:
      *                type: "object"
-     *                required: [defixId, pkEncrypt, toDefix, coin, amount, blockchain]
+     *                required: [fromCoin, toCoin, amount, blockchain]
      *                properties: {
-     *                  defixId: {
+     *                  fromCoin: {
      *                    type: "string"
      *                  },
-     *                  pkEncrypt: {
-     *                    type: "string"
-     *                  },
-     *                  toDefix: {
-     *                    type: "string"
-     *                  },
-     *                  coin: {
+     *                  toCoin: {
      *                    type: "string"
      *                  },
      *                  amount: {
@@ -46,22 +40,18 @@ export class Routes {
      *                  blockchain: {
      *                    type: "string"
      *                  },
-     *                  code2fa: {
+     *                  address: {
      *                    type: "string"
      *                  }
      *                }
      *      responses:
      *        '200':
-     *          description: Devuelve la transaccion realizada.
+     *          description: Devuelve el preview o priceRoute del swap a realizar.
      *        '400':
      *          description: Bad Request.
      *        '500':
-     *          description: Internal Server Error.
+     *          description: Bad Request.
      */
-    router.post(
-      "/send-transfer/",
-      this.middleware2fa.validateTwoFA,
-      this.controller.sendTransfer
-    );
+    router.post("/get-preview-swap/", this.controller.getPreviewSwap);
   }
 }

@@ -1,3 +1,4 @@
+import axios from "axios";
 import dbConnect from "../../config/postgres";
 import { AddressEntity } from "../../modules/address/entities/address.entity";
 
@@ -17,12 +18,28 @@ export class UtilsShared {
         [token, blockchain]
       );
 
-      if (response.rows.length === 0)
-        throw new Error(`Failed to get token contract.`);
+      if (response.rows.length === 0) return false;
 
       return response.rows[0];
     } catch (error) {
       throw new Error(`Failed to get token contract.`);
+    }
+  };
+
+  static getComision = async (coin: string) => {
+    try {
+      const url = process.env.URL_DJANGO + "api/v1/get-comision/" + coin;
+      const result = axios
+        .get(url)
+        .then(function (response) {
+          return response.data;
+        })
+        .catch(function (xhr) {
+          throw new Error(`Failed to get comision.`);
+        });
+      return result;
+    } catch (error) {
+      throw new Error(`Failed to get comision.`);
     }
   };
 

@@ -14,6 +14,7 @@ import { GeneralModule } from "./modules/general/init";
 import { TransactionHistoryModule } from "./modules/transactionHistory/init";
 import { TransferModule } from "./modules/transfer/init";
 import { FrequentModule } from "./modules/frequent/init";
+import { SwapModule } from "./modules/swap/init";
 
 class App {
   public app: express.Express;
@@ -43,6 +44,7 @@ class App {
     new GeneralModule(this.router);
     new TransactionHistoryModule(this.router);
     new TransferModule(this.router);
+    new SwapModule(this.router);
     new FrequentModule(this.router);
   }
 }

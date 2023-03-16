@@ -196,4 +196,14 @@ export class TronService implements BlockchainService {
       throw new Error(`Failed to send transfer, ${err.message}`);
     }
   }
+
+  previewSwap(
+    fromCoin: string,
+    toCoin: string,
+    amount: number,
+    blockchain: string,
+    address: string
+  ): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
 }

@@ -276,4 +276,14 @@ export class BitcoinService implements BlockchainService {
   ): Promise<string> {
     throw new Error("Method not implemented.");
   }
+
+  previewSwap(
+    fromCoin: string,
+    toCoin: string,
+    amount: number,
+    blockchain: string,
+    address: string
+  ): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
 }

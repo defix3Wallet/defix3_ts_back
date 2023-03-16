@@ -23,4 +23,11 @@ export interface BlockchainService {
     amount: number,
     srcToken: any
   ): Promise<string>;
+  previewSwap(
+    fromCoin: string,
+    toCoin: string,
+    amount: number,
+    blockchain: string,
+    address: string | undefined
+  ): Promise<any>;
 }

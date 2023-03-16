@@ -41,6 +41,11 @@ if (process.env.NEAR_ENV === "testnet") {
   NEAR = "near";
 }
 
+const dataToken = {
+  decimals: 24,
+  contract: "wrap.testnet",
+};
+
 export class NearService implements BlockchainService {
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     const walletSeed = await nearSEED.parseSeedPhrase(mnemonic);
@@ -204,5 +209,93 @@ export class NearService implements BlockchainService {
     srcToken: any
   ): Promise<string> {
     throw new Error("Method not implemented.");
+  }
+
+  async previewSwap(
+    fromCoin: string,
+    toCoin: string,
+    amount: number,
+    blockchain: string,
+    address: string
+  ): Promise<any> {
+    try {
+      let fromToken: any = await UtilsShared.getTokenContract(
+        fromCoin,
+        blockchain
+      );
+      let toToken: any = await UtilsShared.getTokenContract(toCoin, blockchain);
+
+      if (!fromToken) {
+        fromToken = dataToken;
+      }
+      if (!toToken) {
+        toToken = dataToken;
+      }
+
+      const tokenIn = fromToken.contract;
+      const tokenOut = toToken.contract;
+
+      const tokensMetadata = await ftGetTokensMetadata([tokenIn, tokenOut]);
+
+      const simplePools = (await fetchAllPools()).simplePools.filter((pool) => {
+        return pool.tokenIds[0] === tokenIn && pool.tokenIds[1] === tokenOut;
+      });
+
+      const swapAlls = await estimateSwap({
+        tokenIn: tokensMetadata[tokenIn],
+        tokenOut: tokensMetadata[tokenOut],
+        amountIn: String(amount),
+        simplePools: simplePools,
+        options: { enableSmartRouting: true },
+      });
+
+      const transactionsRef = await instantSwap({
+        tokenIn: tokensMetadata[tokenIn],
+        tokenOut: tokensMetadata[tokenOut],
+        amountIn: String(amount),
+        swapTodos: swapAlls,
+        slippageTolerance: 0.01,
+        AccountId: address,
+      });
+
+      const transaction = transactionsRef.find(
+        (element) => element.functionCalls[0].methodName === "ft_transfer_call"
+      );
+
+      if (!transaction) return false;
+
+      const transfer: any = transaction.functionCalls[0].args;
+      const data = JSON.parse(transfer.msg);
+
+      const comision = await UtilsShared.getComision(blockchain);
+
+      const nearPrice = await axios.get("https://nearblocks.io/api/near-price");
+
+      let feeTransfer = "0";
+      let porcentFee = 0;
+
+      console.log(comision);
+
+      if (comision.swap) {
+        porcentFee = comision.swap / 100;
+      }
+
+      let feeDefix = String(Number(amount) * porcentFee);
+
+      const dataSwap = {
+        exchange: "Ref Finance" + data.actions[0].pool_id,
+        fromAmount: data.actions[0].amount_in,
+        fromDecimals: tokensMetadata[tokenIn].decimals,
+        toAmount: data.actions[0].min_amount_out,
+        toDecimals: tokensMetadata[tokenOut].decimals,
+        fee: String(porcentFee),
+        feeDefix: feeDefix,
+        feeTotal: String(Number(feeDefix)),
+      };
+
+      return { dataSwap, priceRoute: transactionsRef };
+    } catch (error: any) {
+      throw new Error(`Feiled to get preview swap., ${error.message}`);
+    }
   }
 }

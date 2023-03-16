@@ -7,6 +7,7 @@ import { CredentialInterface } from "../../interfaces/credential.interface";
 import axios from "axios";
 import { constructSimpleSDK, OptimalRate } from "@paraswap/sdk";
 import abi from "../abi.json";
+import { UtilsShared } from "../../shared/utils/utils.shared";
 
 const ETHEREUM_NETWORK = process.env.ETHEREUM_NETWORK;
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
@@ -16,6 +17,11 @@ const ETHERSCAN = process.env.ETHERSCAN;
 const WEB_BSC = process.env.WEB_BSC;
 
 const web3 = new Web3(new Web3.providers.HttpProvider(WEB_BSC || ""));
+
+const dataToken = {
+  decimals: 18,
+  contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+};
 
 export class BinanceService implements BlockchainService {
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
@@ -186,6 +192,85 @@ export class BinanceService implements BlockchainService {
       if (!tx.hash) throw new Error(`Error tx hash.`);
 
       return tx.hash as string;
+    } catch (err: any) {
+      throw new Error(`Failed to send transfer, ${err.message}`);
+    }
+  }
+
+  async previewSwap(
+    fromCoin: string,
+    toCoin: string,
+    amount: number,
+    blockchain: string,
+    address: string
+  ): Promise<any> {
+    try {
+      const paraSwap = constructSimpleSDK({
+        chainId: Number(process.env.PARASWAP_BNB),
+        axios,
+      });
+
+      let fromToken: any = await UtilsShared.getTokenContract(
+        fromCoin,
+        blockchain
+      );
+      let toToken: any = await UtilsShared.getTokenContract(toCoin, blockchain);
+
+      if (!fromToken) {
+        fromToken = dataToken;
+      }
+      if (!toToken) {
+        toToken = dataToken;
+      }
+
+      let value = Math.pow(10, fromToken.decimals);
+      const srcAmount = amount * value;
+
+      const priceRoute: OptimalRate = await paraSwap.swap.getRate({
+        srcToken: fromToken.contract,
+        destToken: toToken.contract,
+        amount: String(srcAmount),
+      });
+
+      const response = await axios.get(
+        "https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=3SU1MAWAPX8X39UD6U8JBGTQ5C67EVVRSM"
+      );
+      let wei = response.data.result.SafeGasPrice;
+
+      const comision = await UtilsShared.getComision(blockchain);
+
+      let feeTransfer = "0";
+      let porcentFee = 0;
+
+      if (comision.swap) {
+        porcentFee = comision.swap / 100;
+        if (comision.swap && fromCoin === "BNB") {
+          feeTransfer = web3.utils.fromWei(String(21000 * wei), "gwei");
+        } else {
+          feeTransfer = web3.utils.fromWei(String(55000 * wei), "gwei");
+        }
+      }
+      const feeGas = web3.utils.fromWei(
+        String(Number(priceRoute.gasCost) * wei),
+        "gwei"
+      );
+
+      const srcFee = String(Number(feeTransfer) + Number(feeGas));
+
+      let feeDefix = String(Number(srcFee) * porcentFee);
+
+      const dataSwap = {
+        exchange: priceRoute.bestRoute[0].swaps[0].swapExchanges[0].exchange,
+        fromAmount: priceRoute.srcAmount,
+        fromDecimals: fromToken.decimals,
+        toAmount: priceRoute.destAmount,
+        toDecimals: toToken.decimals,
+        fee: srcFee,
+        feeDefix: feeDefix,
+        feeTotal: String(Number(srcFee) + Number(feeDefix)),
+      };
+
+      return { dataSwap, priceRoute };
     } catch (err: any) {
       throw new Error(`Failed to send transfer, ${err.message}`);
     }

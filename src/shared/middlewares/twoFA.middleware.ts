@@ -32,8 +32,6 @@ export class TwoFAMiddleware {
           .status(404)
           .send({ message: `Invalid data, Error: code2fa.` });
 
-      console.log(code2fa, user.secret);
-
       const auth = await this.twoFAService.checkTwoFA(code2fa, user.secret);
 
       if (!auth) return res.status(401).send({ message: "code 2fa invalid" });
