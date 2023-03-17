@@ -24,6 +24,10 @@ const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
 const ETHERSCAN = process.env.ETHERSCAN;
 const WEB_BSC = process.env.WEB_BSC;
 const web3 = new web3_1.default(new web3_1.default.providers.HttpProvider(WEB_BSC || ""));
+const paraSwap = (0, sdk_1.constructSimpleSDK)({
+    chainId: Number(process.env.PARASWAP_BNB),
+    axios: axios_1.default,
+});
 const dataToken = {
     decimals: 18,
     contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
@@ -164,10 +168,6 @@ class BinanceService {
     previewSwap(fromCoin, toCoin, amount, blockchain, address) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const paraSwap = (0, sdk_1.constructSimpleSDK)({
-                    chainId: Number(process.env.PARASWAP_BNB),
-                    axios: axios_1.default,
-                });
                 let fromToken = yield utils_shared_1.UtilsShared.getTokenContract(fromCoin, blockchain);
                 let toToken = yield utils_shared_1.UtilsShared.getTokenContract(toCoin, blockchain);
                 if (!fromToken) {
@@ -214,6 +214,32 @@ class BinanceService {
             }
             catch (err) {
                 throw new Error(`Failed to send transfer, ${err.message}`);
+            }
+        });
+    }
+    sendSwap(priceRoute, privateKey, address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const signer = web3.eth.accounts.privateKeyToAccount(privateKey);
+                const txParams = yield paraSwap.swap.buildTx({
+                    srcToken: priceRoute.srcToken,
+                    destToken: priceRoute.destToken,
+                    srcAmount: priceRoute.srcAmount,
+                    destAmount: priceRoute.destAmount,
+                    priceRoute: priceRoute,
+                    userAddress: address,
+                });
+                const txSigned = yield signer.signTransaction(txParams);
+                if (!txSigned.rawTransaction)
+                    throw new Error(`Failed to sign swap.`);
+                const result = yield web3.eth.sendSignedTransaction(txSigned.rawTransaction);
+                const transactionHash = result.transactionHash;
+                if (!transactionHash)
+                    throw new Error(`Failed to send swap, transaction Hash.`);
+                return { transactionHash, srcAmount: priceRoute.srcAmount };
+            }
+            catch (err) {
+                throw new Error(`Failed to send swap, ${err.message}`);
             }
         });
     }

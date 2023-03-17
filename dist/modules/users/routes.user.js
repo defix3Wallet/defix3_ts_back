@@ -1,11 +1,16 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RoutesUser = void 0;
 const shared_middleware_1 = require("../../shared/middlewares/shared.middleware");
+const multer_1 = __importDefault(require("../../config/multer"));
 class RoutesUser {
     constructor(router, controller) {
         this.controller = controller;
         this.middleware = new shared_middleware_1.SharedMiddleware();
+        this.multerConfig = new multer_1.default();
         this.configureRoutes(router);
     }
     configureRoutes(router) {
@@ -89,7 +94,7 @@ class RoutesUser {
          * Post track
          * @swagger
          * /update-user/:
-         *    post:
+         *    patch:
          *      tags:
          *        - User
          *      summary: Actualizar data del usuario.
@@ -113,7 +118,7 @@ class RoutesUser {
          *        '500':
          *          description: Internal server error.
          */
-        router.put("/update-user/", this.middleware.defixIdValid, this.controller.updateUser);
+        router.patch("/update-user/", this.multerConfig.upload().single("avatar"), this.controller.updateUser);
     }
 }
 exports.RoutesUser = RoutesUser;

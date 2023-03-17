@@ -18,6 +18,11 @@ const WEB_BSC = process.env.WEB_BSC;
 
 const web3 = new Web3(new Web3.providers.HttpProvider(WEB_BSC || ""));
 
+const paraSwap = constructSimpleSDK({
+  chainId: Number(process.env.PARASWAP_BNB),
+  axios,
+});
+
 const dataToken = {
   decimals: 18,
   contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
@@ -205,11 +210,6 @@ export class BinanceService implements BlockchainService {
     address: string
   ): Promise<any> {
     try {
-      const paraSwap = constructSimpleSDK({
-        chainId: Number(process.env.PARASWAP_BNB),
-        axios,
-      });
-
       let fromToken: any = await UtilsShared.getTokenContract(
         fromCoin,
         blockchain
@@ -259,12 +259,19 @@ export class BinanceService implements BlockchainService {
 
       let feeDefix = String(Number(srcFee) * porcentFee);
 
+      const swapRate = String(
+        Number(priceRoute.srcAmount) /
+          Math.pow(10, fromToken.decimals) /
+          (Number(priceRoute.destAmount) / Math.pow(10, toToken.decimals))
+      );
+
       const dataSwap = {
         exchange: priceRoute.bestRoute[0].swaps[0].swapExchanges[0].exchange,
         fromAmount: priceRoute.srcAmount,
         fromDecimals: fromToken.decimals,
         toAmount: priceRoute.destAmount,
         toDecimals: toToken.decimals,
+        swapRate,
         fee: srcFee,
         feeDefix: feeDefix,
         feeTotal: String(Number(srcFee) + Number(feeDefix)),
@@ -273,6 +280,42 @@ export class BinanceService implements BlockchainService {
       return { dataSwap, priceRoute };
     } catch (err: any) {
       throw new Error(`Failed to send transfer, ${err.message}`);
+    }
+  }
+
+  async sendSwap(
+    priceRoute: any,
+    privateKey: string,
+    address: string
+  ): Promise<any> {
+    try {
+      const signer = web3.eth.accounts.privateKeyToAccount(privateKey);
+
+      const txParams = await paraSwap.swap.buildTx({
+        srcToken: priceRoute.srcToken,
+        destToken: priceRoute.destToken,
+        srcAmount: priceRoute.srcAmount,
+        destAmount: priceRoute.destAmount,
+        priceRoute: priceRoute,
+        userAddress: address,
+      });
+
+      const txSigned = await signer.signTransaction(txParams);
+
+      if (!txSigned.rawTransaction) throw new Error(`Failed to sign swap.`);
+
+      const result = await web3.eth.sendSignedTransaction(
+        txSigned.rawTransaction
+      );
+
+      const transactionHash = result.transactionHash;
+
+      if (!transactionHash)
+        throw new Error(`Failed to send swap, transaction Hash.`);
+
+      return { transactionHash, srcAmount: priceRoute.srcAmount };
+    } catch (err: any) {
+      throw new Error(`Failed to send swap, ${err.message}`);
     }
   }
 }

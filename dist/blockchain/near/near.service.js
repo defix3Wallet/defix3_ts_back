@@ -18,6 +18,8 @@ const axios_1 = __importDefault(require("axios"));
 const nearSEED = require("near-seed-phrase");
 const bn_js_1 = __importDefault(require("bn.js"));
 const ref_sdk_1 = require("@ref-finance/ref-sdk");
+const transaction_1 = require("near-api-js/lib/transaction");
+const near_utils_1 = require("./near.utils");
 const utils_shared_1 = require("../../shared/utils/utils.shared");
 const NETWORK = process.env.NETWORK || "testnet";
 const ETHERSCAN = process.env.ETHERSCAN;
@@ -79,7 +81,7 @@ class NearService {
     isAddress(address) {
         return __awaiter(this, void 0, void 0, function* () {
             const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
-            const near = new near_api_js_1.Near(utils_shared_1.UtilsShared.ConfigNEAR(keyStore));
+            const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
             const account = new near_api_js_1.Account(near.connection, address);
             const is_address = yield account
                 .state()
@@ -97,7 +99,7 @@ class NearService {
             try {
                 let balanceTotal = 0;
                 const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
-                const near = new near_api_js_1.Near(utils_shared_1.UtilsShared.ConfigNEAR(keyStore));
+                const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
                 const account = new near_api_js_1.Account(near.connection, address);
                 const balanceAccount = yield account.state();
                 const valueStorage = Math.pow(10, 19);
@@ -119,7 +121,7 @@ class NearService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
-                const near = new near_api_js_1.Near(utils_shared_1.UtilsShared.ConfigNEAR(keyStore));
+                const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
                 const account = new near_api_js_1.Account(near.connection, address);
                 const balance = yield account.viewFunction({
                     contractId: srcContract,
@@ -144,7 +146,7 @@ class NearService {
                 const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
                 const keyPair = near_api_js_1.KeyPair.fromString(privateKey);
                 keyStore.setKey(NETWORK, fromAddress, keyPair);
-                const near = new near_api_js_1.Near(utils_shared_1.UtilsShared.ConfigNEAR(keyStore));
+                const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
                 const account = new near_api_js_1.Account(near.connection, fromAddress);
                 const amountInYocto = near_api_js_1.utils.format.parseNearAmount(String(amount));
                 if (!amountInYocto)
@@ -222,6 +224,70 @@ class NearService {
             }
             catch (error) {
                 throw new Error(`Feiled to get preview swap., ${error.message}`);
+            }
+        });
+    }
+    sendSwap(priceRoute, privateKey, address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const transaction = priceRoute.find((element) => element.functionCalls[0].methodName === "ft_transfer_call");
+                if (!transaction)
+                    throw new Error(`Failed to create tx.`);
+                const transfer = transaction.functionCalls[0].args;
+                const data = JSON.parse(transfer.msg);
+                const tokensMetadata = yield (0, ref_sdk_1.ftGetTokensMetadata)([
+                    data.actions[0].token_in,
+                    data.actions[0].token_out,
+                ]);
+                const tokenIn = tokensMetadata[data.actions[0].token_in];
+                const tokenOut = tokensMetadata[data.actions[0].token_out];
+                const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
+                const keyPair = near_api_js_1.KeyPair.fromString(privateKey);
+                keyStore.setKey(process.env.NEAR_ENV, address, keyPair);
+                const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
+                const account = new near_api_js_1.Account(near.connection, address);
+                let nearTransactions = [];
+                if (data.actions[0].token_in.includes("wrap.")) {
+                    const trx = yield near_utils_1.NearUtils.createTransaction(data.actions[0].token_in, [
+                        yield (0, transaction_1.functionCall)("near_deposit", {}, new bn_js_1.default("300000000000000"), new bn_js_1.default(data.actions[0].amount_in)),
+                    ], address, near);
+                    nearTransactions.push(trx);
+                }
+                const trxs = yield Promise.all(priceRoute.map((tx) => __awaiter(this, void 0, void 0, function* () {
+                    return yield near_utils_1.NearUtils.createTransaction(tx.receiverId, tx.functionCalls.map((fc) => {
+                        return (0, transaction_1.functionCall)(fc.methodName, fc.args, fc.gas, new bn_js_1.default(String(near_api_js_1.utils.format.parseNearAmount(fc.amount))));
+                    }), address, near);
+                })));
+                nearTransactions = nearTransactions.concat(trxs);
+                if (data.actions[0].token_out.includes("wrap.")) {
+                    const trx = yield near_utils_1.NearUtils.createTransaction(data.actions[0].token_out, [
+                        yield (0, transaction_1.functionCall)("near_withdraw", { amount: data.actions[0].min_amount_out }, new bn_js_1.default("300000000000000"), new bn_js_1.default("1")),
+                    ], address, near);
+                    nearTransactions.push(trx);
+                }
+                let resultSwap;
+                for (let trx of nearTransactions) {
+                    const result = yield account.signAndSendTransaction(trx);
+                    console.log(result);
+                    if (trx.actions[0].functionCall.methodName === "ft_transfer_call") {
+                        resultSwap = result;
+                    }
+                }
+                if (!resultSwap.transaction.hash)
+                    return false;
+                const transactionHash = resultSwap.transaction.hash;
+                if (!transactionHash)
+                    return false;
+                const srcAmount = String(Number(data.actions[0].amount_in) / Math.pow(10, tokenIn.decimals));
+                const destAmount = String(Number(data.actions[0].amount_out) / Math.pow(10, tokenOut.decimals));
+                return {
+                    transactionHash,
+                    srcAmount,
+                    destAmount,
+                };
+            }
+            catch (err) {
+                throw new Error(`Failed to send swap, ${err.message}`);
             }
         });
     }

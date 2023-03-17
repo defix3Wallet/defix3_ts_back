@@ -77,6 +77,27 @@ class WalletService {
                 throw new Error(`Failed to import wallet: ${err}`);
             }
         });
+        this.exportKeystoreFile = (privateKey) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const credentials = [];
+                for (const service of Object.values(blockchain_1.blockchainService)) {
+                    const credential = yield service.fromPrivateKey(privateKey);
+                    if (credential) {
+                        credentials.push(credential);
+                    }
+                }
+                if (credentials.length === 0)
+                    throw new Error(`Failed private key`);
+                const wallet = {
+                    defixId: credentials[0].address,
+                    credentials: credentials,
+                };
+                return wallet;
+            }
+            catch (err) {
+                throw new Error(`Failed to import wallet: ${err}`);
+            }
+        });
         this.validateAddress = (address, coin) => __awaiter(this, void 0, void 0, function* () {
             try {
                 if (Object.keys(blockchain_1.blockchainService).find((key) => key === coin.toLowerCase())) {

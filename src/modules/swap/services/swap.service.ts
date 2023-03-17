@@ -33,4 +33,44 @@ export class SwapService extends TransactionHistoryService {
       throw new Error(`Failed to get preview swap, ${err}`);
     }
   };
+
+  public sendSwap = async (
+    defixId: string,
+    fromCoin: string,
+    toCoin: string,
+    priceRoute: any,
+    privateKey: string,
+    blockchain: string,
+    address: string
+  ) => {
+    try {
+      if (!Object.keys(blockchainService).includes(blockchain.toLowerCase())) {
+        throw new Error(`Invalid blockchain.`);
+      }
+
+      const swapResult = await blockchainService[
+        blockchain.toLowerCase() as keyof typeof blockchainService
+      ].sendSwap(priceRoute, privateKey, address);
+
+      if (!swapResult) throw new Error(`Transaction hash.`);
+
+      const coin = fromCoin + "/" + toCoin;
+
+      const transactionHistory = await this.createTransactionHistory({
+        fromDefix: defixId,
+        toDefix: defixId,
+        fromAddress: address,
+        toAddress: address,
+        coin,
+        blockchain,
+        amount: swapResult.srcAmount,
+        hash: swapResult.trasactionHash,
+        typeTxn: "SWAP",
+      });
+
+      return transactionHistory;
+    } catch (err) {
+      throw new Error(`Failed to get preview swap, ${err}`);
+    }
+  };
 }

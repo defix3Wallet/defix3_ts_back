@@ -30,6 +30,32 @@ class SwapService extends transactionHistory_service_1.TransactionHistoryService
                 throw new Error(`Failed to get preview swap, ${err}`);
             }
         });
+        this.sendSwap = (defixId, fromCoin, toCoin, priceRoute, privateKey, blockchain, address) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!Object.keys(blockchain_1.blockchainService).includes(blockchain.toLowerCase())) {
+                    throw new Error(`Invalid blockchain.`);
+                }
+                const swapResult = yield blockchain_1.blockchainService[blockchain.toLowerCase()].sendSwap(priceRoute, privateKey, address);
+                if (!swapResult)
+                    throw new Error(`Transaction hash.`);
+                const coin = fromCoin + "/" + toCoin;
+                const transactionHistory = yield this.createTransactionHistory({
+                    fromDefix: defixId,
+                    toDefix: defixId,
+                    fromAddress: address,
+                    toAddress: address,
+                    coin,
+                    blockchain,
+                    amount: swapResult.srcAmount,
+                    hash: swapResult.trasactionHash,
+                    typeTxn: "SWAP",
+                });
+                return transactionHistory;
+            }
+            catch (err) {
+                throw new Error(`Failed to get preview swap, ${err}`);
+            }
+        });
     }
 }
 exports.SwapService = SwapService;

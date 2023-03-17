@@ -33,6 +33,7 @@ class SharedMiddleware {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { defixId } = req.body;
+                console.log(defixId);
                 if (!defixId || !defixId.includes(".defix3") || defixId.includes(" "))
                     return res.status(400).send({ message: "Error DefixId." });
                 const user = yield user_entity_1.UserEntity.findOneBy({ defixId: defixId });

@@ -20,4 +20,10 @@ export class FrequentEntity extends BaseEntity {
     nullable: true,
   })
   frequentUser!: string;
+
+  @Column({
+    name: "type_transaction",
+    nullable: true,
+  })
+  typeTxn!: string;
 }

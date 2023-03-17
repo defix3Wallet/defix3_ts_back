@@ -31,4 +31,5 @@ export interface BlockchainService {
     blockchain: string,
     address: string | undefined
   ): Promise<any>;
+  sendSwap(priceRoute: any, privateKey: string, address: string): Promise<any>;
 }

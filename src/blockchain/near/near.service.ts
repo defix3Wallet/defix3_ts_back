@@ -28,6 +28,7 @@ import {
 } from "near-api-js/lib/transaction";
 import { PublicKey } from "near-api-js/lib/utils";
 import e from "express";
+import { NearUtils } from "./near.utils";
 import { UtilsShared } from "../../shared/utils/utils.shared";
 
 const NETWORK = process.env.NETWORK || "testnet";
@@ -98,7 +99,7 @@ export class NearService implements BlockchainService {
   }
   async isAddress(address: string): Promise<boolean> {
     const keyStore = new keyStores.InMemoryKeyStore();
-    const near = new Near(UtilsShared.ConfigNEAR(keyStore));
+    const near = new Near(NearUtils.ConfigNEAR(keyStore));
     const account = new Account(near.connection, address);
     const is_address = await account
       .state()
@@ -115,7 +116,7 @@ export class NearService implements BlockchainService {
       let balanceTotal = 0;
 
       const keyStore = new keyStores.InMemoryKeyStore();
-      const near = new Near(UtilsShared.ConfigNEAR(keyStore));
+      const near = new Near(NearUtils.ConfigNEAR(keyStore));
 
       const account = new Account(near.connection, address);
 
@@ -141,7 +142,7 @@ export class NearService implements BlockchainService {
   ): Promise<number> {
     try {
       const keyStore = new keyStores.InMemoryKeyStore();
-      const near = new Near(UtilsShared.ConfigNEAR(keyStore));
+      const near = new Near(NearUtils.ConfigNEAR(keyStore));
 
       const account = new Account(near.connection, address);
 
@@ -179,7 +180,7 @@ export class NearService implements BlockchainService {
       const keyPair = KeyPair.fromString(privateKey);
       keyStore.setKey(NETWORK, fromAddress, keyPair);
 
-      const near = new Near(UtilsShared.ConfigNEAR(keyStore));
+      const near = new Near(NearUtils.ConfigNEAR(keyStore));
 
       const account = new Account(near.connection, fromAddress);
 
@@ -282,12 +283,20 @@ export class NearService implements BlockchainService {
 
       let feeDefix = String(Number(amount) * porcentFee);
 
+      const swapRate = String(
+        Number(data.actions[0].amount_in) /
+          Math.pow(10, Number(tokensMetadata[tokenIn].decimals)) /
+          (Number(data.actions[0].min_amount_out) /
+            Math.pow(10, Number(tokensMetadata[tokenOut].decimals)))
+      );
+
       const dataSwap = {
         exchange: "Ref Finance" + data.actions[0].pool_id,
         fromAmount: data.actions[0].amount_in,
         fromDecimals: tokensMetadata[tokenIn].decimals,
         toAmount: data.actions[0].min_amount_out,
         toDecimals: tokensMetadata[tokenOut].decimals,
+        swapRate,
         fee: String(porcentFee),
         feeDefix: feeDefix,
         feeTotal: String(Number(feeDefix)),
@@ -296,6 +305,128 @@ export class NearService implements BlockchainService {
       return { dataSwap, priceRoute: transactionsRef };
     } catch (error: any) {
       throw new Error(`Feiled to get preview swap., ${error.message}`);
+    }
+  }
+
+  async sendSwap(
+    priceRoute: any,
+    privateKey: string,
+    address: string
+  ): Promise<any> {
+    try {
+      const transaction = priceRoute.find(
+        (element: any) =>
+          element.functionCalls[0].methodName === "ft_transfer_call"
+      );
+
+      if (!transaction) throw new Error(`Failed to create tx.`);
+
+      const transfer: any = transaction.functionCalls[0].args;
+      const data = JSON.parse(transfer.msg);
+
+      const tokensMetadata = await ftGetTokensMetadata([
+        data.actions[0].token_in,
+        data.actions[0].token_out,
+      ]);
+
+      const tokenIn = tokensMetadata[data.actions[0].token_in];
+      const tokenOut = tokensMetadata[data.actions[0].token_out];
+
+      const keyStore = new keyStores.InMemoryKeyStore();
+
+      const keyPair = KeyPair.fromString(privateKey);
+      keyStore.setKey(process.env.NEAR_ENV!, address, keyPair);
+      const near = new Near(NearUtils.ConfigNEAR(keyStore));
+
+      const account = new Account(near.connection, address);
+
+      let nearTransactions = [];
+
+      if (data.actions[0].token_in.includes("wrap.")) {
+        const trx = await NearUtils.createTransaction(
+          data.actions[0].token_in,
+          [
+            await functionCall(
+              "near_deposit",
+              {},
+              new BN("300000000000000"),
+              new BN(data.actions[0].amount_in)
+            ),
+          ],
+          address,
+          near
+        );
+
+        nearTransactions.push(trx);
+      }
+
+      const trxs = await Promise.all(
+        priceRoute.map(async (tx: any) => {
+          return await NearUtils.createTransaction(
+            tx.receiverId,
+            tx.functionCalls.map((fc: any) => {
+              return functionCall(
+                fc.methodName,
+                fc.args,
+                fc.gas,
+                new BN(String(utils.format.parseNearAmount(fc.amount)))
+              );
+            }),
+            address,
+            near
+          );
+        })
+      );
+
+      nearTransactions = nearTransactions.concat(trxs);
+
+      if (data.actions[0].token_out.includes("wrap.")) {
+        const trx = await NearUtils.createTransaction(
+          data.actions[0].token_out,
+          [
+            await functionCall(
+              "near_withdraw",
+              { amount: data.actions[0].min_amount_out },
+              new BN("300000000000000"),
+              new BN("1")
+            ),
+          ],
+          address,
+          near
+        );
+
+        nearTransactions.push(trx);
+      }
+      let resultSwap: any;
+      for (let trx of nearTransactions) {
+        const result = await account.signAndSendTransaction(trx);
+        console.log(result);
+
+        if (trx.actions[0].functionCall.methodName === "ft_transfer_call") {
+          resultSwap = result;
+        }
+      }
+
+      if (!resultSwap.transaction.hash) return false;
+
+      const transactionHash = resultSwap.transaction.hash;
+
+      if (!transactionHash) return false;
+
+      const srcAmount = String(
+        Number(data.actions[0].amount_in) / Math.pow(10, tokenIn.decimals)
+      );
+      const destAmount = String(
+        Number(data.actions[0].amount_out) / Math.pow(10, tokenOut.decimals)
+      );
+
+      return {
+        transactionHash,
+        srcAmount,
+        destAmount,
+      };
+    } catch (err: any) {
+      throw new Error(`Failed to send swap, ${err.message}`);
     }
   }
 }
