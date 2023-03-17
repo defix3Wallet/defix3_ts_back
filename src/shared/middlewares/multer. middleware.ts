@@ -5,11 +5,7 @@ import multer from "multer";
 export class MulterMiddleware {
   public upload!: multer.Multer;
 
-  constructor() {
-    this.multerSingle();
-  }
-
-  public multerSingle = (req: Request, res: Response, next: NextFunction) => {
+  multerSingle(req: Request, res: Response, next: NextFunction) {
     try {
       const storage = multer.diskStorage({
         destination: "./uploads",
@@ -18,15 +14,17 @@ export class MulterMiddleware {
           cb(null, fileName);
         },
       });
-      this.upload = multer({ storage });
+      const upload = multer({ storage });
 
-      // upload.single("avatar");
+      upload.single("avatar");
 
       next();
     } catch (err) {
       res.status(500).send({ message: "Internal server error." });
     }
-  };
+  }
+
+  
 
   private generateFileName = (originalFileName: string) => {
     const timestamp = new Date().getTime().toString();

@@ -46,6 +46,7 @@ export class UserService {
         "user.flagFiat",
         "user.name",
         "user.lastname",
+        "user.avatar",
         "user.legalDocument",
         "user.typeDocument",
         "user.twofa",

@@ -1,17 +1,16 @@
 import { Express, Router } from "express";
 import { UserController } from "./controllers/user.controller";
 import { SharedMiddleware } from "../../shared/middlewares/shared.middleware";
-import multer from "multer";
-import { MulterMiddleware } from "../../shared/middlewares/multer. middleware";
+import MulterConfig from "../../config/multer";
 export class RoutesUser {
   private controller: UserController;
   private middleware: SharedMiddleware;
-  private middlewareMulter: MulterMiddleware;
+  private multerConfig: MulterConfig;
 
   constructor(router: Router, controller: UserController) {
     this.controller = controller;
     this.middleware = new SharedMiddleware();
-    this.middlewareMulter = new MulterMiddleware();
+    this.multerConfig = new MulterConfig();
     this.configureRoutes(router);
   }
 
@@ -133,7 +132,7 @@ export class RoutesUser {
      */
     router.patch(
       "/update-user/",
-      this.middlewareMulter.multerSingle,
+      this.multerConfig.upload().single("avatar"),
       this.controller.updateUser
     );
   }
