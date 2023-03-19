@@ -47,6 +47,10 @@ const swaggerDefinition: OAS3Definition = {
       description: "EndPoints asociados a las transferencias.",
     },
     {
+      name: "Withdraw",
+      description: "EndPoints asociados a los retiros.",
+    },
+    {
       name: "Swap",
       description: "EndPoints asociados a al Swap. Solo ETH y BSC",
     },

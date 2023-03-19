@@ -87,6 +87,29 @@ export class WalletService {
     }
   };
 
+  public exportKeystoreFile = async (privateKey: string) => {
+    try {
+      const credentials: CredentialInterface[] = [];
+      for (const service of Object.values(blockchainService)) {
+        const credential = await service.fromPrivateKey(privateKey);
+        if (credential) {
+          credentials.push(credential);
+        }
+      }
+
+      if (credentials.length === 0) throw new Error(`Failed private key`);
+
+      const wallet: WalletInterface = {
+        defixId: credentials[0].address,
+        credentials: credentials,
+      };
+
+      return wallet;
+    } catch (err) {
+      throw new Error(`Failed to import wallet: ${err}`);
+    }
+  };
+
   public validateAddress = async (address: string, coin: string) => {
     try {
       if (

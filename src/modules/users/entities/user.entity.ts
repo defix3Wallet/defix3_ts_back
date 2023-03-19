@@ -79,28 +79,34 @@ export class UserEntity extends BaseEntity {
   secret!: string;
 
   @Column({
-    name: "flag_send",
+    name: "flag_news",
     nullable: true,
   })
-  flagSend!: boolean;
+  flagNews!: boolean;
 
   @Column({
-    name: "flag_receive",
+    name: "flag_deposit",
     nullable: true,
   })
-  flagReceive!: boolean;
+  flagDeposit!: boolean;
 
   @Column({
-    name: "flag_dex",
+    name: "flag_sign",
     nullable: true,
   })
-  flagDex!: boolean;
+  flagSign!: boolean;
 
   @Column({
-    name: "flag_fiat",
+    name: "flag_withdrawal",
     nullable: true,
   })
-  flagFiat!: boolean;
+  flagWithdraw!: boolean;
+
+  @Column({
+    name: "flag_evolution",
+    nullable: true,
+  })
+  flagEvolution!: boolean;
 
   @CreateDateColumn({
     name: "created_at",

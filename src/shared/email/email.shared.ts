@@ -167,9 +167,9 @@ export class MailShared {
 
       if (!user) return;
 
-      if (flag === "SEND" && user.flagSend) {
+      if (flag === "SEND" && user.flagSign) {
         return user.email;
-      } else if (flag === "RECEIVE" && user.flagReceive) {
+      } else if (flag === "RECEIVE" && user.flagEvolution) {
         return user.email;
       }
     } catch (error) {

@@ -206,4 +206,12 @@ export class TronService implements BlockchainService {
   ): Promise<string> {
     throw new Error("Method not implemented.");
   }
+
+  sendSwap(
+    priceRoute: any,
+    privateKey: string,
+    address: string
+  ): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
 }

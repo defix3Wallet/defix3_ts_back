@@ -2,10 +2,9 @@ import { UtilsShared } from "../../../shared/utils/utils.shared";
 import { AddressService } from "../../address/services/address.service";
 import { TransactionHistoryService } from "../../transactionHistory/services/transactionHistory.service";
 import { blockchainService } from "../../../blockchain";
-import { TransactionHistoryEntity } from "../../transactionHistory/entities/transactionHistory.entity";
 import { FrequentService } from "../../frequent/services/frequent.service";
 
-export class TransferService extends TransactionHistoryService {
+export class WithdrawService extends TransactionHistoryService {
   private addressService: AddressService;
   private frequentService: FrequentService;
 
@@ -15,19 +14,16 @@ export class TransferService extends TransactionHistoryService {
     this.frequentService = new FrequentService();
   }
 
-  public sendTransfer = async (
+  public sendWithdraw = async (
     fromDefix: string,
     privateKey: string,
-    toDefix: string,
+    toAddress: string,
     coin: string,
     amount: number,
     blockchain: string
   ) => {
     try {
-      let transactionHash: string | undefined,
-        fromAddress,
-        toAddress,
-        tipoEnvio;
+      let transactionHash: string | undefined, fromAddress;
 
       if (fromDefix.includes(".defix3")) {
         fromAddress = (
@@ -35,16 +31,6 @@ export class TransferService extends TransactionHistoryService {
         )?.address;
       } else {
         fromAddress = fromDefix;
-      }
-
-      if (toDefix.includes(".defix3")) {
-        toAddress = (
-          await this.addressService.getAddressByDefixId(toDefix, blockchain)
-        )?.address;
-        tipoEnvio = "user";
-      } else {
-        toAddress = toDefix;
-        tipoEnvio = "wallet";
       }
 
       if (!fromAddress || !toAddress) throw new Error(`Invalid data.`);
@@ -81,28 +67,22 @@ export class TransferService extends TransactionHistoryService {
 
       const transaction = await this.createTransactionHistory({
         fromDefix,
-        toDefix,
+        toDefix: toAddress,
         fromAddress,
         toAddress,
         blockchain,
         coin,
         amount,
         hash: transactionHash,
-        typeTxn: "TRANSFER",
+        typeTxn: "WITHDRAW",
       });
 
-      await this.frequentService.createFrequent(fromDefix, toDefix, "TRANSFER");
+      await this.frequentService.createFrequent(
+        fromDefix,
+        toAddress,
+        "WITHDRAW"
+      );
       return transaction;
-      // const resSend = await getEmailFlagFN(fromDefix, "SEND");
-      // const resReceive = await getEmailFlagFN(toDefix, "RECEIVE");
-      // const item = {
-      //   monto: amount,
-      //   moneda: coin,
-      //   receptor: toDefix,
-      //   emisor: fromDefix,
-      //   tipoEnvio: tipoEnvio,
-      // };
-      // EnvioCorreo(resSend, resReceive, "envio", item);
     } catch (err) {
       throw new Error(`Failed to send transfer, ${err}`);
     }

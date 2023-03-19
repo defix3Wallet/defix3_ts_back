@@ -63,7 +63,7 @@ class TransferService extends transactionHistory_service_1.TransactionHistorySer
                     hash: transactionHash,
                     typeTxn: "TRANSFER",
                 });
-                yield this.frequentService.createFrequent(fromDefix, toDefix);
+                yield this.frequentService.createFrequent(fromDefix, toDefix, "TRANSFER");
                 return transaction;
                 // const resSend = await getEmailFlagFN(fromDefix, "SEND");
                 // const resReceive = await getEmailFlagFN(toDefix, "RECEIVE");

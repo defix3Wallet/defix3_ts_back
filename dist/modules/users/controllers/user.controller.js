@@ -49,8 +49,12 @@ class UserController {
         this.updateUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { defixId } = req.body;
-                const result = yield this.userService.updateUser(defixId, req.body);
-                res.send(result);
+                console.log(defixId);
+                if (req.file) {
+                    req.body.avatar = req.file.filename;
+                }
+                const updatedUser = yield this.userService.updateUser(defixId, req.body);
+                res.send(updatedUser);
             }
             catch (error) {
                 return res.status(500).send({ message: error.message });

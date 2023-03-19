@@ -54,6 +54,12 @@ __decorate([
 ], UserEntity.prototype, "lastname", void 0);
 __decorate([
     (0, typeorm_1.Column)({
+        nullable: true,
+    }),
+    __metadata("design:type", String)
+], UserEntity.prototype, "avatar", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
         name: "close_sessions",
         nullable: true,
         default: false,
@@ -90,32 +96,39 @@ __decorate([
 ], UserEntity.prototype, "secret", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        name: "flag_send",
+        name: "flag_news",
         nullable: true,
     }),
     __metadata("design:type", Boolean)
-], UserEntity.prototype, "flagSend", void 0);
+], UserEntity.prototype, "flagNews", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        name: "flag_receive",
+        name: "flag_deposit",
         nullable: true,
     }),
     __metadata("design:type", Boolean)
-], UserEntity.prototype, "flagReceive", void 0);
+], UserEntity.prototype, "flagDeposit", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        name: "flag_dex",
+        name: "flag_sign",
         nullable: true,
     }),
     __metadata("design:type", Boolean)
-], UserEntity.prototype, "flagDex", void 0);
+], UserEntity.prototype, "flagSign", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        name: "flag_fiat",
+        name: "flag_withdrawal",
         nullable: true,
     }),
     __metadata("design:type", Boolean)
-], UserEntity.prototype, "flagFiat", void 0);
+], UserEntity.prototype, "flagWithdraw", void 0);
+__decorate([
+    (0, typeorm_1.Column)({
+        name: "flag_evolution",
+        nullable: true,
+    }),
+    __metadata("design:type", Boolean)
+], UserEntity.prototype, "flagEvolution", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({
         name: "created_at",

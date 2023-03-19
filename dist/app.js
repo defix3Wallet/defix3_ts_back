@@ -17,11 +17,12 @@ require("reflect-metadata");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const morgan_1 = __importDefault(require("morgan"));
+const path_1 = __importDefault(require("path"));
+const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
+const swagger_1 = __importDefault(require("./config/swagger"));
 const init_1 = require("./modules/users/init");
 const init_2 = require("./modules/wallets/init");
 const init_3 = require("./modules/address/init");
-const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-const swagger_1 = __importDefault(require("./config/swagger"));
 const init_4 = require("./modules/balance/init");
 const init_5 = require("./modules/subscription/init");
 const init_6 = require("./modules/general/init");
@@ -42,6 +43,7 @@ class App {
             this.app.use((0, cors_1.default)());
             this.app.use(express_1.default.json());
             this.app.use("/api/v2", this.router);
+            this.app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "uploads")));
             this.app.use("/swagger", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.default));
         });
     }
