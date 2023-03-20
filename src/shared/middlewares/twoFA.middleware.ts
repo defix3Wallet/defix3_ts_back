@@ -25,7 +25,7 @@ export class TwoFAMiddleware {
 
       if (!user) return res.status(404).send({ message: `User not exists.` });
 
-      if (!user.twofa) return next;
+      if (!user.twofa) return next();
 
       if (!code2fa)
         return res

@@ -79,6 +79,12 @@ export class UserEntity extends BaseEntity {
   secret!: string;
 
   @Column({
+    nullable: true,
+    type: "integer",
+  })
+  passcode!: string;
+
+  @Column({
     name: "flag_news",
     nullable: true,
   })

@@ -210,12 +210,20 @@ class NearService {
                     porcentFee = comision.swap / 100;
                 }
                 let feeDefix = String(Number(amount) * porcentFee);
+                const firstNum = Number(data.actions[0].amount_in) /
+                    Math.pow(10, Number(tokensMetadata[tokenIn].decimals));
+                const secondNum = Number(data.actions[0].min_amount_out) /
+                    Math.pow(10, Number(tokensMetadata[tokenOut].decimals));
+                const swapRate = String(secondNum / firstNum);
                 const dataSwap = {
                     exchange: "Ref Finance" + data.actions[0].pool_id,
                     fromAmount: data.actions[0].amount_in,
                     fromDecimals: tokensMetadata[tokenIn].decimals,
                     toAmount: data.actions[0].min_amount_out,
                     toDecimals: tokensMetadata[tokenOut].decimals,
+                    block: null,
+                    swapRate,
+                    contract: tokenIn,
                     fee: String(porcentFee),
                     feeDefix: feeDefix,
                     feeTotal: String(Number(feeDefix)),
@@ -265,6 +273,7 @@ class NearService {
                     ], address, near);
                     nearTransactions.push(trx);
                 }
+                console.log("AQUI VA");
                 let resultSwap;
                 for (let trx of nearTransactions) {
                     const result = yield account.signAndSendTransaction(trx);
@@ -276,14 +285,16 @@ class NearService {
                 if (!resultSwap.transaction.hash)
                     return false;
                 const transactionHash = resultSwap.transaction.hash;
+                const block = resultSwap.transaction_outcome.block_hash;
                 if (!transactionHash)
                     return false;
                 const srcAmount = String(Number(data.actions[0].amount_in) / Math.pow(10, tokenIn.decimals));
-                const destAmount = String(Number(data.actions[0].amount_out) / Math.pow(10, tokenOut.decimals));
+                const destAmount = String(Number(data.actions[0].min_amount_out) / Math.pow(10, tokenOut.decimals));
                 return {
                     transactionHash,
                     srcAmount,
                     destAmount,
+                    block,
                 };
             }
             catch (err) {

@@ -250,12 +250,18 @@ class EthereumService {
                 const feeGas = web3.utils.fromWei(String(Number(priceRoute.gasCost) * wei), "gwei");
                 const srcFee = String(Number(feeTransfer) + Number(feeGas));
                 let feeDefix = String(Number(srcFee) * porcentFee);
+                const swapRate = String(Number(priceRoute.destAmount) /
+                    Math.pow(10, toToken.decimals) /
+                    (Number(priceRoute.srcAmount) / Math.pow(10, fromToken.decimals)));
                 const dataSwap = {
                     exchange: priceRoute.bestRoute[0].swaps[0].swapExchanges[0].exchange,
                     fromAmount: priceRoute.srcAmount,
                     fromDecimals: fromToken.decimals,
                     toAmount: priceRoute.destAmount,
                     toDecimals: toToken.decimals,
+                    block: priceRoute.blockNumber,
+                    swapRate,
+                    contract: priceRoute.contractAddress,
                     fee: srcFee,
                     feeDefix: feeDefix,
                     feeTotal: String(Number(srcFee) + Number(feeDefix)),
@@ -286,7 +292,14 @@ class EthereumService {
                 const transactionHash = result.transactionHash;
                 if (!transactionHash)
                     throw new Error(`Failed to send swap, transaction Hash.`);
-                return { transactionHash, srcAmount: priceRoute.srcAmount };
+                const srcAmount = String(Number(priceRoute.srcAmount) / Math.pow(10, priceRoute.srcDecimals));
+                const destAmount = String(Number(priceRoute.destAmount) / Math.pow(10, priceRoute.destDecimals));
+                return {
+                    transactionHash,
+                    srcAmount: srcAmount,
+                    destAmount: destAmount,
+                    block: priceRoute.blockNumber,
+                };
             }
             catch (err) {
                 throw new Error(`Failed to send swap, ${err.message}`);

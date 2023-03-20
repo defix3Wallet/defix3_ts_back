@@ -49,8 +49,8 @@ class UserService {
                 "user.lastname",
                 "user.avatar",
                 "user.legalDocument",
+                "user.passcode",
                 "user.typeDocument",
-                "user.twofa",
                 "user.closeSessions",
             ])
                 .where("user.defixId = :defixId", { defixId: defixId })

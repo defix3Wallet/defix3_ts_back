@@ -283,12 +283,14 @@ export class NearService implements BlockchainService {
 
       let feeDefix = String(Number(amount) * porcentFee);
 
-      const swapRate = String(
+      const firstNum =
         Number(data.actions[0].amount_in) /
-          Math.pow(10, Number(tokensMetadata[tokenIn].decimals)) /
-          (Number(data.actions[0].min_amount_out) /
-            Math.pow(10, Number(tokensMetadata[tokenOut].decimals)))
-      );
+        Math.pow(10, Number(tokensMetadata[tokenIn].decimals));
+      const secondNum =
+        Number(data.actions[0].min_amount_out) /
+        Math.pow(10, Number(tokensMetadata[tokenOut].decimals));
+
+      const swapRate = String(secondNum / firstNum);
 
       const dataSwap = {
         exchange: "Ref Finance" + data.actions[0].pool_id,
@@ -296,7 +298,9 @@ export class NearService implements BlockchainService {
         fromDecimals: tokensMetadata[tokenIn].decimals,
         toAmount: data.actions[0].min_amount_out,
         toDecimals: tokensMetadata[tokenOut].decimals,
+        block: null,
         swapRate,
+        contract: tokenIn,
         fee: String(porcentFee),
         feeDefix: feeDefix,
         feeTotal: String(Number(feeDefix)),
@@ -397,6 +401,7 @@ export class NearService implements BlockchainService {
 
         nearTransactions.push(trx);
       }
+      console.log("AQUI VA");
       let resultSwap: any;
       for (let trx of nearTransactions) {
         const result = await account.signAndSendTransaction(trx);
@@ -410,6 +415,7 @@ export class NearService implements BlockchainService {
       if (!resultSwap.transaction.hash) return false;
 
       const transactionHash = resultSwap.transaction.hash;
+      const block = resultSwap.transaction_outcome.block_hash;
 
       if (!transactionHash) return false;
 
@@ -417,13 +423,14 @@ export class NearService implements BlockchainService {
         Number(data.actions[0].amount_in) / Math.pow(10, tokenIn.decimals)
       );
       const destAmount = String(
-        Number(data.actions[0].amount_out) / Math.pow(10, tokenOut.decimals)
+        Number(data.actions[0].min_amount_out) / Math.pow(10, tokenOut.decimals)
       );
 
       return {
         transactionHash,
         srcAmount,
         destAmount,
+        block,
       };
     } catch (err: any) {
       throw new Error(`Failed to send swap, ${err.message}`);

@@ -47,13 +47,15 @@ class SwapService extends transactionHistory_service_1.TransactionHistoryService
                     coin,
                     blockchain,
                     amount: swapResult.srcAmount,
-                    hash: swapResult.trasactionHash,
+                    hash: swapResult.transactionHash,
                     typeTxn: "SWAP",
                 });
+                transactionHistory.block = swapResult.block;
+                transactionHistory.destAmount = swapResult.destAmount;
                 return transactionHistory;
             }
             catch (err) {
-                throw new Error(`Failed to get preview swap, ${err}`);
+                throw new Error(`Failed to send swap, ${err}`);
             }
         });
     }
