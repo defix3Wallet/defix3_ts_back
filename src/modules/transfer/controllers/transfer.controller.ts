@@ -12,28 +12,22 @@ export class TransferController {
     this.mailService = new MailShared();
   }
 
-  // public getTransferFee = async (req: Request, res: Response) => {
-  //   try {
-  //     const { defixId, toDefix, coin, amount, blockchain } =
-  //       req.body;
+  public getFeeTransfer = async (req: Request, res: Response) => {
+    try {
+      const { coin, blockchain } = req.body;
 
-  //     if (!defixId || !toDefix || !coin || !amount || !blockchain)
-  //       return res.status(400).send({ message: "Invalid data." });
+      if (!coin || !blockchain)
+        return res.status(400).send({ message: "Invalid data." });
 
-  //     const transaction = await this.transferService.sendTransfer(
-  //       defixId,
-  //       privateKey,
-  //       toDefix,
-  //       coin,
-  //       amount,
-  //       blockchain
-  //     );
-
-  //     res.send(transaction);
-  //   } catch (error: any) {
-  //     return res.status(500).send({ message: error.message });
-  //   }
-  // };
+      const previewData = await this.transferService.getFeeTransfer(
+        coin,
+        blockchain
+      );
+      res.send(previewData);
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
+    }
+  };
 
   public sendTransfer = async (req: Request, res: Response) => {
     try {

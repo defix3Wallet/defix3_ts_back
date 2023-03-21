@@ -34,7 +34,7 @@ class Routes {
          *                  hash: {
          *                    type: "string"
          *                  },
-         *                  type: {
+         *                  typeTxn: {
          *                    type: "string"
          *                  },
          *                }

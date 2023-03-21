@@ -214,4 +214,8 @@ export class TronService implements BlockchainService {
   ): Promise<string> {
     throw new Error("Method not implemented.");
   }
+
+  getFeeTransfer(coin: string, blockchain: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
 }

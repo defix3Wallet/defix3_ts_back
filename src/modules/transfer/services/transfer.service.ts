@@ -15,6 +15,26 @@ export class TransferService extends TransactionHistoryService {
     this.frequentService = new FrequentService();
   }
 
+  public getFeeTransfer = async (coin: string, blockchain: string) => {
+    try {
+      if (!Object.keys(blockchainService).includes(blockchain.toLowerCase())) {
+        throw new Error(`Invalid blockchain.`);
+      }
+
+      const feeTransfer = await blockchainService[
+        blockchain.toLowerCase() as keyof typeof blockchainService
+      ].getFeeTransfer(coin, blockchain);
+
+      if (!feeTransfer) {
+        throw new Error(`Internal error fee preview.`);
+      }
+
+      return feeTransfer;
+    } catch (err) {
+      throw new Error(`Failed to get fee transfer, ${err}`);
+    }
+  };
+
   public sendTransfer = async (
     fromDefix: string,
     privateKey: string,

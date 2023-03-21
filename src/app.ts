@@ -16,6 +16,7 @@ import { TransactionHistoryModule } from "./modules/transactionHistory/init";
 import { TransferModule } from "./modules/transfer/init";
 import { FrequentModule } from "./modules/frequent/init";
 import { SwapModule } from "./modules/swap/init";
+import { LimitOrderModule } from "./modules/orderLimit/init";
 
 class App {
   public app: express.Express;
@@ -47,6 +48,7 @@ class App {
     new TransactionHistoryModule(this.router);
     new TransferModule(this.router);
     new SwapModule(this.router);
+    new LimitOrderModule(this.router);
     new FrequentModule(this.router);
   }
 }

@@ -110,6 +110,41 @@ export class BinanceService implements BlockchainService {
     }
   }
 
+  async getFeeTransfer(coin: string, blockchain: string): Promise<any> {
+    try {
+      let comisionAdmin: any = await UtilsShared.getComision(coin);
+
+      const response = await axios.get(
+        "https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=3SU1MAWAPX8X39UD6U8JBGTQ5C67EVVRSM"
+      );
+      const wei = response.data.result.SafeGasPrice;
+
+      if (!wei) throw new Error(`Error getting gas price`);
+
+      const feeMain = {
+        coin,
+        blockchain,
+        fee: "",
+      };
+
+      let gasLimit = 21000;
+      if (coin !== "BNB") {
+        gasLimit = 55000;
+      }
+
+      if (!comisionAdmin.transfer) {
+        feeMain.fee = web3.utils.fromWei(String(gasLimit * wei), "gwei");
+      } else {
+        feeMain.fee = String(
+          Number(web3.utils.fromWei(String(gasLimit * wei), "gwei")) * 2
+        );
+      }
+      return feeMain;
+    } catch (err: any) {
+      throw new Error(`Failed to get fee transfer, ${err.message}`);
+    }
+  }
+
   async sendTransfer(
     fromAddress: string,
     privateKey: string,

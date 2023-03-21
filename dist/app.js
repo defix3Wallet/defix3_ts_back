@@ -30,6 +30,7 @@ const init_7 = require("./modules/transactionHistory/init");
 const init_8 = require("./modules/transfer/init");
 const init_9 = require("./modules/frequent/init");
 const init_10 = require("./modules/swap/init");
+const init_11 = require("./modules/orderLimit/init");
 class App {
     constructor() {
         this.app = (0, express_1.default)();
@@ -57,6 +58,7 @@ class App {
         new init_7.TransactionHistoryModule(this.router);
         new init_8.TransferModule(this.router);
         new init_10.SwapModule(this.router);
+        new init_11.LimitOrderModule(this.router);
         new init_9.FrequentModule(this.router);
     }
 }

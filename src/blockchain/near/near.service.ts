@@ -436,4 +436,7 @@ export class NearService implements BlockchainService {
       throw new Error(`Failed to send swap, ${err.message}`);
     }
   }
+  getFeeTransfer(coin: string, blockchain: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
 }

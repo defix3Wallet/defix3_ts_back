@@ -15,6 +15,38 @@ export class Routes {
   private configureRoutes(router: Router) {
     /**
      * @swagger
+     * /get-fee-transfer/:
+     *    post:
+     *      tags:
+     *        - Transfer
+     *      summary: Obtiene el fee de la transferencia..
+     *      description: Manda campos requeridos para obtener el fee.
+     *      requestBody:
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: "object"
+     *                required: [coin, blockchain]
+     *                properties: {
+     *                  coin: {
+     *                    type: "string"
+     *                  },
+     *                  blockchain: {
+     *                    type: "string"
+     *                  }
+     *                }
+     *      responses:
+     *        '200':
+     *          description: Devuelve el preview de la transfer.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Bad Request.
+     */
+    router.post("/get-fee-transfer/", this.controller.getFeeTransfer);
+
+    /**
+     * @swagger
      * /send-transfer/:
      *    post:
      *      tags:
