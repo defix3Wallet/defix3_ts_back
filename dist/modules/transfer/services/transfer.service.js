@@ -18,6 +18,21 @@ const frequent_service_1 = require("../../frequent/services/frequent.service");
 class TransferService extends transactionHistory_service_1.TransactionHistoryService {
     constructor() {
         super();
+        this.getFeeTransfer = (coin, blockchain, amount, address) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!Object.keys(blockchain_1.blockchainService).includes(blockchain.toLowerCase())) {
+                    throw new Error(`Invalid blockchain.`);
+                }
+                const feeTransfer = yield blockchain_1.blockchainService[blockchain.toLowerCase()].getFeeTransaction(coin, blockchain, "TRANSFER", amount, address);
+                if (!feeTransfer) {
+                    throw new Error(`Internal error fee preview.`);
+                }
+                return feeTransfer;
+            }
+            catch (err) {
+                throw new Error(`Failed to get fee transfer, ${err}`);
+            }
+        });
         this.sendTransfer = (fromDefix, privateKey, toDefix, coin, amount, blockchain) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b;
             try {

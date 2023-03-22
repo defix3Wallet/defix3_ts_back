@@ -110,6 +110,43 @@ class BinanceService {
             }
         });
     }
+    getFeeTransaction(coin, blockchain, typeTxn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let comisionAdmin = yield utils_shared_1.UtilsShared.getComision(coin);
+                const response = yield axios_1.default.get("https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=3SU1MAWAPX8X39UD6U8JBGTQ5C67EVVRSM");
+                const wei = response.data.result.SafeGasPrice;
+                if (!wei)
+                    throw new Error(`Error getting gas price`);
+                const feeMain = {
+                    coin,
+                    blockchain,
+                    fee: "",
+                };
+                let gasLimit = 21000;
+                if (coin !== "BNB") {
+                    gasLimit = 55000;
+                }
+                let comision;
+                if (typeTxn === "TRANSFER") {
+                    comision = comisionAdmin.transfer;
+                }
+                else if (typeTxn === "WITHDRAW") {
+                    comision = comisionAdmin.withdraw;
+                }
+                if (!comision) {
+                    feeMain.fee = web3.utils.fromWei(String(gasLimit * wei), "gwei");
+                }
+                else {
+                    feeMain.fee = String(Number(web3.utils.fromWei(String(gasLimit * wei), "gwei")) * 2);
+                }
+                return feeMain;
+            }
+            catch (err) {
+                throw new Error(`Failed to get fee transaction, ${err.message}`);
+            }
+        });
+    }
     sendTransfer(fromAddress, privateKey, toAddress, amount, coin) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

@@ -15,25 +15,18 @@ const crypto_shared_1 = require("../../../shared/crypto/crypto.shared");
 const email_shared_1 = require("../../../shared/email/email.shared");
 class TransferController {
     constructor() {
-        // public getTransferFee = async (req: Request, res: Response) => {
-        //   try {
-        //     const { defixId, toDefix, coin, amount, blockchain } =
-        //       req.body;
-        //     if (!defixId || !toDefix || !coin || !amount || !blockchain)
-        //       return res.status(400).send({ message: "Invalid data." });
-        //     const transaction = await this.transferService.sendTransfer(
-        //       defixId,
-        //       privateKey,
-        //       toDefix,
-        //       coin,
-        //       amount,
-        //       blockchain
-        //     );
-        //     res.send(transaction);
-        //   } catch (error: any) {
-        //     return res.status(500).send({ message: error.message });
-        //   }
-        // };
+        this.getFeeTransfer = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { coin, blockchain, amount, address } = req.body;
+                if (!coin || !blockchain)
+                    return res.status(400).send({ message: "Invalid data." });
+                const previewData = yield this.transferService.getFeeTransfer(coin, blockchain, amount, address);
+                res.send(previewData);
+            }
+            catch (error) {
+                return res.status(500).send({ message: error.message });
+            }
+        });
         this.sendTransfer = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { defixId, pkEncrypt, toDefix, coin, amount, blockchain } = req.body;

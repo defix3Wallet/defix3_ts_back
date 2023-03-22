@@ -14,6 +14,31 @@ export class WithdrawService extends TransactionHistoryService {
     this.frequentService = new FrequentService();
   }
 
+  public getFeeWithdraw = async (
+    coin: string,
+    blockchain: string,
+    amount: number | undefined,
+    address: string | undefined
+  ) => {
+    try {
+      if (!Object.keys(blockchainService).includes(blockchain.toLowerCase())) {
+        throw new Error(`Invalid blockchain.`);
+      }
+
+      const feeTransfer = await blockchainService[
+        blockchain.toLowerCase() as keyof typeof blockchainService
+      ].getFeeTransaction(coin, blockchain, "WITHDRAW", amount, address);
+
+      if (!feeTransfer) {
+        throw new Error(`Internal error fee preview.`);
+      }
+
+      return feeTransfer;
+    } catch (err) {
+      throw new Error(`Failed to get fee transfer, ${err}`);
+    }
+  };
+
   public sendWithdraw = async (
     fromDefix: string,
     privateKey: string,

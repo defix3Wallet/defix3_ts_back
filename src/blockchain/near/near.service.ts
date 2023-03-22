@@ -160,6 +160,39 @@ export class NearService implements BlockchainService {
     }
   }
 
+  async getFeeTransaction(
+    coin: string,
+    blockchain: string,
+    typeTxn: string
+  ): Promise<any> {
+    try {
+      let comisionAdmin: any = await UtilsShared.getComision(coin);
+
+      const feeMain = {
+        coin,
+        blockchain,
+        fee: "",
+      };
+
+      let comision;
+
+      if (typeTxn === "TRANSFER") {
+        comision = comisionAdmin.transfer;
+      } else if (typeTxn === "WITHDRAW") {
+        comision = comisionAdmin.withdraw;
+      }
+
+      if (!comision) {
+        feeMain.fee = "0";
+      } else {
+        feeMain.fee = "0";
+      }
+      return feeMain;
+    } catch (err: any) {
+      throw new Error(`Failed to get fee transfer, ${err.message}`);
+    }
+  }
+
   async sendTransfer(
     fromAddress: string,
     privateKey: string,
@@ -401,7 +434,7 @@ export class NearService implements BlockchainService {
 
         nearTransactions.push(trx);
       }
-      console.log("AQUI VA");
+
       let resultSwap: any;
       for (let trx of nearTransactions) {
         const result = await account.signAndSendTransaction(trx);
@@ -435,8 +468,5 @@ export class NearService implements BlockchainService {
     } catch (err: any) {
       throw new Error(`Failed to send swap, ${err.message}`);
     }
-  }
-  getFeeTransfer(coin: string, blockchain: string): Promise<any> {
-    throw new Error("Method not implemented.");
   }
 }

@@ -96,3 +96,60 @@ UtilsShared.getIdNear = (mnemonic) => __awaiter(void 0, void 0, void 0, function
     const id = String(split[1]);
     return id;
 });
+UtilsShared.getAddressVault = (coin) => {
+    switch (coin) {
+        case "BTC":
+            return process.env.VAULT_BTC;
+        case "NEAR":
+            return process.env.VAULT_NEAR;
+        case "ETH":
+            return process.env.VAULT_ETH;
+        case "TRX":
+            return process.env.VAULT_TRON;
+        case "BNB":
+            return process.env.VAULT_BNB;
+        default:
+            throw new Error(`Unconfigured environment '${coin}'`);
+    }
+};
+UtilsShared.getLinkTransaction = (blockchain, transactionHash) => {
+    switch (blockchain) {
+        case "BTC":
+            if (process.env.NETWORK === "mainnet") {
+                return `https://live.blockcypher.com/btc/tx/${transactionHash}`;
+            }
+            else {
+                return `https://live.blockcypher.com/btc-testnet/tx/${transactionHash}`;
+            }
+        case "NEAR":
+            if (process.env.NETWORK === "mainnet") {
+                return `https://explorer.near.org/transactions/${transactionHash}`;
+            }
+            else {
+                return `https://explorer.testnet.near.org/transactions/${transactionHash}`;
+            }
+        case "ETH":
+            if (process.env.NETWORK === "mainnet") {
+                return `https://etherscan.io/tx/${transactionHash}`;
+            }
+            else {
+                return `https://${process.env.ETHERSCAN}.etherscan.io/tx/${transactionHash}`;
+            }
+        case "TRX":
+            if (process.env.NETWORK === "mainnet") {
+                return `https://tronscan.org/#/transaction/${transactionHash}`;
+            }
+            else {
+                return `https://shasta.tronscan.org/#/transaction/${transactionHash}`;
+            }
+        case "BNB":
+            if (process.env.NETWORK === "mainnet") {
+                return `https://bscscan.com/tx/${transactionHash}`;
+            }
+            else {
+                return `https://testnet.bscscan.com/tx/${transactionHash}`;
+            }
+        default:
+            throw new Error(`Error blockchain '${blockchain}'`);
+    }
+};

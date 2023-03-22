@@ -137,6 +137,35 @@ class NearService {
             }
         });
     }
+    getFeeTransaction(coin, blockchain, typeTxn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let comisionAdmin = yield utils_shared_1.UtilsShared.getComision(coin);
+                const feeMain = {
+                    coin,
+                    blockchain,
+                    fee: "",
+                };
+                let comision;
+                if (typeTxn === "TRANSFER") {
+                    comision = comisionAdmin.transfer;
+                }
+                else if (typeTxn === "WITHDRAW") {
+                    comision = comisionAdmin.withdraw;
+                }
+                if (!comision) {
+                    feeMain.fee = "0";
+                }
+                else {
+                    feeMain.fee = "0";
+                }
+                return feeMain;
+            }
+            catch (err) {
+                throw new Error(`Failed to get fee transfer, ${err.message}`);
+            }
+        });
+    }
     sendTransfer(fromAddress, privateKey, toAddress, amount, coin) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -273,7 +302,6 @@ class NearService {
                     ], address, near);
                     nearTransactions.push(trx);
                 }
-                console.log("AQUI VA");
                 let resultSwap;
                 for (let trx of nearTransactions) {
                     const result = yield account.signAndSendTransaction(trx);

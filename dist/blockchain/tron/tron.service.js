@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TronService = void 0;
+const utils_shared_1 = require("../../shared/utils/utils.shared");
 const TronWeb = require("tronweb");
 const HttpProvider = TronWeb.providers.HttpProvider;
 const TRON_PRO_API_KEY = process.env.TRON_PRO_API_KEY;
@@ -106,6 +107,35 @@ class TronService {
             }
             catch (error) {
                 return 0;
+            }
+        });
+    }
+    getFeeTransaction(coin, blockchain, typeTxn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let comisionAdmin = yield utils_shared_1.UtilsShared.getComision(coin);
+                const feeMain = {
+                    coin,
+                    blockchain,
+                    fee: "",
+                };
+                let comision;
+                if (typeTxn === "TRANSFER") {
+                    comision = comisionAdmin.transfer;
+                }
+                else if (typeTxn === "WITHDRAW") {
+                    comision = comisionAdmin.withdraw;
+                }
+                if (!comision) {
+                    feeMain.fee = "0";
+                }
+                else {
+                    feeMain.fee = "0";
+                }
+                return feeMain;
+            }
+            catch (err) {
+                throw new Error(`Failed to get fee transaction, ${err.message}`);
             }
         });
     }

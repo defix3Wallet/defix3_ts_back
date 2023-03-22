@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SwapService = void 0;
+const utils_shared_1 = require("../../../shared/utils/utils.shared");
 const transactionHistory_service_1 = require("../../transactionHistory/services/transactionHistory.service");
 const blockchain_1 = require("../../../blockchain");
 class SwapService extends transactionHistory_service_1.TransactionHistoryService {
@@ -52,6 +53,7 @@ class SwapService extends transactionHistory_service_1.TransactionHistoryService
                 });
                 transactionHistory.block = swapResult.block;
                 transactionHistory.destAmount = swapResult.destAmount;
+                transactionHistory.linkTxn = utils_shared_1.UtilsShared.getLinkTransaction(blockchain, swapResult.transactionHash);
                 return transactionHistory;
             }
             catch (err) {

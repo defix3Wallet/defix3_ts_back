@@ -12,6 +12,25 @@ export class WithdrawController {
     this.mailService = new MailShared();
   }
 
+  public getFeeWithdraw = async (req: Request, res: Response) => {
+    try {
+      const { coin, blockchain, amount, address } = req.body;
+
+      if (!coin || !blockchain)
+        return res.status(400).send({ message: "Invalid data." });
+
+      const previewData = await this.withdrawService.getFeeWithdraw(
+        coin,
+        blockchain,
+        amount,
+        address
+      );
+      res.send(previewData);
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
+    }
+  };
+
   public sendWithdraw = async (req: Request, res: Response) => {
     try {
       const { defixId, pkEncrypt, toAddress, coin, amount, blockchain } =

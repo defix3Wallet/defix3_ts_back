@@ -33,6 +33,12 @@ export class Routes {
      *                  },
      *                  blockchain: {
      *                    type: "string"
+     *                  },
+     *                  amount: {
+     *                    type: "number"
+     *                  },
+     *                  address: {
+     *                    type: "string"
      *                  }
      *                }
      *      responses:

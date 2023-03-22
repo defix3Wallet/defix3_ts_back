@@ -44,6 +44,8 @@ const axios_1 = __importDefault(require("axios"));
 const bip32_1 = __importDefault(require("bip32"));
 const ecc = __importStar(require("tiny-secp256k1"));
 const bip32 = (0, bip32_1.default)(ecc);
+const utils_shared_1 = require("../../shared/utils/utils.shared");
+const bitcoin_utils_1 = require("./bitcoin.utils");
 const tinysecp = require("tiny-secp256k1");
 const ECPair = (0, ecpair_1.ECPairFactory)(tinysecp);
 const NETWORK = process.env.NETWORK;
@@ -187,6 +189,32 @@ class BitcoinService {
     getBalanceToken(address, contract, decimals) {
         return __awaiter(this, void 0, void 0, function* () {
             return 0;
+        });
+    }
+    getFeeTransaction(coin, blockchain, typeTxn, amount, address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!amount || !address)
+                    throw new Error(`Failed to amount tx btc`);
+                let comisionAdmin = yield utils_shared_1.UtilsShared.getComision(coin);
+                const feeMain = {
+                    coin,
+                    blockchain,
+                    fee: "",
+                };
+                let comision;
+                if (typeTxn === "TRANSFER") {
+                    comision = comisionAdmin.transfer;
+                }
+                else if (typeTxn === "WITHDRAW") {
+                    comision = comisionAdmin.withdraw;
+                }
+                feeMain.fee = String(yield bitcoin_utils_1.BitcoinUtils.newTxFee(comision, amount, address));
+                return feeMain;
+            }
+            catch (err) {
+                throw new Error(`Failed to get fee transaction, ${err.message}`);
+            }
         });
     }
     sendTransfer(fromAddress, privateKey, toAddress, amount, coin) {

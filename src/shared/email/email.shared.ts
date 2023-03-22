@@ -30,10 +30,10 @@ export class MailShared {
     // point to the template folder
     const handlebarOptions: NodemailerExpressHandlebarsOptions = {
       viewEngine: {
-        partialsDir: path.resolve("./viewsEmail/"),
+        partialsDir: path.join(__dirname, "/viewsEmail"),
         defaultLayout: false,
       },
-      viewPath: path.resolve("./viewsEmail/"),
+      viewPath: path.join(__dirname, "/viewsEmail"),
     };
 
     // use a template file with nodemailer
@@ -73,10 +73,10 @@ export class MailShared {
 
     const handlebarOptions: NodemailerExpressHandlebarsOptions = {
       viewEngine: {
-        partialsDir: path.resolve("./viewsEmail/"),
+        partialsDir: path.join(__dirname, "/viewsEmail"),
         defaultLayout: false,
       },
-      viewPath: path.resolve("./viewsEmail/"),
+      viewPath: path.join(__dirname, "/viewsEmail"),
     };
     // use a template file with nodemailer
     this.transporter.use("compile", hbs(handlebarOptions));

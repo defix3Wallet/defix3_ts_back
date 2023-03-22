@@ -17,6 +17,7 @@ import { TransferModule } from "./modules/transfer/init";
 import { FrequentModule } from "./modules/frequent/init";
 import { SwapModule } from "./modules/swap/init";
 import { LimitOrderModule } from "./modules/orderLimit/init";
+import { WithdrawModule } from "./modules/withdraw/init";
 
 class App {
   public app: express.Express;
@@ -47,6 +48,7 @@ class App {
     new GeneralModule(this.router);
     new TransactionHistoryModule(this.router);
     new TransferModule(this.router);
+    new WithdrawModule(this.router);
     new SwapModule(this.router);
     new LimitOrderModule(this.router);
     new FrequentModule(this.router);

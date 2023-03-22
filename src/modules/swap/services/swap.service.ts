@@ -70,6 +70,10 @@ export class SwapService extends TransactionHistoryService {
 
       transactionHistory.block = swapResult.block;
       transactionHistory.destAmount = swapResult.destAmount;
+      transactionHistory.linkTxn = UtilsShared.getLinkTransaction(
+        blockchain,
+        swapResult.transactionHash
+      );
 
       return transactionHistory;
     } catch (err) {

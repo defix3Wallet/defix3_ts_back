@@ -111,7 +111,11 @@ export class EthereumService implements BlockchainService {
     }
   }
 
-  async getFeeTransfer(coin: string, blockchain: string): Promise<any> {
+  async getFeeTransaction(
+    coin: string,
+    blockchain: string,
+    typeTxn: string
+  ): Promise<any> {
     try {
       let comisionAdmin: any = await UtilsShared.getComision(coin);
 
@@ -133,7 +137,15 @@ export class EthereumService implements BlockchainService {
         gasLimit = 55000;
       }
 
-      if (!comisionAdmin.transfer) {
+      let comision;
+
+      if (typeTxn === "TRANSFER") {
+        comision = comisionAdmin.transfer;
+      } else if (typeTxn === "WITHDRAW") {
+        comision = comisionAdmin.withdraw;
+      }
+
+      if (!comision) {
         feeMain.fee = web3.utils.fromWei(String(gasLimit * wei), "gwei");
       } else {
         feeMain.fee = String(
@@ -142,7 +154,7 @@ export class EthereumService implements BlockchainService {
       }
       return feeMain;
     } catch (err: any) {
-      throw new Error(`Failed to get fee transfer, ${err.message}`);
+      throw new Error(`Failed to get fee transaction, ${err.message}`);
     }
   }
 

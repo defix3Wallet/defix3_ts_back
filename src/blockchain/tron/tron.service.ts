@@ -1,5 +1,6 @@
 import { BlockchainService } from "../blockchain.interface";
 import { CredentialInterface } from "../../interfaces/credential.interface";
+import { UtilsShared } from "../../shared/utils/utils.shared";
 const TronWeb = require("tronweb");
 const HttpProvider = TronWeb.providers.HttpProvider;
 
@@ -100,6 +101,39 @@ export class TronService implements BlockchainService {
       }
     } catch (error) {
       return 0;
+    }
+  }
+
+  async getFeeTransaction(
+    coin: string,
+    blockchain: string,
+    typeTxn: string
+  ): Promise<any> {
+    try {
+      let comisionAdmin: any = await UtilsShared.getComision(coin);
+
+      const feeMain = {
+        coin,
+        blockchain,
+        fee: "",
+      };
+
+      let comision;
+
+      if (typeTxn === "TRANSFER") {
+        comision = comisionAdmin.transfer;
+      } else if (typeTxn === "WITHDRAW") {
+        comision = comisionAdmin.withdraw;
+      }
+
+      if (!comision) {
+        feeMain.fee = "0";
+      } else {
+        feeMain.fee = "0";
+      }
+      return feeMain;
+    } catch (err: any) {
+      throw new Error(`Failed to get fee transaction, ${err.message}`);
     }
   }
 
@@ -212,10 +246,6 @@ export class TronService implements BlockchainService {
     privateKey: string,
     address: string
   ): Promise<string> {
-    throw new Error("Method not implemented.");
-  }
-
-  getFeeTransfer(coin: string, blockchain: string): Promise<any> {
     throw new Error("Method not implemented.");
   }
 }

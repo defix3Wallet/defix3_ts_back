@@ -15,6 +15,44 @@ export class Routes {
   private configureRoutes(router: Router) {
     /**
      * @swagger
+     * /get-fee-withdraw/:
+     *    post:
+     *      tags:
+     *        - Withdraw
+     *      summary: Obtiene el fee del withdraw..
+     *      description: Manda campos requeridos para obtener el fee.
+     *      requestBody:
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: "object"
+     *                required: [coin, blockchain]
+     *                properties: {
+     *                  coin: {
+     *                    type: "string"
+     *                  },
+     *                  blockchain: {
+     *                    type: "string"
+     *                  },
+     *                  amount: {
+     *                    type: "number"
+     *                  },
+     *                  address: {
+     *                    type: "string"
+     *                  }
+     *                }
+     *      responses:
+     *        '200':
+     *          description: Devuelve el preview del withdraw.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Bad Request.
+     */
+    router.post("/get-fee-withdraw/", this.controller.getFeeWithdraw);
+
+    /**
+     * @swagger
      * /send-withdraw/:
      *    post:
      *      tags:

@@ -9,7 +9,13 @@ export interface BlockchainService {
     contract: string,
     decimals: number
   ): Promise<number>;
-  getFeeTransfer(coin: string, blockchain: string): Promise<any>;
+  getFeeTransaction(
+    coin: string,
+    blockchain: string,
+    typeTxn: string,
+    amount: number | undefined,
+    address: string | undefined
+  ): Promise<any>;
   sendTransfer(
     fromAddress: string,
     privateKey: string,

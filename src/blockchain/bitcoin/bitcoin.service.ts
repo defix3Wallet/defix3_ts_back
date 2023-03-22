@@ -14,6 +14,8 @@ const bip32 = BIP32Factory(ecc);
 import crypto from "crypto";
 import { CredentialInterface } from "../../interfaces/credential.interface";
 import { BlockchainService } from "../blockchain.interface";
+import { UtilsShared } from "../../shared/utils/utils.shared";
+import { BitcoinUtils } from "./bitcoin.utils";
 
 const tinysecp: TinySecp256k1Interface = require("tiny-secp256k1");
 const ECPair: ECPairAPI = ECPairFactory(tinysecp);
@@ -169,6 +171,40 @@ export class BitcoinService implements BlockchainService {
     }
   };
 
+  async getFeeTransaction(
+    coin: string,
+    blockchain: string,
+    typeTxn: string,
+    amount: number | undefined,
+    address: string | undefined
+  ): Promise<any> {
+    try {
+      if (!amount || !address) throw new Error(`Failed to amount tx btc`);
+      let comisionAdmin: any = await UtilsShared.getComision(coin);
+
+      const feeMain = {
+        coin,
+        blockchain,
+        fee: "",
+      };
+
+      let comision;
+
+      if (typeTxn === "TRANSFER") {
+        comision = comisionAdmin.transfer;
+      } else if (typeTxn === "WITHDRAW") {
+        comision = comisionAdmin.withdraw;
+      }
+
+      feeMain.fee = String(
+        await BitcoinUtils.newTxFee(comision, amount, address)
+      );
+      return feeMain;
+    } catch (err: any) {
+      throw new Error(`Failed to get fee transaction, ${err.message}`);
+    }
+  }
+
   async sendTransfer(
     fromAddress: string,
     privateKey: string,
@@ -288,10 +324,6 @@ export class BitcoinService implements BlockchainService {
   }
 
   sendSwap(priceRoute: any, privateKey: string, address: string): Promise<any> {
-    throw new Error("Method not implemented.");
-  }
-
-  getFeeTransfer(coin: string, blockchain: string): Promise<any> {
     throw new Error("Method not implemented.");
   }
 }

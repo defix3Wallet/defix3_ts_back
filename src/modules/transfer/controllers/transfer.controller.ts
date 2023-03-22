@@ -14,14 +14,16 @@ export class TransferController {
 
   public getFeeTransfer = async (req: Request, res: Response) => {
     try {
-      const { coin, blockchain } = req.body;
+      const { coin, blockchain, amount, address } = req.body;
 
       if (!coin || !blockchain)
         return res.status(400).send({ message: "Invalid data." });
 
       const previewData = await this.transferService.getFeeTransfer(
         coin,
-        blockchain
+        blockchain,
+        amount,
+        address
       );
       res.send(previewData);
     } catch (error: any) {

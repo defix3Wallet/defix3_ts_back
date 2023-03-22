@@ -109,36 +109,43 @@ class EthereumService {
             }
         });
     }
-    // async getFeeTransfer(coin: string, blockchain: string): Promise<any> {
-    //   try {
-    //     let comisionAdmin: any = await UtilsShared.getComision(blockchain);
-    //     const response = await axios.get(
-    //       "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6"
-    //     );
-    //     const wei = response.data.result.SafeGasPrice;
-    //     if (!wei) throw new Error(`Error getting gas price`);
-    //     let fee = {
-    //       coin: coin,
-    //       fee: null,
-    //     };
-    //     if (comisionAdmin.transfer === 0 || comisionAdmin.transfer === 0.0) {
-    //       let fee = web3.utils.fromWei(String(21000 * wei), "gwei");
-    //       eth = {
-    //         coin: "ETH",
-    //         fee: fee,
-    //       };
-    //     } else {
-    //       let fee =
-    //         parseFloat(web3.utils.fromWei(String(21000 * wei), "gwei")) * 2;
-    //       eth = {
-    //         coin: "ETH",
-    //         fee: String(fee),
-    //       };
-    //     }
-    //   } catch (err: any) {
-    //     throw new Error(`Failed to send transfer, ${err.message}`);
-    //   }
-    // }
+    getFeeTransaction(coin, blockchain, typeTxn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let comisionAdmin = yield utils_shared_1.UtilsShared.getComision(coin);
+                const response = yield axios_1.default.get("https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6");
+                const wei = response.data.result.SafeGasPrice;
+                if (!wei)
+                    throw new Error(`Error getting gas price`);
+                const feeMain = {
+                    coin,
+                    blockchain,
+                    fee: "",
+                };
+                let gasLimit = 21000;
+                if (coin !== "ETH") {
+                    gasLimit = 55000;
+                }
+                let comision;
+                if (typeTxn === "TRANSFER") {
+                    comision = comisionAdmin.transfer;
+                }
+                else if (typeTxn === "WITHDRAW") {
+                    comision = comisionAdmin.withdraw;
+                }
+                if (!comision) {
+                    feeMain.fee = web3.utils.fromWei(String(gasLimit * wei), "gwei");
+                }
+                else {
+                    feeMain.fee = String(Number(web3.utils.fromWei(String(gasLimit * wei), "gwei")) * 2);
+                }
+                return feeMain;
+            }
+            catch (err) {
+                throw new Error(`Failed to get fee transaction, ${err.message}`);
+            }
+        });
+    }
     sendTransfer(fromAddress, privateKey, toAddress, amount, coin) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
