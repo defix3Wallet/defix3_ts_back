@@ -57,7 +57,7 @@ export class LimitOrderController {
       const limitOrder = limitOrderBuilder.buildLimitOrder({
         makerAssetAddress: "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
         takerAssetAddress: "0x111111111117dc0aa78b770fa6a738034120c302",
-        makerAddress: "0xfb3c7ebccccAA12B5A884d612393969Adddddddd",
+        makerAddress: "0x7460CA23e35718FB30f9888F03d31C69Df507612",
         makingAmount: "100",
         takingAmount: "200",
         // predicate = '0x',
@@ -75,10 +75,14 @@ export class LimitOrderController {
       const privateKey =
         "0x64a0c662f57dc25fac5dd9ff24b9c6b6c100e2d3a0501e2ec94eb792e8e9dd6d";
 
+      console.log(this.privateKeyToUint8Array(privateKey));
+
       const privateKeyProviderConnector = new PrivateKeyProviderConnector(
         privateKey,
         web3
       );
+
+      console.log("privateKeyProvider", privateKeyProviderConnector);
 
       // console.log(privateKeyProviderConnector);
 
@@ -112,4 +116,14 @@ export class LimitOrderController {
       return res.status(500).send({ message: error.message });
     }
   };
+  privateKeyToUint8Array(privateKey: string): Uint8Array {
+    const buffer = new Uint8Array(32);
+    const arrayPrivateKey = Buffer.from(privateKey, "hex");
+
+    for (let i = 0; i < 32; i++) {
+      buffer[i] = arrayPrivateKey[i];
+    }
+
+    return buffer;
+  }
 }
