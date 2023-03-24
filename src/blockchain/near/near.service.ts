@@ -308,8 +308,6 @@ export class NearService implements BlockchainService {
       let feeTransfer = "0";
       let porcentFee = 0;
 
-      console.log(comision);
-
       if (comision.swap) {
         porcentFee = comision.swap / 100;
       }
@@ -438,7 +436,6 @@ export class NearService implements BlockchainService {
       let resultSwap: any;
       for (let trx of nearTransactions) {
         const result = await account.signAndSendTransaction(trx);
-        console.log(result);
 
         if (trx.actions[0].functionCall.methodName === "ft_transfer_call") {
           resultSwap = result;

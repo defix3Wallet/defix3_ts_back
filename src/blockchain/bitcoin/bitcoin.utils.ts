@@ -74,18 +74,13 @@ export class BitcoinUtils {
           let resp = await axios
             .get("https://bitcoinfees.earn.com/api/v1/fees/recommended")
             .then(async function (response) {
-              console.log("response", response);
-
               let price = response.data.hourFee;
 
               let fee = (bytes * price) / 100000000;
 
-              console.log("fee", fee);
-
               return fee;
             })
             .catch(function (error) {
-              console.log(error);
               throw new Error(`Error bitcoin tx'`);
             });
 
@@ -100,15 +95,11 @@ export class BitcoinUtils {
             .then(async function (response) {
               let price = response.data.hourFee;
 
-              console.log("bytes", bytes, "price", price);
               let fee = (bytes * price) / 100000000;
-
-              console.log("fee", fee);
 
               return fee;
             })
             .catch(function (error) {
-              console.log(error);
               throw new Error(`Error bitcoin tx'`);
             });
 

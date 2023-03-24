@@ -34,12 +34,12 @@ export class UtilsShared {
         .then(function (response) {
           return response.data;
         })
-        .catch(function (xhr) {
-          throw new Error(`Failed to get comision.`);
+        .catch(function (err) {
+          throw new Error(`Failed to get comision api. ${err.message}}`);
         });
       return result;
-    } catch (error) {
-      throw new Error(`Failed to get comision.`);
+    } catch (error: any) {
+      throw new Error(`Failed to get comision fn. ${error.message}`);
     }
   };
 
