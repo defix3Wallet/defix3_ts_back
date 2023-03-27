@@ -97,7 +97,11 @@ export class BitcoinService implements BlockchainService {
     }
   }
   async isAddress(address: string): Promise<boolean> {
-    return await WAValidator.validate(address, "BTC");
+    if (NETWORK === "mainnet") {
+      return await WAValidator.validate(address, "BTC");
+    } else {
+      return await WAValidator.validate(address, "BTC", "testnet");
+    }
   }
   async getBalance(address: string): Promise<number> {
     try {

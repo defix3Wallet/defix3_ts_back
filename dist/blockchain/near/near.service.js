@@ -234,7 +234,6 @@ class NearService {
                 const nearPrice = yield axios_1.default.get("https://nearblocks.io/api/near-price");
                 let feeTransfer = "0";
                 let porcentFee = 0;
-                console.log(comision);
                 if (comision.swap) {
                     porcentFee = comision.swap / 100;
                 }
@@ -305,7 +304,6 @@ class NearService {
                 let resultSwap;
                 for (let trx of nearTransactions) {
                     const result = yield account.signAndSendTransaction(trx);
-                    console.log(result);
                     if (trx.actions[0].functionCall.methodName === "ft_transfer_call") {
                         resultSwap = result;
                     }

@@ -150,7 +150,12 @@ class BitcoinService {
     }
     isAddress(address) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield WAValidator.validate(address, "BTC");
+            if (NETWORK === "mainnet") {
+                return yield WAValidator.validate(address, "BTC");
+            }
+            else {
+                return yield WAValidator.validate(address, "BTC", "testnet");
+            }
         });
     }
     getBalance(address) {

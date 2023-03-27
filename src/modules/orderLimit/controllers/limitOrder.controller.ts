@@ -55,8 +55,8 @@ export class LimitOrderController {
   public getLimitOrder = async (req: Request, res: Response) => {
     try {
       const limitOrder = limitOrderBuilder.buildLimitOrder({
-        makerAssetAddress: "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
-        takerAssetAddress: "0x111111111117dc0aa78b770fa6a738034120c302",
+        makerAssetAddress: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        takerAssetAddress: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52",
         makerAddress: "0x7460CA23e35718FB30f9888F03d31C69Df507612",
         makingAmount: "100",
         takingAmount: "200",
@@ -69,22 +69,25 @@ export class LimitOrderController {
         // preInteraction  = '0x',
         // postInteraction = '0x',
       });
+
       const limitOrderTypedData =
         limitOrderBuilder.buildLimitOrderTypedData(limitOrder);
 
       const privateKey =
         "0x64a0c662f57dc25fac5dd9ff24b9c6b6c100e2d3a0501e2ec94eb792e8e9dd6d";
 
-      console.log(this.privateKeyToUint8Array(privateKey));
-
       const privateKeyProviderConnector = new PrivateKeyProviderConnector(
         privateKey,
         web3
       );
 
-      console.log("privateKeyProvider", privateKeyProviderConnector);
+      const limitOrderSignature = await limitOrderBuilder.buildOrderSignature(
+        walletAddress,
+        limitOrderTypedData
+      );
 
-      // console.log(privateKeyProviderConnector);
+      console.log("Signature");
+      console.log(limitOrderSignature);
 
       const limitOrderHash =
         limitOrderBuilder.buildLimitOrderHash(limitOrderTypedData);
