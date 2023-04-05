@@ -28,7 +28,7 @@ import {
 } from "near-api-js/lib/transaction";
 import { PublicKey } from "near-api-js/lib/utils";
 import e from "express";
-import { NearUtils } from "./near.utils";
+import { AccountService, NearUtils } from "./near.utils";
 import { UtilsShared } from "../../shared/utils/utils.shared";
 
 const NETWORK = process.env.NETWORK || "testnet";
@@ -100,7 +100,7 @@ export class NearService implements BlockchainService {
   async isAddress(address: string): Promise<boolean> {
     const keyStore = new keyStores.InMemoryKeyStore();
     const near = new Near(NearUtils.ConfigNEAR(keyStore));
-    const account = new Account(near.connection, address);
+    const account = new AccountService(near.connection, address);
     const is_address = await account
       .state()
       .then((response) => {
@@ -118,7 +118,7 @@ export class NearService implements BlockchainService {
       const keyStore = new keyStores.InMemoryKeyStore();
       const near = new Near(NearUtils.ConfigNEAR(keyStore));
 
-      const account = new Account(near.connection, address);
+      const account = new AccountService(near.connection, address);
 
       const balanceAccount = await account.state();
       const valueStorage = Math.pow(10, 19);
@@ -144,7 +144,7 @@ export class NearService implements BlockchainService {
       const keyStore = new keyStores.InMemoryKeyStore();
       const near = new Near(NearUtils.ConfigNEAR(keyStore));
 
-      const account = new Account(near.connection, address);
+      const account = new AccountService(near.connection, address);
 
       const balance = await account.viewFunction({
         contractId: srcContract,
@@ -215,7 +215,7 @@ export class NearService implements BlockchainService {
 
       const near = new Near(NearUtils.ConfigNEAR(keyStore));
 
-      const account = new Account(near.connection, fromAddress);
+      const account = new AccountService(near.connection, fromAddress);
 
       const amountInYocto = utils.format.parseNearAmount(String(amount));
 
@@ -373,7 +373,7 @@ export class NearService implements BlockchainService {
       keyStore.setKey(process.env.NEAR_ENV!, address, keyPair);
       const near = new Near(NearUtils.ConfigNEAR(keyStore));
 
-      const account = new Account(near.connection, address);
+      const account = new AccountService(near.connection, address);
 
       let nearTransactions = [];
 
@@ -435,7 +435,7 @@ export class NearService implements BlockchainService {
 
       let resultSwap: any;
       for (let trx of nearTransactions) {
-        const result = await account.signAndSendTransaction(trx);
+        const result = await account.signAndSendTrx(trx);
 
         if (trx.actions[0].functionCall.methodName === "ft_transfer_call") {
           resultSwap = result;

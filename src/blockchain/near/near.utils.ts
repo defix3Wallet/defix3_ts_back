@@ -3,6 +3,7 @@ import dbConnect from "../../config/postgres";
 import { AddressEntity } from "../../modules/address/entities/address.entity";
 import { Action, createTransaction } from "near-api-js/lib/transaction";
 import {
+  Account,
   ConnectedWalletAccount,
   Near,
   WalletConnection,
@@ -13,6 +14,12 @@ import { PublicKey } from "near-api-js/lib/utils";
 const nearSEED = require("near-seed-phrase");
 
 const NETWORK = process.env.NETWORK || "testnet";
+
+export class AccountService extends Account {
+  public async signAndSendTrx(trx: any) {
+    return await this.signAndSendTransaction(trx);
+  }
+}
 
 export class NearUtils {
   static ConfigNEAR(keyStores: any) {

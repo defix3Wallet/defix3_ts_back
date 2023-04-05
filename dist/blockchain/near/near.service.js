@@ -82,7 +82,7 @@ class NearService {
         return __awaiter(this, void 0, void 0, function* () {
             const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
             const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
-            const account = new near_api_js_1.Account(near.connection, address);
+            const account = new near_utils_1.AccountService(near.connection, address);
             const is_address = yield account
                 .state()
                 .then((response) => {
@@ -100,7 +100,7 @@ class NearService {
                 let balanceTotal = 0;
                 const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
                 const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
-                const account = new near_api_js_1.Account(near.connection, address);
+                const account = new near_utils_1.AccountService(near.connection, address);
                 const balanceAccount = yield account.state();
                 const valueStorage = Math.pow(10, 19);
                 const valueYocto = Math.pow(10, 24);
@@ -122,7 +122,7 @@ class NearService {
             try {
                 const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
                 const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
-                const account = new near_api_js_1.Account(near.connection, address);
+                const account = new near_utils_1.AccountService(near.connection, address);
                 const balance = yield account.viewFunction({
                     contractId: srcContract,
                     methodName: "ft_balance_of",
@@ -176,7 +176,7 @@ class NearService {
                 const keyPair = near_api_js_1.KeyPair.fromString(privateKey);
                 keyStore.setKey(NETWORK, fromAddress, keyPair);
                 const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
-                const account = new near_api_js_1.Account(near.connection, fromAddress);
+                const account = new near_utils_1.AccountService(near.connection, fromAddress);
                 const amountInYocto = near_api_js_1.utils.format.parseNearAmount(String(amount));
                 if (!amountInYocto)
                     throw new Error(`Failed to send transfer.`);
@@ -281,7 +281,7 @@ class NearService {
                 const keyPair = near_api_js_1.KeyPair.fromString(privateKey);
                 keyStore.setKey(process.env.NEAR_ENV, address, keyPair);
                 const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
-                const account = new near_api_js_1.Account(near.connection, address);
+                const account = new near_utils_1.AccountService(near.connection, address);
                 let nearTransactions = [];
                 if (data.actions[0].token_in.includes("wrap.")) {
                     const trx = yield near_utils_1.NearUtils.createTransaction(data.actions[0].token_in, [
@@ -303,7 +303,7 @@ class NearService {
                 }
                 let resultSwap;
                 for (let trx of nearTransactions) {
-                    const result = yield account.signAndSendTransaction(trx);
+                    const result = yield account.signAndSendTrx(trx);
                     if (trx.actions[0].functionCall.methodName === "ft_transfer_call") {
                         resultSwap = result;
                     }
