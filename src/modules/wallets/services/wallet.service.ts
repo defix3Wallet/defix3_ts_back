@@ -5,6 +5,7 @@ import { UserService } from "../../users/services/user.service";
 import { blockchainService } from "../../../blockchain";
 import { UserEntity } from "../../users/entities/user.entity";
 import { AddressService } from "../../address/services/address.service";
+import { CryptoShared } from "../../../shared/crypto/crypto.shared";
 
 export class WalletService {
   private userService: UserService;
@@ -87,37 +88,62 @@ export class WalletService {
     }
   };
 
-  public exportKeystoreFile = async (privateKey: string) => {
+  public importFromJson = async (dataImport: any) => {
     try {
       const credentials: CredentialInterface[] = [];
-      for (const service of Object.values(blockchainService)) {
-        const credential = await service.fromPrivateKey(privateKey);
-        if (credential) {
-          credentials.push(credential);
+      let defixId: any;
+      if (CryptoShared.decryptAES(dataImport.typeLog) === "MNEMONIC") {
+        const mnemonic = CryptoShared.decryptAES(dataImport.ciphertext);
+        const importId = await UtilsShared.getIdNear(mnemonic);
+
+        const user = await this.userService.getUserByImportId(importId);
+
+        if (!user) throw new Error("Wallet does not exist in Defix3");
+
+        defixId = user.defixId;
+
+        for (const service of Object.values(blockchainService)) {
+          credentials.push(await service.fromMnemonic(mnemonic));
         }
+      } else if (CryptoShared.decryptAES(dataImport.typeLog) === "PRIVATE_KEY") {
+        for (const service of Object.values(blockchainService)) {
+          const credential = await service.fromPrivateKey(CryptoShared.decryptAES(dataImport.ciphertext));
+          if (credential) {
+            credentials.push(credential);
+          }
+        }
+        defixId = credentials[0].address;
+      } else {
+        throw new Error(`Invalid mnemonic and private key`);
       }
-
-      if (credentials.length === 0) throw new Error(`Failed private key`);
-
       const wallet: WalletInterface = {
-        defixId: credentials[0].address,
+        defixId: defixId,
         credentials: credentials,
       };
-
       return wallet;
     } catch (err) {
-      throw new Error(`Failed to import wallet: ${err}`);
+      throw new Error(`Failed to export wallet: ${err}`);
+    }
+  };
+
+  public exportWalletJson = async (ciphertext: string, typeLog: string) => {
+    try {
+      const data = {
+        ciphertext: CryptoShared.encryptAES(ciphertext),
+        typeLog: CryptoShared.encryptAES(typeLog),
+        dateTime: Date.now(),
+      };
+
+      return data;
+    } catch (err) {
+      throw new Error(`Failed to export wallet: ${err}`);
     }
   };
 
   public validateAddress = async (address: string, coin: string) => {
     try {
-      if (
-        Object.keys(blockchainService).find((key) => key === coin.toLowerCase())
-      ) {
-        return blockchainService[
-          coin.toLowerCase() as keyof typeof blockchainService
-        ].isAddress(address);
+      if (Object.keys(blockchainService).find((key) => key === coin.toLowerCase())) {
+        return blockchainService[coin.toLowerCase() as keyof typeof blockchainService].isAddress(address);
       }
       throw new Error(`Invalid coin`);
     } catch (err) {
@@ -128,10 +154,7 @@ export class WalletService {
   /**
    * Utils for WalletService
    */
-  private saveWalletDefix = async (
-    mnemonic: string,
-    wallet: WalletInterface
-  ) => {
+  private saveWalletDefix = async (mnemonic: string, wallet: WalletInterface) => {
     try {
       const importId = await UtilsShared.getIdNear(mnemonic);
 
@@ -140,11 +163,7 @@ export class WalletService {
       if (!user) throw new Error("Wallet does not exist in Defix3");
 
       for (let credential of wallet.credentials) {
-        this.addressService.createAddress(
-          user,
-          credential.name,
-          credential.address
-        );
+        this.addressService.createAddress(user, credential.name, credential.address);
       }
 
       return user;
@@ -153,24 +172,13 @@ export class WalletService {
     }
   };
 
-  private validateWalletsUser = async (
-    user: UserEntity,
-    wallet: WalletInterface
-  ) => {
+  private validateWalletsUser = async (user: UserEntity, wallet: WalletInterface) => {
     try {
-      const walletsUser = await this.addressService.getAddressesByDefixId(
-        user.defixId
-      );
+      const walletsUser = await this.addressService.getAddressesByDefixId(user.defixId);
 
       for (let credential of wallet.credentials) {
-        if (
-          !walletsUser.find((element) => element.blockchain === credential.name)
-        ) {
-          this.addressService.createAddress(
-            user,
-            credential.name,
-            credential.address
-          );
+        if (!walletsUser.find((element) => element.blockchain === credential.name)) {
+          this.addressService.createAddress(user, credential.name, credential.address);
         }
       }
     } catch (err) {

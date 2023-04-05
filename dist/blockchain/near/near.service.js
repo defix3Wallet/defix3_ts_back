@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NearService = void 0;
 const near_api_js_1 = require("near-api-js");
-const axios_1 = __importDefault(require("axios"));
 const nearSEED = require("near-seed-phrase");
 const bn_js_1 = __importDefault(require("bn.js"));
 const ref_sdk_1 = require("@ref-finance/ref-sdk");
@@ -105,8 +104,7 @@ class NearService {
                 const valueStorage = Math.pow(10, 19);
                 const valueYocto = Math.pow(10, 24);
                 const storage = (balanceAccount.storage_usage * valueStorage) / valueYocto;
-                balanceTotal =
-                    Number(balanceAccount.amount) / valueYocto - storage - 0.05;
+                balanceTotal = Number(balanceAccount.amount) / valueYocto - storage - 0.05;
                 if (balanceTotal === null || balanceTotal < 0) {
                     balanceTotal = 0;
                 }
@@ -207,47 +205,56 @@ class NearService {
                 const tokenIn = fromToken.contract;
                 const tokenOut = toToken.contract;
                 const tokensMetadata = yield (0, ref_sdk_1.ftGetTokensMetadata)([tokenIn, tokenOut]);
-                const simplePools = (yield (0, ref_sdk_1.fetchAllPools)()).simplePools.filter((pool) => {
-                    return pool.tokenIds[0] === tokenIn && pool.tokenIds[1] === tokenOut;
-                });
-                const swapAlls = yield (0, ref_sdk_1.estimateSwap)({
-                    tokenIn: tokensMetadata[tokenIn],
-                    tokenOut: tokensMetadata[tokenOut],
-                    amountIn: String(amount),
-                    simplePools: simplePools,
-                    options: { enableSmartRouting: true },
-                });
-                const transactionsRef = yield (0, ref_sdk_1.instantSwap)({
-                    tokenIn: tokensMetadata[tokenIn],
-                    tokenOut: tokensMetadata[tokenOut],
-                    amountIn: String(amount),
-                    swapTodos: swapAlls,
-                    slippageTolerance: 0.01,
-                    AccountId: address,
-                });
-                const transaction = transactionsRef.find((element) => element.functionCalls[0].methodName === "ft_transfer_call");
+                const transactionsRef = yield near_utils_1.NearUtils.getTxSwapRef(tokensMetadata[tokenIn], tokensMetadata[tokenOut], amount, address);
+                const transactionsDcl = yield near_utils_1.NearUtils.getTxSwapDCL(tokensMetadata[tokenIn], tokensMetadata[tokenOut], amount);
+                const minAmountRef = yield near_utils_1.NearUtils.getMinAmountOut(transactionsRef);
+                const minAmountDcl = yield near_utils_1.NearUtils.getMinAmountOut(transactionsDcl);
+                let txMain;
+                let minAmountOut = 0;
+                if (minAmountRef && !minAmountDcl) {
+                    console.log("REF");
+                    txMain = transactionsRef;
+                    minAmountOut = minAmountRef;
+                }
+                else if (!minAmountRef && minAmountDcl) {
+                    console.log("DCL");
+                    txMain = transactionsDcl;
+                    minAmountOut = minAmountDcl;
+                }
+                else if (minAmountRef && minAmountDcl) {
+                    if (minAmountRef > minAmountDcl) {
+                        console.log("REF");
+                        txMain = transactionsRef;
+                        minAmountOut = minAmountRef;
+                    }
+                    else {
+                        console.log("DCL");
+                        txMain = transactionsDcl;
+                        minAmountOut = minAmountDcl;
+                    }
+                }
+                if (!txMain || !minAmountOut)
+                    return;
+                const transaction = txMain.find((element) => element.functionCalls[0].methodName === "ft_transfer_call");
                 if (!transaction)
                     return false;
                 const transfer = transaction.functionCalls[0].args;
-                const data = JSON.parse(transfer.msg);
+                const amountIn = transfer.amount;
                 const comision = yield utils_shared_1.UtilsShared.getComision(blockchain);
-                const nearPrice = yield axios_1.default.get("https://nearblocks.io/api/near-price");
                 let feeTransfer = "0";
                 let porcentFee = 0;
                 if (comision.swap) {
                     porcentFee = comision.swap / 100;
                 }
                 let feeDefix = String(Number(amount) * porcentFee);
-                const firstNum = Number(data.actions[0].amount_in) /
-                    Math.pow(10, Number(tokensMetadata[tokenIn].decimals));
-                const secondNum = Number(data.actions[0].min_amount_out) /
-                    Math.pow(10, Number(tokensMetadata[tokenOut].decimals));
+                const firstNum = Number(amountIn) / Math.pow(10, Number(tokensMetadata[tokenIn].decimals));
+                const secondNum = minAmountOut / Math.pow(10, Number(tokensMetadata[tokenOut].decimals));
                 const swapRate = String(secondNum / firstNum);
                 const dataSwap = {
-                    exchange: "Ref Finance" + data.actions[0].pool_id,
-                    fromAmount: data.actions[0].amount_in,
+                    exchange: "Ref Finance",
+                    fromAmount: amountIn,
                     fromDecimals: tokensMetadata[tokenIn].decimals,
-                    toAmount: data.actions[0].min_amount_out,
+                    toAmount: minAmountOut,
                     toDecimals: tokensMetadata[tokenOut].decimals,
                     block: null,
                     swapRate,
@@ -256,7 +263,7 @@ class NearService {
                     feeDefix: feeDefix,
                     feeTotal: String(Number(feeDefix)),
                 };
-                return { dataSwap, priceRoute: transactionsRef };
+                return { dataSwap, priceRoute: { tokenIn, tokenOut, amountIn, minAmountOut, txMain } };
             }
             catch (error) {
                 throw new Error(`Feiled to get preview swap., ${error.message}`);
@@ -266,39 +273,30 @@ class NearService {
     sendSwap(priceRoute, privateKey, address) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const transaction = priceRoute.find((element) => element.functionCalls[0].methodName === "ft_transfer_call");
+                const transaction = priceRoute.txMain.find((element) => element.functionCalls[0].methodName === "ft_transfer_call");
                 if (!transaction)
                     throw new Error(`Failed to create tx.`);
-                const transfer = transaction.functionCalls[0].args;
-                const data = JSON.parse(transfer.msg);
-                const tokensMetadata = yield (0, ref_sdk_1.ftGetTokensMetadata)([
-                    data.actions[0].token_in,
-                    data.actions[0].token_out,
-                ]);
-                const tokenIn = tokensMetadata[data.actions[0].token_in];
-                const tokenOut = tokensMetadata[data.actions[0].token_out];
+                const tokensMetadata = yield (0, ref_sdk_1.ftGetTokensMetadata)([priceRoute.tokenIn, priceRoute.tokenOut]);
+                const tokenIn = tokensMetadata[priceRoute.tokenIn];
+                const tokenOut = tokensMetadata[priceRoute.tokenOut];
                 const keyStore = new near_api_js_1.keyStores.InMemoryKeyStore();
                 const keyPair = near_api_js_1.KeyPair.fromString(privateKey);
                 keyStore.setKey(process.env.NEAR_ENV, address, keyPair);
                 const near = new near_api_js_1.Near(near_utils_1.NearUtils.ConfigNEAR(keyStore));
                 const account = new near_utils_1.AccountService(near.connection, address);
                 let nearTransactions = [];
-                if (data.actions[0].token_in.includes("wrap.")) {
-                    const trx = yield near_utils_1.NearUtils.createTransaction(data.actions[0].token_in, [
-                        yield (0, transaction_1.functionCall)("near_deposit", {}, new bn_js_1.default("300000000000000"), new bn_js_1.default(data.actions[0].amount_in)),
-                    ], address, near);
+                if (priceRoute.tokenIn.includes("wrap.")) {
+                    const trx = yield near_utils_1.NearUtils.createTransaction(priceRoute.tokenIn, [yield (0, transaction_1.functionCall)("near_deposit", {}, new bn_js_1.default("300000000000000"), new bn_js_1.default(priceRoute.amountIn))], address, near);
                     nearTransactions.push(trx);
                 }
-                const trxs = yield Promise.all(priceRoute.map((tx) => __awaiter(this, void 0, void 0, function* () {
+                const trxs = yield Promise.all(priceRoute.txMain.map((tx) => __awaiter(this, void 0, void 0, function* () {
                     return yield near_utils_1.NearUtils.createTransaction(tx.receiverId, tx.functionCalls.map((fc) => {
                         return (0, transaction_1.functionCall)(fc.methodName, fc.args, fc.gas, new bn_js_1.default(String(near_api_js_1.utils.format.parseNearAmount(fc.amount))));
                     }), address, near);
                 })));
                 nearTransactions = nearTransactions.concat(trxs);
-                if (data.actions[0].token_out.includes("wrap.")) {
-                    const trx = yield near_utils_1.NearUtils.createTransaction(data.actions[0].token_out, [
-                        yield (0, transaction_1.functionCall)("near_withdraw", { amount: data.actions[0].min_amount_out }, new bn_js_1.default("300000000000000"), new bn_js_1.default("1")),
-                    ], address, near);
+                if (priceRoute.tokenOut.includes("wrap.")) {
+                    const trx = yield near_utils_1.NearUtils.createTransaction(priceRoute.minAmountOut, [yield (0, transaction_1.functionCall)("near_withdraw", { amount: priceRoute.minAmountOut }, new bn_js_1.default("300000000000000"), new bn_js_1.default("1"))], address, near);
                     nearTransactions.push(trx);
                 }
                 let resultSwap;
@@ -314,8 +312,8 @@ class NearService {
                 const block = resultSwap.transaction_outcome.block_hash;
                 if (!transactionHash)
                     return false;
-                const srcAmount = String(Number(data.actions[0].amount_in) / Math.pow(10, tokenIn.decimals));
-                const destAmount = String(Number(data.actions[0].min_amount_out) / Math.pow(10, tokenOut.decimals));
+                const srcAmount = String(Number(priceRoute.amountIn) / Math.pow(10, tokenIn.decimals));
+                const destAmount = String(Number(priceRoute.minAmountOut) / Math.pow(10, tokenOut.decimals));
                 return {
                     transactionHash,
                     srcAmount,

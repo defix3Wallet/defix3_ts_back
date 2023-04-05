@@ -16,23 +16,17 @@ export class WalletController {
   public createWalletDefix = async (req: Request, res: Response) => {
     try {
       const { defixId, seedPhrase, email } = req.body;
-      if (!defixId || !seedPhrase)
-        return res.status(400).send({ message: "Invalid data." });
+      if (!defixId || !seedPhrase) return res.status(400).send({ message: "Invalid data." });
 
       const mnemonic = CryptoShared.decrypt(seedPhrase);
 
-      if (!mnemonic)
-        return res.status(400).send({ message: "Seed Phrase invalid." });
+      if (!mnemonic) return res.status(400).send({ message: "Seed Phrase invalid." });
 
       const defixID: string = defixId.toLowerCase();
 
-      const wallet = await this.walletService.createWalletDefix(
-        defixID,
-        mnemonic
-      );
+      const wallet = await this.walletService.createWalletDefix(defixID, mnemonic);
 
-      if (!wallet)
-        return res.status(400).send({ message: "Internal server error." });
+      if (!wallet) return res.status(400).send({ message: "Internal server error." });
 
       if (await UtilsShared.validateEmail(email)) {
         this.mailService.sendMailPhrase(mnemonic, defixID, email);
@@ -46,13 +40,11 @@ export class WalletController {
   public importWalletDefix = async (req: Request, res: Response) => {
     try {
       const { seedPhrase } = req.body;
-      if (!seedPhrase)
-        return res.status(400).send({ message: "Invalid data." });
+      if (!seedPhrase) return res.status(400).send({ message: "Invalid data." });
 
       const mnemonic = CryptoShared.decrypt(seedPhrase);
 
-      if (!mnemonic)
-        return res.status(400).send({ message: "Seed Phrase invalid." });
+      if (!mnemonic) return res.status(400).send({ message: "Seed Phrase invalid." });
 
       const wallet = await this.walletService.importWalletDefix(mnemonic);
 
@@ -69,8 +61,7 @@ export class WalletController {
 
       const privateKey = CryptoShared.decrypt(pkEncrypt);
 
-      if (!privateKey)
-        return res.status(400).send({ message: "Invalid data." });
+      if (!privateKey) return res.status(400).send({ message: "Invalid data." });
 
       const wallet = await this.walletService.importFromPrivateKey(privateKey);
 
@@ -83,10 +74,38 @@ export class WalletController {
   public validateAddress = async (req: Request, res: Response) => {
     try {
       const { address, blockchain } = req.body;
-      if (!address || !blockchain)
-        return res.status(400).send({ message: "Invalid data." });
+      if (!address || !blockchain) return res.status(400).send({ message: "Invalid data." });
 
       res.send(await this.walletService.validateAddress(address, blockchain));
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
+    }
+  };
+
+  public importFromJson = async (req: Request, res: Response) => {
+    try {
+      const { ciphertext, typeLog, dateTime } = req.body;
+      if (!ciphertext || !typeLog || !dateTime) return res.status(400).send({ message: "Invalid data." });
+
+      const dataImport = {
+        ciphertext,
+        typeLog,
+        dateTime,
+      };
+
+      const wallet = await this.walletService.importFromJson(dataImport);
+
+      return res.send(wallet);
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
+    }
+  };
+
+  public exportWalletJson = async (req: Request, res: Response) => {
+    try {
+      const { ciphertext, typeLog } = req.body;
+      if (!ciphertext && (typeLog !== "MNEMONIC" || typeLog !== "PRIVATE_KEY")) return res.status(400).send({ message: "Invalid data." });
+      res.send(await this.walletService.exportWalletJson(ciphertext, typeLog));
     } catch (error: any) {
       return res.status(500).send({ message: error.message });
     }
