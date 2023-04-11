@@ -13,11 +13,7 @@ const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
 
 const ETHERSCAN = process.env.ETHERSCAN;
 
-const web3 = new Web3(
-  new Web3.providers.HttpProvider(
-    `https://${ETHEREUM_NETWORK}.infura.io/v3/${INFURA_PROJECT_ID}`
-  )
-);
+const web3 = new Web3(new Web3.providers.HttpProvider(`https://${ETHEREUM_NETWORK}.infura.io/v3/${INFURA_PROJECT_ID}`));
 
 const paraSwap = constructSimpleSDK({
   chainId: Number(process.env.PARASWAP_ETH),
@@ -41,9 +37,7 @@ export class EthereumService implements BlockchainService {
 
     return credential;
   }
-  async fromPrivateKey(
-    privateKey: string
-  ): Promise<CredentialInterface | null> {
+  async fromPrivateKey(privateKey: string): Promise<CredentialInterface | null> {
     try {
       const wallet = web3.eth.accounts.privateKeyToAccount(privateKey);
       const credential: CredentialInterface = {
@@ -81,16 +75,9 @@ export class EthereumService implements BlockchainService {
     }
   }
 
-  async getBalanceToken(
-    address: string,
-    srcContract: string,
-    decimals: number
-  ): Promise<number> {
+  async getBalanceToken(address: string, srcContract: string, decimals: number): Promise<number> {
     try {
-      let contract = new web3.eth.Contract(
-        abi as web3Utils.AbiItem[],
-        srcContract
-      );
+      let contract = new web3.eth.Contract(abi as web3Utils.AbiItem[], srcContract);
 
       const balance = await contract.methods.balanceOf(address).call();
 
@@ -111,17 +98,11 @@ export class EthereumService implements BlockchainService {
     }
   }
 
-  async getFeeTransaction(
-    coin: string,
-    blockchain: string,
-    typeTxn: string
-  ): Promise<any> {
+  async getFeeTransaction(coin: string, blockchain: string, typeTxn: string): Promise<any> {
     try {
       let comisionAdmin: any = await UtilsShared.getComision(coin);
 
-      const response = await axios.get(
-        "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6"
-      );
+      const response = await axios.get("https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6");
       const wei = response.data.result.SafeGasPrice;
 
       if (!wei) throw new Error(`Error getting gas price`);
@@ -148,9 +129,7 @@ export class EthereumService implements BlockchainService {
       if (!comision) {
         feeMain.fee = web3.utils.fromWei(String(gasLimit * wei), "gwei");
       } else {
-        feeMain.fee = String(
-          Number(web3.utils.fromWei(String(gasLimit * wei), "gwei")) * 2
-        );
+        feeMain.fee = String(Number(web3.utils.fromWei(String(gasLimit * wei), "gwei")) * 2);
       }
       return feeMain;
     } catch (err: any) {
@@ -158,19 +137,11 @@ export class EthereumService implements BlockchainService {
     }
   }
 
-  async sendTransfer(
-    fromAddress: string,
-    privateKey: string,
-    toAddress: string,
-    amount: number,
-    coin: string
-  ): Promise<string> {
+  async sendTransfer(fromAddress: string, privateKey: string, toAddress: string, amount: number, coin: string): Promise<string> {
     try {
       const balance = await this.getBalance(fromAddress);
       if (balance < amount) {
-        throw new Error(
-          `Error: You do not have enough funds to make the transfer`
-        );
+        throw new Error(`Error: You do not have enough funds to make the transfer`);
       }
 
       const gasPrice = await web3.eth.getGasPrice();
@@ -186,20 +157,13 @@ export class EthereumService implements BlockchainService {
         nonce: nonce,
       };
 
-      const signedTransaction = await web3.eth.accounts.signTransaction(
-        rawTransaction,
-        privateKey
-      );
+      const signedTransaction = await web3.eth.accounts.signTransaction(rawTransaction, privateKey);
 
-      if (!signedTransaction.rawTransaction)
-        throw new Error(`Error: Failed to sign transaction`);
+      if (!signedTransaction.rawTransaction) throw new Error(`Error: Failed to sign transaction`);
 
-      const transactionHash = await web3.eth.sendSignedTransaction(
-        signedTransaction.rawTransaction
-      );
+      const transactionHash = await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
 
-      if (!transactionHash.transactionHash)
-        throw new Error(`Error: Failed to send transaction`);
+      if (!transactionHash.transactionHash) throw new Error(`Error: Failed to send transaction`);
 
       return transactionHash.transactionHash;
 
@@ -236,29 +200,14 @@ export class EthereumService implements BlockchainService {
     }
   }
 
-  async sendTransferToken(
-    fromAddress: string,
-    privateKey: string,
-    toAddress: string,
-    amount: number,
-    srcToken: any
-  ): Promise<string> {
+  async sendTransferToken(fromAddress: string, privateKey: string, toAddress: string, amount: number, srcToken: any): Promise<string> {
     try {
-      const balance = await this.getBalanceToken(
-        fromAddress,
-        srcToken.contract,
-        srcToken.decimals
-      );
+      const balance = await this.getBalanceToken(fromAddress, srcToken.contract, srcToken.decimals);
       if (balance < amount) {
-        throw new Error(
-          `Error: You do not have enough funds to make the transfer`
-        );
+        throw new Error(`Error: You do not have enough funds to make the transfer`);
       }
 
-      const provider = new ethers.providers.InfuraProvider(
-        ETHEREUM_NETWORK,
-        INFURA_PROJECT_ID
-      );
+      const provider = new ethers.providers.InfuraProvider(ETHEREUM_NETWORK, INFURA_PROJECT_ID);
 
       const minABI = abi;
 
@@ -279,18 +228,9 @@ export class EthereumService implements BlockchainService {
     }
   }
 
-  async previewSwap(
-    fromCoin: string,
-    toCoin: string,
-    amount: number,
-    blockchain: string,
-    address: string
-  ): Promise<any> {
+  async previewSwap(fromCoin: string, toCoin: string, amount: number, blockchain: string, address: string): Promise<any> {
     try {
-      let fromToken: any = await UtilsShared.getTokenContract(
-        fromCoin,
-        blockchain
-      );
+      let fromToken: any = await UtilsShared.getTokenContract(fromCoin, blockchain);
       let toToken: any = await UtilsShared.getTokenContract(toCoin, blockchain);
 
       if (!fromToken) {
@@ -309,9 +249,7 @@ export class EthereumService implements BlockchainService {
         amount: String(srcAmount),
       });
 
-      const response = await axios.get(
-        "https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6"
-      );
+      const response = await axios.get("https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6");
       let wei = response.data.result.SafeGasPrice;
 
       const comision = await UtilsShared.getComision(blockchain);
@@ -327,19 +265,14 @@ export class EthereumService implements BlockchainService {
           feeTransfer = web3.utils.fromWei(String(55000 * wei), "gwei");
         }
       }
-      const feeGas = web3.utils.fromWei(
-        String(Number(priceRoute.gasCost) * wei),
-        "gwei"
-      );
+      const feeGas = web3.utils.fromWei(String(Number(priceRoute.gasCost) * wei), "gwei");
 
       const srcFee = String(Number(feeTransfer) + Number(feeGas));
 
       let feeDefix = String(Number(srcFee) * porcentFee);
 
       const swapRate = String(
-        Number(priceRoute.destAmount) /
-          Math.pow(10, toToken.decimals) /
-          (Number(priceRoute.srcAmount) / Math.pow(10, fromToken.decimals))
+        Number(priceRoute.destAmount) / Math.pow(10, toToken.decimals) / (Number(priceRoute.srcAmount) / Math.pow(10, fromToken.decimals))
       );
 
       const dataSwap = {
@@ -362,11 +295,7 @@ export class EthereumService implements BlockchainService {
     }
   }
 
-  async sendSwap(
-    priceRoute: any,
-    privateKey: string,
-    address: string
-  ): Promise<any> {
+  async sendSwap(priceRoute: any, privateKey: string, address: string): Promise<any> {
     try {
       const signer = web3.eth.accounts.privateKeyToAccount(privateKey);
 
@@ -383,21 +312,14 @@ export class EthereumService implements BlockchainService {
 
       if (!txSigned.rawTransaction) throw new Error(`Failed to sign swap.`);
 
-      const result = await web3.eth.sendSignedTransaction(
-        txSigned.rawTransaction
-      );
+      const result = await web3.eth.sendSignedTransaction(txSigned.rawTransaction);
 
       const transactionHash = result.transactionHash;
 
-      if (!transactionHash)
-        throw new Error(`Failed to send swap, transaction Hash.`);
+      if (!transactionHash) throw new Error(`Failed to send swap, transaction Hash.`);
 
-      const srcAmount = String(
-        Number(priceRoute.srcAmount) / Math.pow(10, priceRoute.srcDecimals)
-      );
-      const destAmount = String(
-        Number(priceRoute.destAmount) / Math.pow(10, priceRoute.destDecimals)
-      );
+      const srcAmount = String(Number(priceRoute.srcAmount) / Math.pow(10, priceRoute.srcDecimals));
+      const destAmount = String(Number(priceRoute.destAmount) / Math.pow(10, priceRoute.destDecimals));
 
       return {
         transactionHash,

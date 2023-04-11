@@ -43,6 +43,7 @@ export class NearService implements BlockchainService {
 
     return credential;
   }
+
   async fromPrivateKey(privateKey: string): Promise<CredentialInterface | null> {
     try {
       if (!privateKey.includes("ed25519:")) return null;
@@ -60,6 +61,7 @@ export class NearService implements BlockchainService {
       return null;
     }
   }
+
   async importWallet(nearId: string, mnemonic: string): Promise<CredentialInterface> {
     const walletSeed = await nearSEED.parseSeedPhrase(mnemonic);
     const credential: CredentialInterface = {
@@ -70,6 +72,7 @@ export class NearService implements BlockchainService {
 
     return credential;
   }
+
   async isAddress(address: string): Promise<boolean> {
     const keyStore = new keyStores.InMemoryKeyStore();
     const near = new Near(NearUtils.ConfigNEAR(keyStore));
@@ -84,6 +87,7 @@ export class NearService implements BlockchainService {
       });
     return is_address;
   }
+
   async getBalance(address: string): Promise<number> {
     try {
       let balanceTotal = 0;
@@ -106,6 +110,7 @@ export class NearService implements BlockchainService {
       return 0;
     }
   }
+
   async getBalanceToken(address: string, srcContract: string, decimals: number): Promise<number> {
     try {
       const keyStore = new keyStores.InMemoryKeyStore();
@@ -185,8 +190,53 @@ export class NearService implements BlockchainService {
     }
   }
 
-  sendTransferToken(fromAddress: string, privateKey: string, toAddress: string, amount: number, srcToken: any): Promise<string> {
-    throw new Error("Method not implemented.");
+  async sendTransferToken(fromAddress: string, privateKey: string, toAddress: string, amount: number, srcToken: any): Promise<string> {
+    try {
+      const balance = await this.getBalanceToken(fromAddress, srcToken.contract, srcToken.decimals);
+      if (balance < amount) {
+        throw new Error(`Error: You do not have enough funds to make the transfer`);
+      }
+
+      const keyStore = new keyStores.InMemoryKeyStore();
+
+      const keyPair = KeyPair.fromString(privateKey);
+      keyStore.setKey(process.env.NEAR_ENV!, fromAddress, keyPair);
+      const near = new Near(NearUtils.ConfigNEAR(keyStore));
+
+      const account = new AccountService(near.connection, fromAddress);
+
+      const activated = await activateAccount(account, fromAddress, toAddress, srcToken, near);
+
+      if (!activated) throw new Error(`Error: To activated account`);
+
+      let value = Math.pow(10, srcToken.decimals);
+      let srcAmount = Math.round(amount * value);
+
+      const trx = await NearUtils.createTransaction(
+        srcToken,
+        [
+          await functionCall(
+            "ft_transfer",
+            {
+              receiver_id: toAddress,
+              amount: String(srcAmount),
+            },
+            new BN("30000000000000"),
+            new BN("1")
+          ),
+        ],
+        fromAddress,
+        near
+      );
+
+      const result = await account.signAndSendTrx(trx);
+
+      if (!result.transaction.hash) throw new Error(`Failed to send transfer.`);
+
+      return result.transaction.hash as string;
+    } catch (err: any) {
+      throw new Error(`Failed to send transfer, ${err.message}`);
+    }
   }
 
   async previewSwap(fromCoin: string, toCoin: string, amount: number, blockchain: string, address: string): Promise<any> {
@@ -370,5 +420,52 @@ export class NearService implements BlockchainService {
     } catch (err: any) {
       throw new Error(`Failed to send swap, ${err.message}`);
     }
+  }
+}
+
+async function activateAccount(account: AccountService, fromAddress: string, toAddress: string, srcToken: string, near: Near) {
+  try {
+    if (!toAddress) return false;
+    const contract: any = new Contract(
+      account, // the account object that is connecting
+      srcToken,
+      {
+        viewMethods: ["storage_balance_of"], // view methods do not change state but usually return a value
+        changeMethods: [], // change methods modify state
+      }
+    );
+
+    const addressActivate = await contract.storage_balance_of({
+      account_id: toAddress,
+    });
+
+    if (addressActivate) return true;
+
+    const trx = await NearUtils.createTransaction(
+      srcToken,
+      [
+        await functionCall(
+          "storage_deposit",
+          {
+            registration_only: true,
+            account_id: toAddress,
+          },
+          new BN("300000000000000"),
+          new BN("100000000000000000000000")
+        ),
+      ],
+      fromAddress,
+      near
+    );
+
+    const result = await account.signAndSendTrx(trx);
+
+    if (!result.transaction.hash) return false;
+    console.log("ACTIVATE END");
+    return true;
+  } catch (error) {
+    console.log(error);
+    console.log("ACTIVATE ERR");
+    return false;
   }
 }

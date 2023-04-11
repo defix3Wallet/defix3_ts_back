@@ -2,7 +2,7 @@ import axios from "axios";
 import dbConnect from "../../config/postgres";
 import { AddressEntity } from "../../modules/address/entities/address.entity";
 import { Action, createTransaction } from "near-api-js/lib/transaction";
-import { Account, ConnectedWalletAccount, Near, WalletConnection, utils } from "near-api-js";
+import { Account, ConnectedWalletAccount, Contract, Near, WalletConnection, utils } from "near-api-js";
 import { PublicKey } from "near-api-js/lib/utils";
 import { DCLSwap, Pool, StablePool, SwapOptions, estimateSwap, fetchAllPools, getDCLPoolId, getStablePools, instantSwap } from "@ref-finance/ref-sdk";
 

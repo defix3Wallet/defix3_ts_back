@@ -84,8 +84,11 @@ export class WalletController {
 
   public importFromJson = async (req: Request, res: Response) => {
     try {
-      const { ciphertext, typeLog, dateTime } = req.body;
-      if (!ciphertext || !typeLog || !dateTime) return res.status(400).send({ message: "Invalid data." });
+      const { data } = req.body;
+      if (!data) return res.status(400).send({ message: "Invalid data." });
+
+      const { ciphertext, typeLog, dateTime } = JSON.parse(data);
+      if (!ciphertext || !typeLog || !dateTime) return res.status(400).send({ message: "Invalid variables." });
 
       const dataImport = {
         ciphertext,
@@ -104,8 +107,12 @@ export class WalletController {
   public exportWalletJson = async (req: Request, res: Response) => {
     try {
       const { ciphertext, typeLog } = req.body;
-      if (!ciphertext && (typeLog !== "MNEMONIC" || typeLog !== "PRIVATE_KEY")) return res.status(400).send({ message: "Invalid data." });
-      res.send(await this.walletService.exportWalletJson(ciphertext, typeLog));
+      const ciphertextMain = CryptoShared.decrypt(ciphertext);
+
+      if (!ciphertextMain) return res.status(400).send({ message: "Invalid data." });
+
+      if (!ciphertextMain && (typeLog !== "MNEMONIC" || typeLog !== "PRIVATE_KEY")) return res.status(400).send({ message: "Invalid data." });
+      res.send(JSON.stringify(await this.walletService.exportWalletJson(ciphertextMain, typeLog)));
     } catch (error: any) {
       return res.status(500).send({ message: error.message });
     }
