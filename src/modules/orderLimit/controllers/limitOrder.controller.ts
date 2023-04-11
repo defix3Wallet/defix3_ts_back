@@ -38,6 +38,11 @@ const seriesContractAddress = seriesNonceManagerContractAddresses[chainId];
 const limitOrderBuilder = new LimitOrderBuilder(seriesContractAddress, chainId, connector);
 const limitOrderProtocolFacade = new LimitOrderProtocolFacade(contractAddress, chainId, connector);
 
+const seriesNonceManagerFacade = new SeriesNonceManagerFacade(seriesContractAddress, chainId, connector);
+const limitOrderPredicateBuilder = new LimitOrderPredicateBuilder(limitOrderProtocolFacade);
+
+const { arbitraryStaticCall, and, timestampBelow } = limitOrderPredicateBuilder;
+
 export class LimitOrderController {
   private limitOrderService: LimitOrderService;
   private mailService: MailShared;
@@ -49,16 +54,22 @@ export class LimitOrderController {
 
   public getLimitOrder = async (req: Request, res: Response) => {
     try {
-      // Creates predicate that restricts Limit Order invalidation conditions
-      // Because timestampBelowAndNonceEquals is method of another contract arbitraryStaticCall() is necessary
-
+      console.log("HOLA", NonceSeriesV2.LimitOrderV3);
+      const nonce = await seriesNonceManagerFacade.increaseNonce(NonceSeriesV2.LimitOrderV3);
+      const expiration = 5444440000;
+      console.log(seriesContractAddress);
+      const predicate = arbitraryStaticCall(
+        seriesContractAddress,
+        limitOrderPredicateBuilder.timestampBelowAndNonceEquals(expiration, nonce, walletAddress)
+      );
+      console.log(predicate);
       const limitOrder = limitOrderBuilder.buildLimitOrder({
         makerAssetAddress: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
         takerAssetAddress: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52",
         makerAddress: walletAddress,
         makingAmount: "100",
         takingAmount: "200",
-        // predicate = '0x',
+        predicate,
         // permit = '0x',
         // receiver = ZERO_ADDRESS,
         // allowedSender = ZERO_ADDRESS,

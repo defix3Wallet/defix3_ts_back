@@ -14,20 +14,19 @@ export class WithdrawService extends TransactionHistoryService {
     this.frequentService = new FrequentService();
   }
 
-  public getFeeWithdraw = async (
-    coin: string,
-    blockchain: string,
-    amount: number | undefined,
-    address: string | undefined
-  ) => {
+  public getFeeWithdraw = async (coin: string, blockchain: string, amount: number | undefined, address: string | undefined) => {
     try {
       if (!Object.keys(blockchainService).includes(blockchain.toLowerCase())) {
         throw new Error(`Invalid blockchain.`);
       }
 
-      const feeTransfer = await blockchainService[
-        blockchain.toLowerCase() as keyof typeof blockchainService
-      ].getFeeTransaction(coin, blockchain, "WITHDRAW", amount, address);
+      const feeTransfer = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].getFeeTransaction(
+        coin,
+        blockchain,
+        "WITHDRAW",
+        amount,
+        address
+      );
 
       if (!feeTransfer) {
         throw new Error(`Internal error fee preview.`);
@@ -39,21 +38,12 @@ export class WithdrawService extends TransactionHistoryService {
     }
   };
 
-  public sendWithdraw = async (
-    fromDefix: string,
-    privateKey: string,
-    toAddress: string,
-    coin: string,
-    amount: number,
-    blockchain: string
-  ) => {
+  public sendWithdraw = async (fromDefix: string, privateKey: string, toAddress: string, coin: string, amount: number, blockchain: string) => {
     try {
       let transactionHash: string | undefined, fromAddress;
 
       if (fromDefix.includes(".defix3")) {
-        fromAddress = (
-          await this.addressService.getAddressByDefixId(fromDefix, blockchain)
-        )?.address;
+        fromAddress = (await this.addressService.getAddressByDefixId(fromDefix, blockchain))?.address;
       } else {
         fromAddress = fromDefix;
       }
@@ -61,25 +51,22 @@ export class WithdrawService extends TransactionHistoryService {
       if (!fromAddress || !toAddress) throw new Error(`Invalid data.`);
 
       if (Object.keys(blockchainService).includes(coin.toLowerCase())) {
-        transactionHash = await blockchainService[
-          coin.toLowerCase() as keyof typeof blockchainService
-        ].sendTransfer(fromAddress, privateKey, toAddress, amount, coin);
+        transactionHash = await blockchainService[coin.toLowerCase() as keyof typeof blockchainService].sendTransfer(
+          fromAddress,
+          privateKey,
+          toAddress,
+          amount,
+          coin
+        );
       } else {
-        if (
-          !Object.keys(blockchainService).includes(blockchain.toLowerCase())
-        ) {
+        if (!Object.keys(blockchainService).includes(blockchain.toLowerCase())) {
           throw new Error(`Invalid data.`);
         }
-        const srcContract = await UtilsShared.getTokenContract(
-          coin,
-          blockchain
-        );
+        const srcContract = await UtilsShared.getTokenContract(coin, blockchain);
 
         if (!srcContract) throw new Error(`Failed to get token contract.`);
 
-        transactionHash = await blockchainService[
-          blockchain.toLowerCase() as keyof typeof blockchainService
-        ].sendTransferToken(
+        transactionHash = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].sendTransferToken(
           fromAddress,
           privateKey,
           toAddress,
@@ -102,11 +89,7 @@ export class WithdrawService extends TransactionHistoryService {
         typeTxn: "WITHDRAW",
       });
 
-      await this.frequentService.createFrequent(
-        fromDefix,
-        toAddress,
-        "WITHDRAW"
-      );
+      await this.frequentService.createFrequent(fromDefix, toAddress, "WITHDRAW");
       return transaction;
     } catch (err) {
       throw new Error(`Failed to send transfer, ${err}`);

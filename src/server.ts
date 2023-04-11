@@ -60,18 +60,9 @@ class Server {
   public listen() {
     if (process.env.NODE_ENV === "production") {
       const credentials = {
-        key: fs.readFileSync(
-          "/etc/letsencrypt/live/defix3.com/privkey.pem",
-          "utf8"
-        ),
-        cert: fs.readFileSync(
-          "/etc/letsencrypt/live/defix3.com/cert.pem",
-          "utf8"
-        ),
-        ca: fs.readFileSync(
-          "/etc/letsencrypt/live/defix3.com/chain.pem",
-          "utf8"
-        ),
+        key: fs.readFileSync("/etc/letsencrypt/live/defix3.com/privkey.pem", "utf8"),
+        cert: fs.readFileSync("/etc/letsencrypt/live/defix3.com/cert.pem", "utf8"),
+        ca: fs.readFileSync("/etc/letsencrypt/live/defix3.com/chain.pem", "utf8"),
       };
       this.server = https.createServer(credentials, this.app);
     } else {

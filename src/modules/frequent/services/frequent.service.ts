@@ -4,17 +4,9 @@ import { UserService } from "../../users/services/user.service";
 import { FrequentEntity } from "../entities/frequent.entity";
 
 export class FrequentService extends UserService {
-  public createFrequent = async (
-    user: string,
-    frequentUser: string,
-    typeTxn: string
-  ) => {
+  public createFrequent = async (user: string, frequentUser: string, typeTxn: string) => {
     try {
-      const userFrequent = await this.getFrequentByDefixId(
-        user,
-        frequentUser,
-        typeTxn
-      );
+      const userFrequent = await this.getFrequentByDefixId(user, frequentUser, typeTxn);
       if (userFrequent) throw new Error(`User frequent already exists.`);
 
       const userDefix = await this.getUserByDefixId(user);
@@ -34,11 +26,7 @@ export class FrequentService extends UserService {
     }
   };
 
-  public getFrequentByDefixId = async (
-    defixId: string,
-    frequentUser: string,
-    typeTxn: string
-  ) => {
+  public getFrequentByDefixId = async (defixId: string, frequentUser: string, typeTxn: string) => {
     try {
       const frequent = await FrequentEntity.findOneBy({
         user: { defixId },

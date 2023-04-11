@@ -1,8 +1,6 @@
 import nodemailer from "nodemailer";
 import path from "path";
-import hbs, {
-  NodemailerExpressHandlebarsOptions,
-} from "nodemailer-express-handlebars";
+import hbs, { NodemailerExpressHandlebarsOptions } from "nodemailer-express-handlebars";
 import { UserService } from "../../modules/users/services/user.service";
 
 export class MailShared {
@@ -60,12 +58,7 @@ export class MailShared {
     });
   };
 
-  public sendMail = async (
-    fromDefix: string,
-    toDefix: string,
-    type: string,
-    data: any
-  ) => {
+  public sendMail = async (fromDefix: string, toDefix: string, type: string, data: any) => {
     const from = await this.getEmailFlag(fromDefix, "SEND");
     const to = await this.getEmailFlag(toDefix, "RECEIVE");
 
@@ -109,12 +102,9 @@ export class MailShared {
                   tipoEnvio: tipoEnvio,
                 },
               };
-              this.transporter.sendMail(
-                mailOptionsFrom,
-                function (error, info) {
-                  return true;
-                }
-              );
+              this.transporter.sendMail(mailOptionsFrom, function (error, info) {
+                return true;
+              });
             }
           }
 

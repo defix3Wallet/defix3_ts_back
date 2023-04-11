@@ -96,10 +96,6 @@ export class Routes {
      *        '500':
      *          description: Internal Server Error.
      */
-    router.post(
-      "/send-transfer/",
-      this.middleware2fa.validateTwoFA,
-      this.controller.sendTransfer
-    );
+    router.post("/send-transfer/", this.middleware2fa.validateTwoFA, this.controller.sendTransfer);
   }
 }

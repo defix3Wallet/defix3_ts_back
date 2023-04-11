@@ -79,24 +79,21 @@ export class UserController {
     }
 
     if (typeof req.body.flagDeposit === "string") {
-      if (req.body.flagDeposit.toLowerCase() === "true")
-        req.body.flagDeposit = true;
+      if (req.body.flagDeposit.toLowerCase() === "true") req.body.flagDeposit = true;
       else if (req.body.flagDeposit.toLowerCase() === "false") {
         req.body.flagDeposit = false;
       }
     }
 
     if (typeof req.body.flagWithdraw === "string") {
-      if (req.body.flagWithdraw.toLowerCase() === "true")
-        req.body.flagWithdraw = true;
+      if (req.body.flagWithdraw.toLowerCase() === "true") req.body.flagWithdraw = true;
       else if (req.body.flagWithdraw.toLowerCase() === "false") {
         req.body.flagWithdraw = false;
       }
     }
 
     if (typeof req.body.flagEvolution === "string") {
-      if (req.body.flagEvolution.toLowerCase() === "true")
-        req.body.flagEvolution = true;
+      if (req.body.flagEvolution.toLowerCase() === "true") req.body.flagEvolution = true;
       else if (req.body.flagEvolution.toLowerCase() === "false") {
         req.body.flagEvolution = false;
       }

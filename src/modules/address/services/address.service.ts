@@ -3,11 +3,7 @@ import { UserEntity } from "../../users/entities/user.entity";
 import { AddressEntity } from "../entities/address.entity";
 
 export class AddressService {
-  public createAddress = async (
-    user: UserEntity,
-    blockchain: string,
-    address: string
-  ) => {
+  public createAddress = async (user: UserEntity, blockchain: string, address: string) => {
     try {
       const walletAddress = new AddressEntity();
 

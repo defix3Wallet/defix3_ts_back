@@ -17,16 +17,9 @@ export class SwapController {
     try {
       const { fromCoin, toCoin, amount, blockchain, address } = req.body;
 
-      if (!fromCoin || !toCoin || !amount || !blockchain)
-        return res.status(400).send({ message: "Invalid data." });
+      if (!fromCoin || !toCoin || !amount || !blockchain) return res.status(400).send({ message: "Invalid data." });
 
-      const previewData = await this.swapService.getPreviewSwap(
-        fromCoin,
-        toCoin,
-        amount,
-        blockchain,
-        address
-      );
+      const previewData = await this.swapService.getPreviewSwap(fromCoin, toCoin, amount, blockchain, address);
       res.send(previewData);
     } catch (error: any) {
       return res.status(500).send({ message: error.message });
@@ -35,38 +28,19 @@ export class SwapController {
 
   public sendSwap = async (req: Request, res: Response) => {
     try {
-      const { defixId, fromCoin, toCoin, pkEncrypt, priceRoute, blockchain } =
-        req.body;
+      const { defixId, fromCoin, toCoin, pkEncrypt, priceRoute, blockchain } = req.body;
 
-      if (
-        !fromCoin ||
-        !toCoin ||
-        !defixId ||
-        !priceRoute ||
-        !pkEncrypt ||
-        !blockchain
-      )
-        return res.status(400).send({ message: "Invalid data." });
+      if (!fromCoin || !toCoin || !defixId || !priceRoute || !pkEncrypt || !blockchain) return res.status(400).send({ message: "Invalid data." });
 
       const privateKey = CryptoShared.decrypt(pkEncrypt);
 
-      if (!privateKey)
-        return res.status(400).send({ message: "privateKey invalid." });
+      if (!privateKey) return res.status(400).send({ message: "privateKey invalid." });
 
       const address = await UtilsShared.getAddressUser(defixId, blockchain);
 
-      if (!address)
-        return res.status(400).send({ message: "Address invalid." });
+      if (!address) return res.status(400).send({ message: "Address invalid." });
 
-      const swapResult = await this.swapService.sendSwap(
-        defixId,
-        fromCoin,
-        toCoin,
-        priceRoute,
-        privateKey,
-        blockchain,
-        address
-      );
+      const swapResult = await this.swapService.sendSwap(defixId, fromCoin, toCoin, priceRoute, privateKey, blockchain, address);
 
       res.send(swapResult);
     } catch (error: any) {

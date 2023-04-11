@@ -22,13 +22,11 @@ const swaggerDefinition: OAS3Definition = {
   tags: [
     {
       name: "Wallet",
-      description:
-        "EndPoints asociados a la creacion y funciones basicas de las wallets.",
+      description: "EndPoints asociados a la creacion y funciones basicas de las wallets.",
     },
     {
       name: "User",
-      description:
-        "EndPoints asociados a la configuracion del perfil de los usuarios.",
+      description: "EndPoints asociados a la configuracion del perfil de los usuarios.",
     },
     {
       name: "2FA",
@@ -60,13 +58,11 @@ const swaggerDefinition: OAS3Definition = {
     },
     {
       name: "Frequent",
-      description:
-        "EndPoints para los usuarios frecuentes al hacer transferencias",
+      description: "EndPoints para los usuarios frecuentes al hacer transferencias",
     },
     {
       name: "Subscription",
-      description:
-        "EndPoint para guardar correo de usuario que quiera recibir notificaciones de Defix3",
+      description: "EndPoint para guardar correo de usuario que quiera recibir notificaciones de Defix3",
     },
   ],
   components: {

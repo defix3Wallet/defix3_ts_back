@@ -6,21 +6,19 @@ export class LimitOrderService extends TransactionHistoryService {
     super();
   }
 
-  public getLimitOrder = async (
-    fromCoin: string,
-    toCoin: string,
-    amount: number,
-    blockchain: string,
-    address: string
-  ) => {
+  public getLimitOrder = async (fromCoin: string, toCoin: string, amount: number, blockchain: string, address: string) => {
     try {
       if (!Object.keys(blockchainService).includes(blockchain.toLowerCase())) {
         throw new Error(`Invalid blockchain.`);
       }
 
-      const swapResult = await blockchainService[
-        blockchain.toLowerCase() as keyof typeof blockchainService
-      ].previewSwap(fromCoin, toCoin, amount, blockchain, address);
+      const swapResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].previewSwap(
+        fromCoin,
+        toCoin,
+        amount,
+        blockchain,
+        address
+      );
 
       if (!swapResult) {
         throw new Error(`Internal error swap preview.`);
@@ -46,9 +44,11 @@ export class LimitOrderService extends TransactionHistoryService {
         throw new Error(`Invalid blockchain.`);
       }
 
-      const swapResult = await blockchainService[
-        blockchain.toLowerCase() as keyof typeof blockchainService
-      ].sendSwap(priceRoute, privateKey, address);
+      const swapResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].sendSwap(
+        priceRoute,
+        privateKey,
+        address
+      );
 
       if (!swapResult) throw new Error(`Transaction hash.`);
 

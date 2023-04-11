@@ -3,11 +3,7 @@ import { UtilsShared } from "../../../shared/utils/utils.shared";
 import { UserEntity } from "../entities/user.entity";
 
 export class UserService {
-  public createUser = async (
-    defixId: string,
-    importId: string,
-    email?: string
-  ) => {
+  public createUser = async (defixId: string, importId: string, email?: string) => {
     try {
       const user = new UserEntity();
 

@@ -9,11 +9,7 @@ export class TwoFAMiddleware {
     this.twoFAService = new TwoFAService();
   }
 
-  public validateTwoFA = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  public validateTwoFA = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { defixId, code2fa } = req.body;
 
@@ -27,10 +23,7 @@ export class TwoFAMiddleware {
 
       if (!user.twofa) return next();
 
-      if (!code2fa)
-        return res
-          .status(404)
-          .send({ message: `Invalid data, Error: code2fa.` });
+      if (!code2fa) return res.status(404).send({ message: `Invalid data, Error: code2fa.` });
 
       const auth = await this.twoFAService.checkTwoFA(code2fa, user.secret);
 

@@ -8,21 +8,19 @@ export class SwapService extends TransactionHistoryService {
     super();
   }
 
-  public getPreviewSwap = async (
-    fromCoin: string,
-    toCoin: string,
-    amount: number,
-    blockchain: string,
-    address: string
-  ) => {
+  public getPreviewSwap = async (fromCoin: string, toCoin: string, amount: number, blockchain: string, address: string) => {
     try {
       if (!Object.keys(blockchainService).includes(blockchain.toLowerCase())) {
         throw new Error(`Invalid blockchain.`);
       }
 
-      const swapResult = await blockchainService[
-        blockchain.toLowerCase() as keyof typeof blockchainService
-      ].previewSwap(fromCoin, toCoin, amount, blockchain, address);
+      const swapResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].previewSwap(
+        fromCoin,
+        toCoin,
+        amount,
+        blockchain,
+        address
+      );
 
       if (!swapResult) {
         throw new Error(`Internal error swap preview.`);
@@ -48,9 +46,11 @@ export class SwapService extends TransactionHistoryService {
         throw new Error(`Invalid blockchain.`);
       }
 
-      const swapResult = await blockchainService[
-        blockchain.toLowerCase() as keyof typeof blockchainService
-      ].sendSwap(priceRoute, privateKey, address);
+      const swapResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].sendSwap(
+        priceRoute,
+        privateKey,
+        address
+      );
 
       if (!swapResult) throw new Error(`Transaction hash.`);
 
@@ -70,10 +70,7 @@ export class SwapService extends TransactionHistoryService {
 
       transactionHistory.block = swapResult.block;
       transactionHistory.destAmount = swapResult.destAmount;
-      transactionHistory.linkTxn = UtilsShared.getLinkTransaction(
-        blockchain,
-        swapResult.transactionHash
-      );
+      transactionHistory.linkTxn = UtilsShared.getLinkTransaction(blockchain, swapResult.transactionHash);
 
       return transactionHistory;
     } catch (err) {

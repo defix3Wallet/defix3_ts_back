@@ -41,10 +41,6 @@ export class Routes {
      *        '500':
      *          description: Internal Server Error.
      */
-    router.post(
-      "/get-balance/",
-      this.middleware.defixIdValid,
-      this.controller.getBalance
-    );
+    router.post("/get-balance/", this.middleware.defixIdValid, this.controller.getBalance);
   }
 }

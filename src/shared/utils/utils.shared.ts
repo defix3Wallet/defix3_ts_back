@@ -61,17 +61,12 @@ export class UtilsShared {
   static getCryptos = async () => {
     try {
       const conexion = await dbConnect();
-      const cryptocurrencys = await conexion.query(
-        "select * from backend_cryptocurrency"
-      );
+      const cryptocurrencys = await conexion.query("select * from backend_cryptocurrency");
 
       const cryptos = [];
 
       for (let cryptocurrency of cryptocurrencys.rows) {
-        const tokens = await conexion.query(
-          "select * from backend_token where cryptocurrency_id = $1",
-          [cryptocurrency.id]
-        );
+        const tokens = await conexion.query("select * from backend_token where cryptocurrency_id = $1", [cryptocurrency.id]);
         cryptocurrency.tokens = tokens.rows;
         cryptos.push(cryptocurrency);
       }

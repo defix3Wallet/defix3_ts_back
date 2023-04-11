@@ -6,8 +6,7 @@ export class SubscriptionService {
     try {
       const subscription = new SubscriptionEntity();
 
-      if (!(await UtilsShared.validateEmail(email)))
-        throw new Error(`Invalid email`);
+      if (!(await UtilsShared.validateEmail(email))) throw new Error(`Invalid email`);
 
       subscription.email = email;
 

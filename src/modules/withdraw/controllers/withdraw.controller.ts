@@ -16,15 +16,9 @@ export class WithdrawController {
     try {
       const { coin, blockchain, amount, address } = req.body;
 
-      if (!coin || !blockchain)
-        return res.status(400).send({ message: "Invalid data." });
+      if (!coin || !blockchain) return res.status(400).send({ message: "Invalid data." });
 
-      const previewData = await this.withdrawService.getFeeWithdraw(
-        coin,
-        blockchain,
-        amount,
-        address
-      );
+      const previewData = await this.withdrawService.getFeeWithdraw(coin, blockchain, amount, address);
       res.send(previewData);
     } catch (error: any) {
       return res.status(500).send({ message: error.message });
@@ -33,32 +27,15 @@ export class WithdrawController {
 
   public sendWithdraw = async (req: Request, res: Response) => {
     try {
-      const { defixId, pkEncrypt, toAddress, coin, amount, blockchain } =
-        req.body;
+      const { defixId, pkEncrypt, toAddress, coin, amount, blockchain } = req.body;
 
-      if (
-        !defixId ||
-        !pkEncrypt ||
-        !toAddress ||
-        !coin ||
-        !amount ||
-        !blockchain
-      )
-        return res.status(400).send({ message: "Invalid data." });
+      if (!defixId || !pkEncrypt || !toAddress || !coin || !amount || !blockchain) return res.status(400).send({ message: "Invalid data." });
 
       const privateKey = CryptoShared.decrypt(pkEncrypt);
 
-      if (!privateKey)
-        return res.status(400).send({ message: "privateKey invalid." });
+      if (!privateKey) return res.status(400).send({ message: "privateKey invalid." });
 
-      const withdrawal = await this.withdrawService.sendWithdraw(
-        defixId,
-        privateKey,
-        toAddress,
-        coin,
-        amount,
-        blockchain
-      );
+      const withdrawal = await this.withdrawService.sendWithdraw(defixId, privateKey, toAddress, coin, amount, blockchain);
 
       this.mailService.sendMail(defixId, toAddress, "envio", {
         monto: amount,

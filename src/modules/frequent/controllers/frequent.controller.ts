@@ -22,8 +22,7 @@ export class FrequentController {
     try {
       const { id } = req.body;
       const resultDelete = await this.frequentService.deleteFrequentById(id);
-      if (resultDelete.affected === 0)
-        return res.status(400).send({ message: "Frequent not found" });
+      if (resultDelete.affected === 0) return res.status(400).send({ message: "Frequent not found" });
       return res.status(204).send();
     } catch (error: any) {
       return res.status(500).send({ message: error.message });

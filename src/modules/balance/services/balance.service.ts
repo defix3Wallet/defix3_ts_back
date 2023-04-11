@@ -13,9 +13,7 @@ export class BalanceService {
 
   public getBalance = async (defixId: string) => {
     try {
-      const addresses = await this.addressService.getAddressesByDefixId(
-        defixId
-      );
+      const addresses = await this.addressService.getAddressesByDefixId(defixId);
       const balances: BalanceCrypto[] = [];
 
       const cryptos = await UtilsShared.getCryptos();
@@ -30,17 +28,13 @@ export class BalanceService {
           tokens: [],
         };
 
-        const addressItem = addresses.find(
-          (element) => element.blockchain === crypto.coin
-        );
+        const addressItem = addresses.find((element) => element.blockchain === crypto.coin);
 
         if (!addressItem) throw new Error(`Failed to get balance`);
 
         const address = addressItem.address || "";
 
-        balanceCrypto.balance = await blockchainService[
-          crypto.coin.toLowerCase() as keyof typeof blockchainService
-        ].getBalance(address);
+        balanceCrypto.balance = await blockchainService[crypto.coin.toLowerCase() as keyof typeof blockchainService].getBalance(address);
 
         for (let token of crypto.tokens) {
           const itemToken: Balance = {
@@ -49,9 +43,11 @@ export class BalanceService {
             icon: token.icon,
           };
 
-          itemToken.balance = await blockchainService[
-            crypto.coin.toLowerCase() as keyof typeof blockchainService
-          ].getBalanceToken(address, token.contract, token.decimals);
+          itemToken.balance = await blockchainService[crypto.coin.toLowerCase() as keyof typeof blockchainService].getBalanceToken(
+            address,
+            token.contract,
+            token.decimals
+          );
 
           balanceCrypto.tokens.push(itemToken);
         }

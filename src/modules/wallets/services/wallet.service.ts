@@ -116,7 +116,7 @@ export class WalletService {
       } else {
         throw new Error(`Invalid mnemonic and private key`);
       }
-      const wallet: WalletInterface = { 
+      const wallet: WalletInterface = {
         defixId: defixId,
         credentials: credentials,
       };

@@ -3,17 +3,7 @@ import { UserEntity } from "../../users/entities/user.entity";
 import { TransactionHistoryEntity } from "../entities/transactionHistory.entity";
 
 export class TransactionHistoryService {
-  public createTransactionHistory = async ({
-    fromDefix,
-    toDefix,
-    fromAddress,
-    toAddress,
-    blockchain,
-    coin,
-    amount,
-    hash,
-    typeTxn,
-  }: any) => {
+  public createTransactionHistory = async ({ fromDefix, toDefix, fromAddress, toAddress, blockchain, coin, amount, hash, typeTxn }: any) => {
     try {
       const transactionHistory = new TransactionHistoryEntity();
 
@@ -42,9 +32,7 @@ export class TransactionHistoryService {
     year: string | null = null
   ) => {
     try {
-      const transactions = await TransactionHistoryEntity.createQueryBuilder(
-        "transaction"
-      )
+      const transactions = await TransactionHistoryEntity.createQueryBuilder("transaction")
         .where(
           "(transaction.fromDefix = :defixId OR transaction.toDefix = :defixId) \
           AND (transaction.coin = :coin IS NULL OR transaction.coin = :coin) \

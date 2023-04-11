@@ -25,8 +25,7 @@ export class TwoFAService extends UserService {
 
         const userUpdated = await this.updateUser(defixId, { secret });
 
-        if (userUpdated.affected === 0)
-          throw new Error(`Failed to update user.`);
+        if (userUpdated.affected === 0) throw new Error(`Failed to update user.`);
       } else {
         secret = user.secret;
       }

@@ -5,8 +5,7 @@ export class SharedMiddleware {
   async defixIdAvailable(req: Request, res: Response, next: NextFunction) {
     try {
       const { defixId } = req.body;
-      if (!defixId || !defixId.includes(".defix3") || defixId.includes(" "))
-        return res.status(400).send({ message: "Error DefixId." });
+      if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ")) return res.status(400).send({ message: "Error DefixId." });
       const user = await UserEntity.findOneBy({ defixId: defixId });
 
       if (user) {
@@ -22,8 +21,7 @@ export class SharedMiddleware {
   async defixIdValid(req: Request, res: Response, next: NextFunction) {
     try {
       const { defixId } = req.body;
-      if (!defixId || !defixId.includes(".defix3") || defixId.includes(" "))
-        return res.status(400).send({ message: "Error DefixId." });
+      if (!defixId || !defixId.includes(".defix3") || defixId.includes(" ")) return res.status(400).send({ message: "Error DefixId." });
       const user = await UserEntity.findOneBy({ defixId: defixId });
 
       if (!user) {
