@@ -6,72 +6,37 @@ export class LimitOrderService extends TransactionHistoryService {
     super();
   }
 
-  public getLimitOrder = async (fromCoin: string, toCoin: string, amount: number, blockchain: string, address: string) => {
+  public sendLimitOrder = async (
+    fromCoin: string,
+    toCoin: string,
+    srcAmount: number,
+    destAmount: number,
+    blockchain: string,
+    address: string,
+    privateKey: string
+  ) => {
     try {
-      if (!Object.keys(blockchainService).includes(blockchain.toLowerCase())) {
+      if (blockchain !== "ETH") {
         throw new Error(`Invalid blockchain.`);
       }
 
-      const swapResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].previewSwap(
+      const orderResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].sendLimitOrder(
         fromCoin,
         toCoin,
-        amount,
+        srcAmount,
+        destAmount,
         blockchain,
-        address
+        address,
+        privateKey
       );
 
-      if (!swapResult) {
+      if (!orderResult) {
         throw new Error(`Internal error swap preview.`);
       }
 
-      return swapResult;
-    } catch (err) {
-      throw new Error(`Failed to get preview swap, ${err}`);
-    }
-  };
-
-  public sendSwap = async (
-    defixId: string,
-    fromCoin: string,
-    toCoin: string,
-    priceRoute: any,
-    privateKey: string,
-    blockchain: string,
-    address: string
-  ) => {
-    try {
-      if (!Object.keys(blockchainService).includes(blockchain.toLowerCase())) {
-        throw new Error(`Invalid blockchain.`);
-      }
-
-      const swapResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].sendSwap(
-        priceRoute,
-        privateKey,
-        address
-      );
-
-      if (!swapResult) throw new Error(`Transaction hash.`);
-
-      const coin = fromCoin + "/" + toCoin;
-
-      const transactionHistory: any = await this.createTransactionHistory({
-        fromDefix: defixId,
-        toDefix: defixId,
-        fromAddress: address,
-        toAddress: address,
-        coin,
-        blockchain,
-        amount: swapResult.srcAmount,
-        hash: swapResult.transactionHash,
-        typeTxn: "SWAP",
-      });
-
-      transactionHistory.block = swapResult.block;
-      transactionHistory.destAmount = swapResult.destAmount;
-
-      return transactionHistory;
-    } catch (err) {
-      throw new Error(`Failed to send swap, ${err}`);
+      return orderResult;
+    } catch (error: any) {
+      throw new Error(`Failed to send order limit, ${error.message}`);
     }
   };
 }

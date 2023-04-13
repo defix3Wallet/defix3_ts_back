@@ -30,6 +30,9 @@ const dataToken = {
 };
 
 export class NearService implements BlockchainService {
+  sendLimitOrder(fromCoin: string, toCoin: string, srcAmount: number, destAmount: number, blockchain: string, address: string, privateKey: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     const walletSeed = await nearSEED.parseSeedPhrase(mnemonic);
     const keyPair = KeyPair.fromString(walletSeed.secretKey);
@@ -205,7 +208,7 @@ export class NearService implements BlockchainService {
 
       const account = new AccountService(near.connection, fromAddress);
 
-      const activated = await activateAccount(account, fromAddress, toAddress, srcToken, near);
+      const activated = await activateAccount(account, fromAddress, toAddress, srcToken.contract, near);
 
       if (!activated) throw new Error(`Error: To activated account`);
 
@@ -213,7 +216,7 @@ export class NearService implements BlockchainService {
       let srcAmount = Math.round(amount * value);
 
       const trx = await NearUtils.createTransaction(
-        srcToken,
+        srcToken.contract,
         [
           await functionCall(
             "ft_transfer",
@@ -457,6 +460,8 @@ async function activateAccount(account: AccountService, fromAddress: string, toA
       fromAddress,
       near
     );
+
+    console.log(trx);
 
     const result = await account.signAndSendTrx(trx);
 

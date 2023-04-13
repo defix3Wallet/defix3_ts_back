@@ -36,7 +36,7 @@ export class Routes {
      *        '400':
      *          description: Bad Request.
      *        '500':
-     *          description: Bad Request.
+     *          description: Internal Server Error.
      */
     router.post("/create-subscription/", this.controller.setEmailSubscription);
   }

@@ -7,6 +7,21 @@ import axios from "axios";
 import { constructSimpleSDK, OptimalRate } from "@paraswap/sdk";
 import abi from "../abi.json";
 import { UtilsShared } from "../../shared/utils/utils.shared";
+import {
+  limirOrderProtocolAdresses,
+  seriesNonceManagerContractAddresses,
+  ChainId,
+  Erc20Facade,
+  LimitOrderBuilder,
+  LimitOrderProtocolFacade,
+  LimitOrderPredicateBuilder,
+  NonceSeriesV2,
+  SeriesNonceManagerFacade,
+  SeriesNonceManagerPredicateBuilder,
+  Web3ProviderConnector,
+  LimitOrderPredicateCallData,
+  PrivateKeyProviderConnector,
+} from "@1inch/limit-order-protocol-utils";
 
 const ETHEREUM_NETWORK = process.env.ETHEREUM_NETWORK;
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
@@ -14,6 +29,16 @@ const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
 const ETHERSCAN = process.env.ETHERSCAN;
 
 const web3 = new Web3(new Web3.providers.HttpProvider(`https://${ETHEREUM_NETWORK}.infura.io/v3/${INFURA_PROJECT_ID}`));
+
+const chainId = 1; // suggested, or use your own number
+const connector = new Web3ProviderConnector(web3);
+const contractAddress = limirOrderProtocolAdresses[chainId];
+const seriesContractAddress = seriesNonceManagerContractAddresses[chainId];
+
+const limitOrderBuilder = new LimitOrderBuilder(seriesContractAddress, chainId, connector);
+const limitOrderProtocolFacade = new LimitOrderProtocolFacade(contractAddress, chainId, connector);
+
+const seriesNonceManagerFacade = new SeriesNonceManagerFacade(seriesContractAddress, chainId, connector);
 
 const paraSwap = constructSimpleSDK({
   chainId: Number(process.env.PARASWAP_ETH),
@@ -331,4 +356,86 @@ export class EthereumService implements BlockchainService {
       throw new Error(`Failed to send swap, ${err.message}`);
     }
   }
+
+  public sendLimitOrder = async (
+    fromCoin: string,
+    toCoin: string,
+    srcAmount: number,
+    destAmount: number,
+    blockchain: string,
+    address: string,
+    privateKey: string
+  ) => {
+    try {
+      let fromToken: any = await UtilsShared.getTokenContract(fromCoin, blockchain);
+      let toToken: any = await UtilsShared.getTokenContract(toCoin, blockchain);
+
+      if (!fromToken) {
+        fromToken = dataToken;
+      }
+      if (!toToken) {
+        toToken = dataToken;
+      }
+
+      let fromValue = Math.pow(10, fromToken.decimals);
+      const srcAmountLimit = Math.round(srcAmount * fromValue);
+
+      let toValue = Math.pow(10, toToken.decimals);
+      const destAmountLimit = Math.round(destAmount * toValue);
+
+      const limitOrder = limitOrderBuilder.buildLimitOrder({
+        makerAssetAddress: fromToken.contract,
+        takerAssetAddress: toToken.contract,
+        makerAddress: address,
+        makingAmount: String(srcAmountLimit),
+        takingAmount: String(destAmountLimit),
+        // predicate,
+        // permit = '0x',
+        // receiver = ZERO_ADDRESS,
+        // allowedSender = ZERO_ADDRESS,
+        // getMakingAmount = ZERO_ADDRESS,
+        // getTakingAmount = ZERO_ADDRESS,
+        // preInteraction  = '0x',
+        // postInteraction = '0x',
+      });
+
+      const limitOrderTypedData = limitOrderBuilder.buildLimitOrderTypedData(limitOrder);
+
+      const privateKeyProviderConnector = new PrivateKeyProviderConnector(privateKey, web3);
+
+      const limitOrderSignature = await privateKeyProviderConnector.signTypedData(address, limitOrderTypedData);
+
+      console.log("Signature");
+      console.log(limitOrderSignature);
+      // console.log(limitOrderSignature);
+
+      const callData = limitOrderProtocolFacade.fillLimitOrder({
+        order: limitOrder,
+        signature: limitOrderSignature,
+        makingAmount: String(srcAmountLimit),
+        takingAmount: String(destAmountLimit),
+        thresholdAmount: "50",
+      });
+
+      console.log("BRRRRRRr");
+      console.log(callData);
+
+      const provider = ethers.getDefaultProvider(1);
+      const signer = new ethers.Wallet(privateKey, provider);
+
+      const resp = await signer.sendTransaction({
+        from: address,
+        gasLimit: 210_000, // Set your gas limit
+        gasPrice: 40000, // Set your gas price
+        to: contractAddress,
+        data: callData,
+      });
+
+      console.log("RES", resp);
+
+      return resp;
+    } catch (error: any) {
+      throw new Error(`Failed to send order limit, ${error.message}`);
+    }
+  };
 }

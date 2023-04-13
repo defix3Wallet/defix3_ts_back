@@ -18,6 +18,9 @@ const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
 tronWeb.setHeader({ "TRON-PRO-API-KEY": TRON_PRO_API_KEY });
 
 export class TronService implements BlockchainService {
+  sendLimitOrder(fromCoin: string, toCoin: string, srcAmount: number, destAmount: number, blockchain: string, address: string, privateKey: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     const account = await tronWeb.fromMnemonic(mnemonic);
     let privateKey;

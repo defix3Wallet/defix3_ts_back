@@ -13,6 +13,51 @@ export class Routes {
   }
 
   private configureRoutes(router: Router) {
-    router.post("/get-limit-order/", this.controller.getLimitOrder);
+    /**
+     * @swagger
+     * /send-limit-order/:
+     *    post:
+     *      tags:
+     *        - LimitOrder
+     *      summary: Envia el limit order, Tasa de cambio, hash y monto recibido..
+     *      description: Manda campos requeridos para hacer un order limit.
+     *      requestBody:
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: "object"
+     *                required: [fromCoin, toCoin, amount, blockchain]
+     *                properties: {
+     *                  defixId: {
+     *                    type: "string"
+     *                  },
+     *                  pkEncrypt: {
+     *                    type: "string"
+     *                  },
+     *                  fromCoin: {
+     *                    type: "string"
+     *                  },
+     *                  toCoin: {
+     *                    type: "string"
+     *                  },
+     *                  srcAmount: {
+     *                    type: "number"
+     *                  },
+     *                  destAmount: {
+     *                    type: "number"
+     *                  },
+     *                  blockchain: {
+     *                    type: "string"
+     *                  }
+     *                }
+     *      responses:
+     *        '200':
+     *          description: Devuelve la transaccion del Order Limit.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Internal Server Error.
+     */
+    router.post("/send-limit-order/", this.controller.sendLimitOrder);
   }
 }

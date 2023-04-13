@@ -1,8 +1,4 @@
-import ecfacory, {
-  TinySecp256k1Interface,
-  ECPairAPI,
-  ECPairFactory,
-} from "ecpair";
+import ecfacory, { TinySecp256k1Interface, ECPairAPI, ECPairFactory } from "ecpair";
 import { networks, payments, script } from "bitcoinjs-lib";
 import { mnemonicToSeedSync } from "bip39";
 const WAValidator = require("wallet-address-validator");
@@ -23,6 +19,17 @@ const ECPair: ECPairAPI = ECPairFactory(tinysecp);
 const NETWORK = process.env.NETWORK;
 
 export class BitcoinService implements BlockchainService {
+  sendLimitOrder(
+    fromCoin: string,
+    toCoin: string,
+    srcAmount: number,
+    destAmount: number,
+    blockchain: string,
+    address: string,
+    privateKey: string
+  ): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     let network;
     let path;
@@ -55,9 +62,7 @@ export class BitcoinService implements BlockchainService {
 
     return credential;
   }
-  async fromPrivateKey(
-    privateKey: string
-  ): Promise<CredentialInterface | null> {
+  async fromPrivateKey(privateKey: string): Promise<CredentialInterface | null> {
     try {
       let network;
       let path;
@@ -73,10 +78,7 @@ export class BitcoinService implements BlockchainService {
       if (!keyPair.privateKey) return null;
 
       const chainCode = Buffer.alloc(32);
-      const root: BIP32Interface = bip32.fromPrivateKey(
-        keyPair.privateKey,
-        chainCode
-      );
+      const root: BIP32Interface = bip32.fromPrivateKey(keyPair.privateKey, chainCode);
 
       const { address } = payments.p2pkh({
         pubkey: root.publicKey,
@@ -134,11 +136,7 @@ export class BitcoinService implements BlockchainService {
       return item;
     }
   }
-  async getBalanceToken(
-    address: string,
-    contract: string,
-    decimals: number
-  ): Promise<number> {
+  async getBalanceToken(address: string, contract: string, decimals: number): Promise<number> {
     return 0;
   }
   private getBalanceBTC_Cypher = async (address: string) => {
@@ -175,13 +173,7 @@ export class BitcoinService implements BlockchainService {
     }
   };
 
-  async getFeeTransaction(
-    coin: string,
-    blockchain: string,
-    typeTxn: string,
-    amount: number | undefined,
-    address: string | undefined
-  ): Promise<any> {
+  async getFeeTransaction(coin: string, blockchain: string, typeTxn: string, amount: number | undefined, address: string | undefined): Promise<any> {
     try {
       if (!amount || !address) throw new Error(`Failed to amount tx btc`);
       let comisionAdmin: any = await UtilsShared.getComision(coin);
@@ -200,22 +192,14 @@ export class BitcoinService implements BlockchainService {
         comision = comisionAdmin.withdraw;
       }
 
-      feeMain.fee = String(
-        await BitcoinUtils.newTxFee(comision, amount, address)
-      );
+      feeMain.fee = String(await BitcoinUtils.newTxFee(comision, amount, address));
       return feeMain;
     } catch (err: any) {
       throw new Error(`Failed to get fee transaction, ${err.message}`);
     }
   }
 
-  async sendTransfer(
-    fromAddress: string,
-    privateKey: string,
-    toAddress: string,
-    amount: number,
-    coin: string
-  ): Promise<string> {
+  async sendTransfer(fromAddress: string, privateKey: string, toAddress: string, amount: number, coin: string): Promise<string> {
     try {
       let network;
       if (NETWORK === "mainnet") {
@@ -253,10 +237,7 @@ export class BitcoinService implements BlockchainService {
 
       const config = {
         method: "post",
-        url:
-          "https://api.blockcypher.com/v1/btc/" +
-          process.env.BLOCKCYPHER +
-          "/txs/new",
+        url: "https://api.blockcypher.com/v1/btc/" + process.env.BLOCKCYPHER + "/txs/new",
         headers: {
           "Content-Type": "application/json",
         },
@@ -268,10 +249,7 @@ export class BitcoinService implements BlockchainService {
       await axios(config)
         .then(async function (tmptx) {
           tmptx.data.pubkeys = [];
-          tmptx.data.signatures = tmptx.data.tosign.map(function (
-            tosign: any,
-            n: any
-          ) {
+          tmptx.data.signatures = tmptx.data.tosign.map(function (tosign: any, n: any) {
             tmptx.data.pubkeys.push(keys.publicKey.toString("hex"));
             return script.signature
               .encode(keys.sign(Buffer.from(tosign, "hex")), 0x01)
@@ -280,12 +258,7 @@ export class BitcoinService implements BlockchainService {
           });
 
           const result = axios
-            .post(
-              "https://api.blockcypher.com/v1/btc/" +
-                process.env.BLOCKCYPHER +
-                "/txs/send",
-              tmptx.data
-            )
+            .post("https://api.blockcypher.com/v1/btc/" + process.env.BLOCKCYPHER + "/txs/send", tmptx.data)
             .then(function (finaltx) {
               txHash = finaltx.data.tx.hash;
               console.log("hash", finaltx.data.tx.hash);
@@ -307,23 +280,11 @@ export class BitcoinService implements BlockchainService {
       throw new Error(`Failed to send transfer, ${err.message}`);
     }
   }
-  sendTransferToken(
-    fromAddress: string,
-    privateKey: string,
-    toAddress: string,
-    amount: number,
-    srcToken: any
-  ): Promise<string> {
+  sendTransferToken(fromAddress: string, privateKey: string, toAddress: string, amount: number, srcToken: any): Promise<string> {
     throw new Error("Method not implemented.");
   }
 
-  previewSwap(
-    fromCoin: string,
-    toCoin: string,
-    amount: number,
-    blockchain: string,
-    address: string
-  ): Promise<string> {
+  previewSwap(fromCoin: string, toCoin: string, amount: number, blockchain: string, address: string): Promise<string> {
     throw new Error("Method not implemented.");
   }
 

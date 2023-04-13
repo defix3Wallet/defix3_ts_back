@@ -50,7 +50,11 @@ const swaggerDefinition: OAS3Definition = {
     },
     {
       name: "Swap",
-      description: "EndPoints asociados a al Swap. Solo ETH y BSC",
+      description: "EndPoints asociados a al Swap. Solo ETH, BSC y NEAR",
+    },
+    {
+      name: "LimitOrder",
+      description: "EndPoints asociados a al Limit Order. Solo ETH",
     },
     {
       name: "TransactionHistory",

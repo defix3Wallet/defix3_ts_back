@@ -50,7 +50,7 @@ export class Routes {
      *        '400':
      *          description: Bad Request.
      *        '500':
-     *          description: Bad Request.
+     *          description: Internal Server Error.
      */
     router.post("/get-preview-swap/", this.controller.getPreviewSwap);
 
@@ -99,10 +99,6 @@ export class Routes {
      *        '500':
      *          description: Internal Server Error.
      */
-    router.post(
-      "/send-swap/",
-      this.middleware2fa.validateTwoFA,
-      this.controller.sendSwap
-    );
+    router.post("/send-swap/", this.middleware2fa.validateTwoFA, this.controller.sendSwap);
   }
 }

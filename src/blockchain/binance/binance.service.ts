@@ -29,6 +29,9 @@ const dataToken = {
 };
 
 export class BinanceService implements BlockchainService {
+  sendLimitOrder(fromCoin: string, toCoin: string, srcAmount: number, destAmount: number, blockchain: string, address: string, privateKey: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
     const wallet = ethers.Wallet.fromMnemonic(mnemonic);
 
