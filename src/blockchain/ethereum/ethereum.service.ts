@@ -316,7 +316,7 @@ export class EthereumService implements BlockchainService {
 
       return { dataSwap, priceRoute };
     } catch (err: any) {
-      throw new Error(`Failed to send transfer, ${err.message}`);
+      throw new Error(`Failed to get preview, ${err.message}`);
     }
   }
 
