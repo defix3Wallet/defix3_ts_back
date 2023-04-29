@@ -30,7 +30,15 @@ const dataToken = {
 };
 
 export class NearService implements BlockchainService {
-  sendLimitOrder(fromCoin: string, toCoin: string, srcAmount: number, destAmount: number, blockchain: string, address: string, privateKey: string): Promise<any> {
+  sendLimitOrder(
+    fromCoin: string,
+    toCoin: string,
+    srcAmount: number,
+    destAmount: number,
+    blockchain: string,
+    address: string,
+    privateKey: string
+  ): Promise<any> {
     throw new Error("Method not implemented.");
   }
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
@@ -263,8 +271,17 @@ export class NearService implements BlockchainService {
 
       const transactionsDcl = await NearUtils.getTxSwapDCL(tokensMetadata[tokenIn], tokensMetadata[tokenOut], amount);
 
+      console.log(transactionsRef);
+
       const minAmountRef = await NearUtils.getMinAmountOut(transactionsRef);
-      const minAmountDcl = await NearUtils.getMinAmountOut(transactionsDcl);
+      let minAmountDcl: any;
+      if (NETWORK === "testnet") {
+        minAmountDcl = 0;
+      } else {
+        minAmountDcl = await NearUtils.getMinAmountOut(transactionsDcl);
+      }
+
+      console.log(minAmountDcl, minAmountRef);
 
       let txMain: any;
       let minAmountOut: number = 0;
