@@ -132,7 +132,7 @@ export class NearUtils {
     return transactionsDcl;
   }
 
-  static getMinAmountOut(trxSwap: any) {
+  static getMinAmountOut(trxSwap: any, tokenOut: string) {
     const transaction = trxSwap.find(
       (element: {
         functionCalls: {
@@ -152,7 +152,7 @@ export class NearUtils {
     if (Object.keys(argsMsg).includes("actions")) {
       let minAmountOut = 0;
       for (const action of argsMsg.actions) {
-        if (action.token_out === process.env.TOKEN_OUT) {
+        if (action.token_out === tokenOut) {
           minAmountOut += Number(action.min_amount_out);
         }
       }

@@ -271,17 +271,13 @@ export class NearService implements BlockchainService {
 
       const transactionsDcl = await NearUtils.getTxSwapDCL(tokensMetadata[tokenIn], tokensMetadata[tokenOut], amount);
 
-      console.log(transactionsRef);
-
-      const minAmountRef = await NearUtils.getMinAmountOut(transactionsRef);
+      const minAmountRef = await NearUtils.getMinAmountOut(transactionsRef, tokenOut);
       let minAmountDcl: any;
       if (NETWORK === "testnet") {
         minAmountDcl = 0;
       } else {
-        minAmountDcl = await NearUtils.getMinAmountOut(transactionsDcl);
+        minAmountDcl = await NearUtils.getMinAmountOut(transactionsDcl, tokenOut);
       }
-
-      console.log(minAmountDcl, minAmountRef);
 
       let txMain: any;
       let minAmountOut: number = 0;
