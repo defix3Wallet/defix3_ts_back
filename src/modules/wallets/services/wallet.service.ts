@@ -142,7 +142,11 @@ export class WalletService {
 
   public validateAddress = async (address: string, coin: string) => {
     try {
-      if (Object.keys(blockchainService).find((key) => key === coin.toLowerCase())) {
+      if (address.includes(".defix3")) {
+        const user = await this.userService.getUserByDefixId(address);
+        if (!user) return false;
+        return true;
+      } else {
         return blockchainService[coin.toLowerCase() as keyof typeof blockchainService].isAddress(address);
       }
       throw new Error(`Invalid coin`);
