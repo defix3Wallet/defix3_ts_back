@@ -18,7 +18,15 @@ const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
 tronWeb.setHeader({ "TRON-PRO-API-KEY": TRON_PRO_API_KEY });
 
 export class TronService implements BlockchainService {
-  sendLimitOrder(fromCoin: string, toCoin: string, srcAmount: number, destAmount: number, blockchain: string, address: string, privateKey: string): Promise<any> {
+  sendLimitOrder(
+    fromCoin: string,
+    toCoin: string,
+    srcAmount: number,
+    destAmount: number,
+    blockchain: string,
+    address: string,
+    privateKey: string
+  ): Promise<any> {
     throw new Error("Method not implemented.");
   }
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
@@ -39,9 +47,7 @@ export class TronService implements BlockchainService {
 
     return credential;
   }
-  async fromPrivateKey(
-    privateKey: string
-  ): Promise<CredentialInterface | null> {
+  async fromPrivateKey(privateKey: string): Promise<CredentialInterface | null> {
     try {
       const address = tronWeb.address.fromPrivateKey(privateKey);
 
@@ -79,11 +85,7 @@ export class TronService implements BlockchainService {
       return 0;
     }
   }
-  async getBalanceToken(
-    address: string,
-    srcContract: string,
-    decimals: number
-  ): Promise<number> {
+  async getBalanceToken(address: string, srcContract: string, decimals: number): Promise<number> {
     try {
       tronWeb.setAddress(srcContract);
       const contract = await tronWeb.contract().at(srcContract);
@@ -107,11 +109,7 @@ export class TronService implements BlockchainService {
     }
   }
 
-  async getFeeTransaction(
-    coin: string,
-    blockchain: string,
-    typeTxn: string
-  ): Promise<any> {
+  async getFeeTransaction(coin: string, blockchain: string, typeTxn: string): Promise<any> {
     try {
       let comisionAdmin: any = await UtilsShared.getComision(coin);
 
@@ -140,19 +138,11 @@ export class TronService implements BlockchainService {
     }
   }
 
-  async sendTransfer(
-    fromAddress: string,
-    privateKey: string,
-    toAddress: string,
-    amount: number,
-    coin: string
-  ): Promise<string> {
+  async sendTransfer(fromAddress: string, privateKey: string, toAddress: string, amount: number, coin: string): Promise<string> {
     try {
       const balance = await this.getBalance(fromAddress);
       if (balance < amount) {
-        throw new Error(
-          `Error: You do not have enough funds to make the transfer`
-        );
+        throw new Error(`Error: You do not have enough funds to make the transfer`);
       }
 
       tronWeb.setAddress(fromAddress);
@@ -194,23 +184,11 @@ export class TronService implements BlockchainService {
     }
   }
 
-  async sendTransferToken(
-    fromAddress: string,
-    privateKey: string,
-    toAddress: string,
-    amount: number,
-    srcToken: any
-  ): Promise<string> {
+  async sendTransferToken(fromAddress: string, privateKey: string, toAddress: string, amount: number, srcToken: any): Promise<string> {
     try {
-      const balance = await this.getBalanceToken(
-        fromAddress,
-        srcToken.contract,
-        srcToken.decimals
-      );
+      const balance = await this.getBalanceToken(fromAddress, srcToken.contract, srcToken.decimals);
       if (balance < amount) {
-        throw new Error(
-          `Error: You do not have enough funds to make the transfer`
-        );
+        throw new Error(`Error: You do not have enough funds to make the transfer`);
       }
 
       tronWeb.setAddress(fromAddress);
@@ -234,21 +212,11 @@ export class TronService implements BlockchainService {
     }
   }
 
-  previewSwap(
-    fromCoin: string,
-    toCoin: string,
-    amount: number,
-    blockchain: string,
-    address: string
-  ): Promise<string> {
+  previewSwap(fromCoin: string, toCoin: string, amount: number, blockchain: string, address: string): Promise<string> {
     throw new Error("Method not implemented.");
   }
 
-  sendSwap(
-    priceRoute: any,
-    privateKey: string,
-    address: string
-  ): Promise<string> {
+  sendSwap(priceRoute: any, privateKey: string, address: string): Promise<string> {
     throw new Error("Method not implemented.");
   }
 }

@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TronService = void 0;
 const utils_shared_1 = require("../../shared/utils/utils.shared");
@@ -23,186 +14,173 @@ const eventServer = new HttpProvider(EVENT_SERVER);
 const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
 tronWeb.setHeader({ "TRON-PRO-API-KEY": TRON_PRO_API_KEY });
 class TronService {
-    fromMnemonic(mnemonic) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const account = yield tronWeb.fromMnemonic(mnemonic);
-            let privateKey;
-            if (account.privateKey.indexOf("0x") === 0) {
-                privateKey = account.privateKey.slice(2);
-            }
-            else {
-                privateKey = account.privateKey;
-            }
+    sendLimitOrder(fromCoin, toCoin, srcAmount, destAmount, blockchain, address, privateKey) {
+        throw new Error("Method not implemented.");
+    }
+    async fromMnemonic(mnemonic) {
+        const account = await tronWeb.fromMnemonic(mnemonic);
+        let privateKey;
+        if (account.privateKey.indexOf("0x") === 0) {
+            privateKey = account.privateKey.slice(2);
+        }
+        else {
+            privateKey = account.privateKey;
+        }
+        const credential = {
+            name: "TRX",
+            address: account.address,
+            privateKey: privateKey,
+        };
+        return credential;
+    }
+    async fromPrivateKey(privateKey) {
+        try {
+            const address = tronWeb.address.fromPrivateKey(privateKey);
+            if (!address)
+                return null;
             const credential = {
                 name: "TRX",
-                address: account.address,
+                address: address,
                 privateKey: privateKey,
             };
             return credential;
-        });
+        }
+        catch (error) {
+            return null;
+        }
     }
-    fromPrivateKey(privateKey) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const address = tronWeb.address.fromPrivateKey(privateKey);
-                if (!address)
-                    return null;
-                const credential = {
-                    name: "TRX",
-                    address: address,
-                    privateKey: privateKey,
-                };
-                return credential;
-            }
-            catch (error) {
-                return null;
-            }
-        });
+    async isAddress(address) {
+        return await tronWeb.isAddress(address);
     }
-    isAddress(address) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield tronWeb.isAddress(address);
-        });
-    }
-    getBalance(address) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                let balanceTotal = 0;
-                const balance = yield tronWeb.trx.getBalance(address);
-                if (balance) {
-                    let value = Math.pow(10, 6);
-                    balanceTotal = balance / value;
-                    if (!balanceTotal) {
-                        balanceTotal = 0;
-                    }
-                    return balanceTotal;
-                }
-                else {
-                    return balanceTotal;
-                }
-            }
-            catch (error) {
-                return 0;
-            }
-        });
-    }
-    getBalanceToken(address, srcContract, decimals) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                tronWeb.setAddress(srcContract);
-                const contract = yield tronWeb.contract().at(srcContract);
-                const balance = yield contract.balanceOf(address).call();
-                let balanceTotal = 0;
-                if (balance) {
-                    let value = Math.pow(10, decimals);
-                    balanceTotal = balance / value;
-                    if (!balanceTotal) {
-                        balanceTotal = 0;
-                    }
-                    return balanceTotal;
-                }
-                else {
-                    return balanceTotal;
-                }
-            }
-            catch (error) {
-                return 0;
-            }
-        });
-    }
-    getFeeTransaction(coin, blockchain, typeTxn) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                let comisionAdmin = yield utils_shared_1.UtilsShared.getComision(coin);
-                const feeMain = {
-                    coin,
-                    blockchain,
-                    fee: "",
-                };
-                let comision;
-                if (typeTxn === "TRANSFER") {
-                    comision = comisionAdmin.transfer;
-                }
-                else if (typeTxn === "WITHDRAW") {
-                    comision = comisionAdmin.withdraw;
-                }
-                if (!comision) {
-                    feeMain.fee = "0";
-                }
-                else {
-                    feeMain.fee = "0";
-                }
-                return feeMain;
-            }
-            catch (err) {
-                throw new Error(`Failed to get fee transaction, ${err.message}`);
-            }
-        });
-    }
-    sendTransfer(fromAddress, privateKey, toAddress, amount, coin) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const balance = yield this.getBalance(fromAddress);
-                if (balance < amount) {
-                    throw new Error(`Error: You do not have enough funds to make the transfer`);
-                }
-                tronWeb.setAddress(fromAddress);
+    async getBalance(address) {
+        try {
+            let balanceTotal = 0;
+            const balance = await tronWeb.trx.getBalance(address);
+            if (balance) {
                 let value = Math.pow(10, 6);
-                let srcAmount = parseInt(String(amount * value));
-                const tx = yield tronWeb.transactionBuilder
-                    .sendTrx(toAddress, srcAmount)
-                    .then(function (response) {
-                    return response;
-                })
-                    .catch(function (error) {
-                    return false;
-                });
-                if (!tx)
-                    throw new Error(`Error to do build transaction`);
-                const signedTxn = yield tronWeb.trx
-                    .sign(tx, privateKey)
-                    .then(function (response) {
-                    return response;
-                })
-                    .catch(function (error) {
-                    return false;
-                });
-                if (!signedTxn.signature) {
-                    throw new Error(`Error to sign transaction`);
+                balanceTotal = balance / value;
+                if (!balanceTotal) {
+                    balanceTotal = 0;
                 }
-                const result = yield tronWeb.trx.sendRawTransaction(signedTxn);
-                if (!result.txid)
-                    throw new Error(`Failed to send raw tx.`);
-                return result.txid;
+                return balanceTotal;
             }
-            catch (err) {
-                throw new Error(`Failed to send transfer, ${err.message}`);
+            else {
+                return balanceTotal;
             }
-        });
+        }
+        catch (error) {
+            return 0;
+        }
     }
-    sendTransferToken(fromAddress, privateKey, toAddress, amount, srcToken) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const balance = yield this.getBalanceToken(fromAddress, srcToken.contract, srcToken.decimals);
-                if (balance < amount) {
-                    throw new Error(`Error: You do not have enough funds to make the transfer`);
+    async getBalanceToken(address, srcContract, decimals) {
+        try {
+            tronWeb.setAddress(srcContract);
+            const contract = await tronWeb.contract().at(srcContract);
+            const balance = await contract.balanceOf(address).call();
+            let balanceTotal = 0;
+            if (balance) {
+                let value = Math.pow(10, decimals);
+                balanceTotal = balance / value;
+                if (!balanceTotal) {
+                    balanceTotal = 0;
                 }
-                tronWeb.setAddress(fromAddress);
-                let value = Math.pow(10, srcToken.decimals);
-                let srcAmount = parseInt(String(amount * value));
-                const contract = yield tronWeb.contract().at(srcToken.contract);
-                const transaction = yield contract.transfer(toAddress, srcAmount).send({
-                    callValue: 0,
-                    shouldPollResponse: true,
-                    privateKey: privateKey,
-                });
-                console.log("TRANSACTION: ", transaction);
-                return transaction;
+                return balanceTotal;
             }
-            catch (err) {
-                throw new Error(`Failed to send transfer, ${err.message}`);
+            else {
+                return balanceTotal;
             }
-        });
+        }
+        catch (error) {
+            return 0;
+        }
+    }
+    async getFeeTransaction(coin, blockchain, typeTxn) {
+        try {
+            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(coin);
+            const feeMain = {
+                coin,
+                blockchain,
+                fee: "",
+            };
+            let comision;
+            if (typeTxn === "TRANSFER") {
+                comision = comisionAdmin.transfer;
+            }
+            else if (typeTxn === "WITHDRAW") {
+                comision = comisionAdmin.withdraw;
+            }
+            if (!comision) {
+                feeMain.fee = "0";
+            }
+            else {
+                feeMain.fee = "0";
+            }
+            return feeMain;
+        }
+        catch (err) {
+            throw new Error(`Failed to get fee transaction, ${err.message}`);
+        }
+    }
+    async sendTransfer(fromAddress, privateKey, toAddress, amount, coin) {
+        try {
+            const balance = await this.getBalance(fromAddress);
+            if (balance < amount) {
+                throw new Error(`Error: You do not have enough funds to make the transfer`);
+            }
+            tronWeb.setAddress(fromAddress);
+            let value = Math.pow(10, 6);
+            let srcAmount = parseInt(String(amount * value));
+            const tx = await tronWeb.transactionBuilder
+                .sendTrx(toAddress, srcAmount)
+                .then(function (response) {
+                return response;
+            })
+                .catch(function (error) {
+                return false;
+            });
+            if (!tx)
+                throw new Error(`Error to do build transaction`);
+            const signedTxn = await tronWeb.trx
+                .sign(tx, privateKey)
+                .then(function (response) {
+                return response;
+            })
+                .catch(function (error) {
+                return false;
+            });
+            if (!signedTxn.signature) {
+                throw new Error(`Error to sign transaction`);
+            }
+            const result = await tronWeb.trx.sendRawTransaction(signedTxn);
+            if (!result.txid)
+                throw new Error(`Failed to send raw tx.`);
+            return result.txid;
+        }
+        catch (err) {
+            throw new Error(`Failed to send transfer, ${err.message}`);
+        }
+    }
+    async sendTransferToken(fromAddress, privateKey, toAddress, amount, srcToken) {
+        try {
+            const balance = await this.getBalanceToken(fromAddress, srcToken.contract, srcToken.decimals);
+            if (balance < amount) {
+                throw new Error(`Error: You do not have enough funds to make the transfer`);
+            }
+            tronWeb.setAddress(fromAddress);
+            let value = Math.pow(10, srcToken.decimals);
+            let srcAmount = parseInt(String(amount * value));
+            const contract = await tronWeb.contract().at(srcToken.contract);
+            const transaction = await contract.transfer(toAddress, srcAmount).send({
+                callValue: 0,
+                shouldPollResponse: true,
+                privateKey: privateKey,
+            });
+            console.log("TRANSACTION: ", transaction);
+            return transaction;
+        }
+        catch (err) {
+            throw new Error(`Failed to send transfer, ${err.message}`);
+        }
     }
     previewSwap(fromCoin, toCoin, amount, blockchain, address) {
         throw new Error("Method not implemented.");

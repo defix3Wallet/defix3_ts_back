@@ -223,6 +223,8 @@ export class NearService implements BlockchainService {
       let value = Math.pow(10, srcToken.decimals);
       let srcAmount = Math.round(amount * value);
 
+      // console.log(srcAmount.toLocaleString("fullwide", { useGrouping: false }), (amount * value).toFixed());
+
       const trx = await NearUtils.createTransaction(
         srcToken.contract,
         [
@@ -230,7 +232,7 @@ export class NearService implements BlockchainService {
             "ft_transfer",
             {
               receiver_id: toAddress,
-              amount: String(srcAmount),
+              amount: srcAmount.toLocaleString("fullwide", { useGrouping: false }),
             },
             new BN("30000000000000"),
             new BN("1")

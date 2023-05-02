@@ -1,49 +1,41 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WalletService = void 0;
 const utils_shared_1 = require("../../../shared/utils/utils.shared");
 const user_service_1 = require("../../users/services/user.service");
 const blockchain_1 = require("../../../blockchain");
 const address_service_1 = require("../../address/services/address.service");
+const crypto_shared_1 = require("../../../shared/crypto/crypto.shared");
 class WalletService {
     constructor() {
-        this.createWalletDefix = (defixId, mnemonic) => __awaiter(this, void 0, void 0, function* () {
+        this.createWalletDefix = async (defixId, mnemonic) => {
             try {
                 const credentials = [];
                 for (const service of Object.values(blockchain_1.blockchainService)) {
-                    credentials.push(yield service.fromMnemonic(mnemonic));
+                    credentials.push(await service.fromMnemonic(mnemonic));
                 }
                 const wallet = {
                     defixId: defixId,
                     credentials: credentials,
                 };
-                yield this.saveWalletDefix(mnemonic, wallet);
+                await this.saveWalletDefix(mnemonic, wallet);
                 return wallet;
             }
             catch (err) {
                 console.log(err);
                 throw new Error(`Failed to create wallet: ${err}`);
             }
-        });
-        this.importWalletDefix = (mnemonic) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.importWalletDefix = async (mnemonic) => {
             try {
-                const importId = yield utils_shared_1.UtilsShared.getIdNear(mnemonic);
-                const user = yield this.userService.getUserByImportId(importId);
+                const importId = await utils_shared_1.UtilsShared.getIdNear(mnemonic);
+                const user = await this.userService.getUserByImportId(importId);
                 if (!user)
                     throw new Error("Wallet does not exist in Defix3");
                 const defixId = user.defixId;
                 const credentials = [];
                 for (const service of Object.values(blockchain_1.blockchainService)) {
-                    credentials.push(yield service.fromMnemonic(mnemonic));
+                    credentials.push(await service.fromMnemonic(mnemonic));
                 }
                 const wallet = {
                     defixId: defixId,
@@ -55,12 +47,12 @@ class WalletService {
             catch (err) {
                 throw new Error(`Failed to import wallet: ${err}`);
             }
-        });
-        this.importFromPrivateKey = (privateKey) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.importFromPrivateKey = async (privateKey) => {
             try {
                 const credentials = [];
                 for (const service of Object.values(blockchain_1.blockchainService)) {
-                    const credential = yield service.fromPrivateKey(privateKey);
+                    const credential = await service.fromPrivateKey(privateKey);
                     if (credential) {
                         credentials.push(credential);
                     }
@@ -76,31 +68,66 @@ class WalletService {
             catch (err) {
                 throw new Error(`Failed to import wallet: ${err}`);
             }
-        });
-        this.exportKeystoreFile = (privateKey) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.importFromJson = async (dataImport) => {
             try {
                 const credentials = [];
-                for (const service of Object.values(blockchain_1.blockchainService)) {
-                    const credential = yield service.fromPrivateKey(privateKey);
-                    if (credential) {
-                        credentials.push(credential);
+                let defixId;
+                if (crypto_shared_1.CryptoShared.decryptAES(dataImport.typeLog) === "MNEMONIC") {
+                    const mnemonic = crypto_shared_1.CryptoShared.decryptAES(dataImport.ciphertext);
+                    const importId = await utils_shared_1.UtilsShared.getIdNear(mnemonic);
+                    const user = await this.userService.getUserByImportId(importId);
+                    if (!user)
+                        throw new Error("Wallet does not exist in Defix3");
+                    defixId = user.defixId;
+                    for (const service of Object.values(blockchain_1.blockchainService)) {
+                        credentials.push(await service.fromMnemonic(mnemonic));
                     }
                 }
-                if (credentials.length === 0)
-                    throw new Error(`Failed private key`);
+                else if (crypto_shared_1.CryptoShared.decryptAES(dataImport.typeLog) === "PRIVATE_KEY") {
+                    for (const service of Object.values(blockchain_1.blockchainService)) {
+                        const credential = await service.fromPrivateKey(crypto_shared_1.CryptoShared.decryptAES(dataImport.ciphertext));
+                        if (credential) {
+                            credentials.push(credential);
+                        }
+                    }
+                    defixId = credentials[0].address;
+                }
+                else {
+                    throw new Error(`Invalid mnemonic and private key`);
+                }
                 const wallet = {
-                    defixId: credentials[0].address,
+                    defixId: defixId,
                     credentials: credentials,
                 };
                 return wallet;
             }
             catch (err) {
-                throw new Error(`Failed to import wallet: ${err}`);
+                throw new Error(`Failed to export wallet: ${err}`);
             }
-        });
-        this.validateAddress = (address, coin) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.exportWalletJson = async (ciphertext, typeLog) => {
             try {
-                if (Object.keys(blockchain_1.blockchainService).find((key) => key === coin.toLowerCase())) {
+                const data = {
+                    ciphertext: crypto_shared_1.CryptoShared.encryptAES(ciphertext),
+                    typeLog: crypto_shared_1.CryptoShared.encryptAES(typeLog),
+                    dateTime: Date.now(),
+                };
+                return data;
+            }
+            catch (err) {
+                throw new Error(`Failed to export wallet: ${err}`);
+            }
+        };
+        this.validateAddress = async (address, coin) => {
+            try {
+                if (address.includes(".defix3")) {
+                    const user = await this.userService.getUserByDefixId(address);
+                    if (!user)
+                        return false;
+                    return true;
+                }
+                else {
                     return blockchain_1.blockchainService[coin.toLowerCase()].isAddress(address);
                 }
                 throw new Error(`Invalid coin`);
@@ -108,14 +135,14 @@ class WalletService {
             catch (err) {
                 throw new Error(`Failed to validate address: ${err}`);
             }
-        });
+        };
         /**
          * Utils for WalletService
          */
-        this.saveWalletDefix = (mnemonic, wallet) => __awaiter(this, void 0, void 0, function* () {
+        this.saveWalletDefix = async (mnemonic, wallet) => {
             try {
-                const importId = yield utils_shared_1.UtilsShared.getIdNear(mnemonic);
-                const user = yield this.userService.createUser(wallet.defixId, importId);
+                const importId = await utils_shared_1.UtilsShared.getIdNear(mnemonic);
+                const user = await this.userService.createUser(wallet.defixId, importId);
                 if (!user)
                     throw new Error("Wallet does not exist in Defix3");
                 for (let credential of wallet.credentials) {
@@ -126,10 +153,10 @@ class WalletService {
             catch (err) {
                 throw new Error(`Failed to save wallet addresses: ${err}`);
             }
-        });
-        this.validateWalletsUser = (user, wallet) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.validateWalletsUser = async (user, wallet) => {
             try {
-                const walletsUser = yield this.addressService.getAddressesByDefixId(user.defixId);
+                const walletsUser = await this.addressService.getAddressesByDefixId(user.defixId);
                 for (let credential of wallet.credentials) {
                     if (!walletsUser.find((element) => element.blockchain === credential.name)) {
                         this.addressService.createAddress(user, credential.name, credential.address);
@@ -139,7 +166,7 @@ class WalletService {
             catch (err) {
                 throw new Error(`Failed to validate wallet address: ${err}`);
             }
-        });
+        };
         this.userService = new user_service_1.UserService();
         this.addressService = new address_service_1.AddressService();
     }

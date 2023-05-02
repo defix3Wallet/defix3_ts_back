@@ -59,7 +59,7 @@ class Routes {
          *            application/json:
          *              schema:
          *                type: "object"
-         *                required: [defixId, pkEncrypt, toDefix, coin, amount, blockchain]
+         *                required: [defixId, pkEncrypt, toAddress, coin, amount, blockchain]
          *                properties: {
          *                  defixId: {
          *                    type: "string"
@@ -67,7 +67,7 @@ class Routes {
          *                  pkEncrypt: {
          *                    type: "string"
          *                  },
-         *                  toDefix: {
+         *                  toAddress: {
          *                    type: "string"
          *                  },
          *                  coin: {

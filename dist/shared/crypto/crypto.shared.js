@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CryptoShared = void 0;
 const crypto_1 = __importDefault(require("crypto"));
+const crypto_js_1 = __importDefault(require("crypto-js"));
 class CryptoShared {
     static decrypt(text) {
         try {
@@ -24,7 +25,7 @@ class CryptoShared {
             return false;
         }
     }
-    static encrypt(text) {
+    static encryptRSA(text) {
         try {
             const encrypted = crypto_1.default.publicEncrypt({
                 key: process.env.PUBLIC_KEY,
@@ -36,6 +37,15 @@ class CryptoShared {
             console.log(error);
             return false;
         }
+    }
+    static encryptAES(text) {
+        const ciphertext = crypto_js_1.default.AES.encrypt(text, process.env.PRIVATE_KEY).toString();
+        return ciphertext;
+    }
+    static decryptAES(text) {
+        var bytes = crypto_js_1.default.AES.decrypt(text, process.env.PRIVATE_KEY);
+        var originalText = bytes.toString(crypto_js_1.default.enc.Utf8);
+        return originalText;
     }
 }
 exports.CryptoShared = CryptoShared;

@@ -19,7 +19,6 @@ export class BalanceService {
       const cryptos = await UtilsShared.getCryptos();
 
       for (let crypto of cryptos) {
-        console.log(crypto);
         const balanceCrypto: BalanceCrypto = {
           coin: crypto.coin,
           blockchain: crypto.blockchain,

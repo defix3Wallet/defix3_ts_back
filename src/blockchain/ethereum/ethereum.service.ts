@@ -176,7 +176,7 @@ export class EthereumService implements BlockchainService {
       const rawTransaction = {
         from: fromAddress,
         to: toAddress,
-        value: web3.utils.toHex(web3.utils.toWei(amount.toString(), "ether")),
+        value: web3.utils.toHex(web3.utils.toWei(amount.toLocaleString("fullwide", { useGrouping: false }), "ether")),
         gasPrice: web3.utils.toHex(gasPrice),
         gasLimit: web3.utils.toHex(gasLimit),
         nonce: nonce,
@@ -243,7 +243,7 @@ export class EthereumService implements BlockchainService {
       let value = Math.pow(10, srcToken.decimals);
       let srcAmount = amount * value;
 
-      const tx = await contract.transfer(toAddress, String(srcAmount));
+      const tx = await contract.transfer(toAddress, srcAmount.toLocaleString("fullwide", { useGrouping: false }));
 
       if (!tx.hash) throw new Error(`Error tx hash.`);
 
@@ -271,7 +271,7 @@ export class EthereumService implements BlockchainService {
       const priceRoute: OptimalRate = await paraSwap.swap.getRate({
         srcToken: fromToken.contract,
         destToken: toToken.contract,
-        amount: String(srcAmount),
+        amount: srcAmount.toLocaleString("fullwide", { useGrouping: false }),
       });
 
       const response = await axios.get("https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6");
@@ -367,6 +367,8 @@ export class EthereumService implements BlockchainService {
     privateKey: string
   ) => {
     try {
+      console.log(address, privateKey, fromCoin, toCoin, srcAmount, destAmount, blockchain);
+
       let fromToken: any = await UtilsShared.getTokenContract(fromCoin, blockchain);
       let toToken: any = await UtilsShared.getTokenContract(toCoin, blockchain);
 
@@ -387,10 +389,10 @@ export class EthereumService implements BlockchainService {
         makerAssetAddress: fromToken.contract,
         takerAssetAddress: toToken.contract,
         makerAddress: address,
-        makingAmount: String(srcAmountLimit),
-        takingAmount: String(destAmountLimit),
+        makingAmount: srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
+        takingAmount: destAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
         // predicate,
-        // permit = '0x',
+        permit: "0x",
         // receiver = ZERO_ADDRESS,
         // allowedSender = ZERO_ADDRESS,
         // getMakingAmount = ZERO_ADDRESS,
@@ -401,7 +403,9 @@ export class EthereumService implements BlockchainService {
 
       const limitOrderTypedData = limitOrderBuilder.buildLimitOrderTypedData(limitOrder);
 
-      const privateKeyProviderConnector = new PrivateKeyProviderConnector(privateKey, web3);
+      const privateKeyProviderConnector = new PrivateKeyProviderConnector("64a0c662f57dc25fac5dd9ff24b9c6b6c100e2d3a0501e2ec94eb792e8e9dd6d", web3);
+
+      console.log(limitOrderTypedData);
 
       const limitOrderSignature = await privateKeyProviderConnector.signTypedData(address, limitOrderTypedData);
 
@@ -412,16 +416,82 @@ export class EthereumService implements BlockchainService {
       const callData = limitOrderProtocolFacade.fillLimitOrder({
         order: limitOrder,
         signature: limitOrderSignature,
-        makingAmount: String(srcAmountLimit),
-        takingAmount: String(destAmountLimit),
+        makingAmount: srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
+        takingAmount: destAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
         thresholdAmount: "50",
       });
 
-      console.log("BRRRRRRr");
+      const provider = ethers.getDefaultProvider(1);
+      const signer = new ethers.Wallet(privateKey, provider);
+
       console.log(callData);
+
+      const resp = await signer.sendTransaction({
+        from: address,
+        gasLimit: 210_000, // Set your gas limit
+        gasPrice: 40000, // Set your gas price
+        to: contractAddress,
+        data: callData,
+      });
+
+      console.log("RES", resp);
+
+      return resp;
+    } catch (error: any) {
+      throw new Error(`Failed to send order limit, ${error.message}`);
+    }
+  };
+
+  public cancelLimitOrder = async (
+    fromCoin: string,
+    toCoin: string,
+    srcAmount: number,
+    destAmount: number,
+    blockchain: string,
+    address: string,
+    privateKey: string
+  ) => {
+    try {
+      console.log(address, privateKey, fromCoin, toCoin, srcAmount, destAmount, blockchain);
+
+      let fromToken: any = await UtilsShared.getTokenContract(fromCoin, blockchain);
+      let toToken: any = await UtilsShared.getTokenContract(toCoin, blockchain);
+
+      if (!fromToken) {
+        fromToken = dataToken;
+      }
+      if (!toToken) {
+        toToken = dataToken;
+      }
+
+      let fromValue = Math.pow(10, fromToken.decimals);
+      const srcAmountLimit = Math.round(srcAmount * fromValue);
+
+      let toValue = Math.pow(10, toToken.decimals);
+      const destAmountLimit = Math.round(destAmount * toValue);
+
+      const limitOrder = limitOrderBuilder.buildLimitOrder({
+        makerAssetAddress: fromToken.contract,
+        takerAssetAddress: toToken.contract,
+        makerAddress: address,
+        makingAmount: srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
+        takingAmount: destAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
+        // predicate,
+        // permit = '0x',
+        // receiver = ZERO_ADDRESS,
+        // allowedSender = ZERO_ADDRESS,
+        // getMakingAmount = ZERO_ADDRESS,
+        // getTakingAmount = ZERO_ADDRESS,
+        // preInteraction  = '0x',
+        // postInteraction = '0x',
+      });
+
+      const callData = limitOrderProtocolFacade.cancelLimitOrder(limitOrder);
 
       const provider = ethers.getDefaultProvider(1);
       const signer = new ethers.Wallet(privateKey, provider);
+
+      console.log(callData);
 
       const resp = await signer.sendTransaction({
         from: address,

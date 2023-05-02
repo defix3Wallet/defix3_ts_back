@@ -138,6 +138,73 @@ class Routes {
          *          description: Internal server error.
          */
         router.post("/validate-address/", this.controller.validateAddress);
+        /**
+         * Post track
+         * @swagger
+         * /import-from-json/:
+         *    post:
+         *      tags:
+         *        - Wallet
+         *      summary: Inicicar sesion con json
+         *      description: Manda los parametros del json y se logueara ya sea con seed phrase o private key
+         *      requestBody:
+         *          content:
+         *            application/json:
+         *              schema:
+         *                type: "object"
+         *                required: [ciphertext, typeLog, dateTime]
+         *                properties: {
+         *                  ciphertext: {
+         *                    type: "string"
+         *                  },
+         *                  typeLog: {
+         *                    type: "string"
+         *                  },
+         *                  dateTime: {
+         *                    type: "number"
+         *                  }
+         *                }
+         *      responses:
+         *        '200':
+         *          description: Te response ya las credentials que tenia el json o la cuenta completa.
+         *        '400':
+         *          description: Bad Request.
+         *        '500':
+         *          description: Internal server error.
+         */
+        router.post("/import-from-json/", this.controller.importFromJson);
+        /**
+         * Post track
+         * @swagger
+         * /export-wallet-json/:
+         *    post:
+         *      tags:
+         *        - Wallet
+         *      summary: Exportar cuenta defix o crendenciales.
+         *      description: Encripta los datos ya sea de la cuenta o crendenciales
+         *      requestBody:
+         *          content:
+         *            application/json:
+         *              schema:
+         *                type: "object"
+         *                required: [ciphertext, typeLog]
+         *                properties: {
+         *                  ciphertext: {
+         *                    type: "string"
+         *                  },
+         *                  typeLog: {
+         *                    type: "string"
+         *                  }
+         *                }
+         *      responses:
+         *        '200':
+         *          description: Responde json con las encriptaciones.
+         *        '400':
+         *          description: Bad Request.
+         *        '500':
+         *          description: Internal server error.
+         */
+        router.post("/export-wallet-json/", this.controller.exportWalletJson);
     }
 }
 exports.Routes = Routes;
