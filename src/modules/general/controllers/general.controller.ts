@@ -23,4 +23,12 @@ export class GeneralController {
       return res.status(500).send({ message: error.message });
     }
   };
+  public getCryptosLimit = async (req: Request, res: Response) => {
+    try {
+      const cryptos = await this.generalService.getCryptosLimit();
+      res.send(cryptos);
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
+    }
+  };
 }

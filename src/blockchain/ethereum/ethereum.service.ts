@@ -368,6 +368,13 @@ export class EthereumService implements BlockchainService {
   ) => {
     try {
       console.log(address, privateKey, fromCoin, toCoin, srcAmount, destAmount, blockchain);
+      let privateKeyOx;
+
+      if (privateKey.length > 64 && privateKey.includes("0x")) {
+        privateKeyOx = privateKey.split("0x").pop() as string;
+      } else {
+        privateKeyOx = privateKey;
+      }
 
       let fromToken: any = await UtilsShared.getTokenContract(fromCoin, blockchain);
       let toToken: any = await UtilsShared.getTokenContract(toCoin, blockchain);
@@ -385,6 +392,9 @@ export class EthereumService implements BlockchainService {
       let toValue = Math.pow(10, toToken.decimals);
       const destAmountLimit = Math.round(destAmount * toValue);
 
+      console.log(srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }));
+      console.log(destAmountLimit.toLocaleString("fullwide", { useGrouping: false }));
+
       const limitOrder = limitOrderBuilder.buildLimitOrder({
         makerAssetAddress: fromToken.contract,
         takerAssetAddress: toToken.contract,
@@ -392,7 +402,7 @@ export class EthereumService implements BlockchainService {
         makingAmount: srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
         takingAmount: destAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
         // predicate,
-        permit: "0x",
+        // permit: "0x",
         // receiver = ZERO_ADDRESS,
         // allowedSender = ZERO_ADDRESS,
         // getMakingAmount = ZERO_ADDRESS,
@@ -403,14 +413,14 @@ export class EthereumService implements BlockchainService {
 
       const limitOrderTypedData = limitOrderBuilder.buildLimitOrderTypedData(limitOrder);
 
-      const privateKeyProviderConnector = new PrivateKeyProviderConnector("64a0c662f57dc25fac5dd9ff24b9c6b6c100e2d3a0501e2ec94eb792e8e9dd6d", web3);
+      const privateKeyProviderConnector = new PrivateKeyProviderConnector(privateKeyOx, web3);
 
       console.log(limitOrderTypedData);
 
       const limitOrderSignature = await privateKeyProviderConnector.signTypedData(address, limitOrderTypedData);
 
       console.log("Signature");
-      console.log(limitOrderSignature);
+      // console.log(limitOrderSignature);
       // console.log(limitOrderSignature);
 
       const callData = limitOrderProtocolFacade.fillLimitOrder({

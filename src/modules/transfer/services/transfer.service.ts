@@ -73,6 +73,8 @@ export class TransferService extends TransactionHistoryService {
         }
         const srcContract = await UtilsShared.getTokenContract(coin, blockchain);
 
+        console.log(srcContract);
+
         if (!srcContract) throw new Error(`Failed to get token contract.`);
 
         transactionHash = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].sendTransferToken(

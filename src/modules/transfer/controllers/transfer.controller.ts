@@ -47,6 +47,7 @@ export class TransferController {
       });
       res.send(transaction);
     } catch (error: any) {
+      console.log(error.message);
       return res.status(500).send({ message: error.message });
     }
   };
