@@ -91,9 +91,11 @@ export class NearService implements BlockchainService {
     const is_address = await account
       .state()
       .then((response) => {
+        console.log(response);
         return true;
       })
       .catch((error) => {
+        console.log(error);
         return false;
       });
     return is_address;

@@ -24,6 +24,20 @@ export class UserController {
     }
   };
 
+  public validateEmail = async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+
+      const user = await this.userService.getUserByEmail(email);
+
+      if (!user) return res.send(false);
+
+      return res.send(true);
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
+    }
+  };
+
   public getUsers = async (req: Request, res: Response) => {
     try {
       const users = await this.userService.getUsers();

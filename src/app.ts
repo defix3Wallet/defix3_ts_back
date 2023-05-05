@@ -18,6 +18,7 @@ import { FrequentModule } from "./modules/frequent/init";
 import { SwapModule } from "./modules/swap/init";
 import { LimitOrderModule } from "./modules/orderLimit/init";
 import { WithdrawModule } from "./modules/withdraw/init";
+import { HiddenTokensModule } from "./modules/hiddenTokens/init";
 
 class App {
   public app: express.Express;
@@ -52,6 +53,7 @@ class App {
     new SwapModule(this.router);
     new LimitOrderModule(this.router);
     new FrequentModule(this.router);
+    new HiddenTokensModule(this.router);
   }
 }
 

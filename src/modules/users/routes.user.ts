@@ -43,11 +43,37 @@ export class RoutesUser {
      *        '500':
      *          description: Bad Request.
      */
-    router.post(
-      "/validate-defix3/",
-      this.middleware.defixIdAvailable,
-      this.controller.validateDefixId
-    );
+    router.post("/validate-defix3/", this.middleware.defixIdAvailable, this.controller.validateDefixId);
+
+    /**
+     * Post track
+     * @swagger
+     * /validate-email/:
+     *    post:
+     *      tags:
+     *        - User
+     *      summary: Validar si un email existe.
+     *      description: Response un Boolean si el email existe o no.
+     *      requestBody:
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: "object"
+     *                required: ["email"]
+     *                properties: {
+     *                  email: {
+     *                    type: "string"
+     *                  }
+     *                }
+     *      responses:
+     *        '200':
+     *          description: Responde un boolean.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Bad Request.
+     */
+    router.post("/validate-email/", this.controller.validateEmail);
 
     /**
      * Post track
@@ -96,11 +122,7 @@ export class RoutesUser {
      *        '500':
      *          description: Bad Request.
      */
-    router.post(
-      "/get-user-data/",
-      this.middleware.defixIdValid,
-      this.controller.getUserData
-    );
+    router.post("/get-user-data/", this.middleware.defixIdValid, this.controller.getUserData);
 
     /**
      * Post track
@@ -130,10 +152,6 @@ export class RoutesUser {
      *        '500':
      *          description: Internal server error.
      */
-    router.patch(
-      "/update-user/",
-      this.multerConfig.upload().single("avatar"),
-      this.controller.updateUser
-    );
+    router.patch("/update-user/", this.multerConfig.upload().single("avatar"), this.controller.updateUser);
   }
 }

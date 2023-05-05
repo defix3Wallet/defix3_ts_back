@@ -27,6 +27,10 @@ export class UserService {
     return await UserEntity.findOneBy({ defixId });
   };
 
+  public getUserByEmail = async (email: string) => {
+    return await UserEntity.findOneBy({ email });
+  };
+
   public getUsers = async () => {
     return await UserEntity.find({ select: ["defixId", "id"] });
   };
@@ -45,7 +49,6 @@ export class UserService {
         "user.lastname",
         "user.avatar",
         "user.legalDocument",
-        "user.passcode",
         "user.typeDocument",
         "user.closeSessions",
       ])
