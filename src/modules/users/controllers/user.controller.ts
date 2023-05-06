@@ -26,11 +26,13 @@ export class UserController {
 
   public validateEmail = async (req: Request, res: Response) => {
     try {
-      const { email } = req.body;
+      const { defixId, email } = req.body;
 
       const user = await this.userService.getUserByEmail(email);
 
       if (!user) return res.send(false);
+
+      if (user.defixId === defixId) return res.send(false);
 
       return res.send(true);
     } catch (error: any) {

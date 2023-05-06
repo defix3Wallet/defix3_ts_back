@@ -6,9 +6,14 @@ export class HiddenTokensLimitEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => UserEntity)
-  user!: UserEntity;
+  @Column({
+    nullable: false,
+  })
+  user!: string;
 
-  @ManyToOne(() => UserEntity)
-  token!: UserEntity;
+  @Column({
+    name: "token_id",
+    nullable: false,
+  })
+  tokenId!: number;
 }
