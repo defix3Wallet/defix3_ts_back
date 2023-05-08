@@ -24,9 +24,9 @@ export class HiddenTokensService {
         if (crypto.limit_order) {
           for (let token of crypto.tokens) {
             if (tokensHidden.find((element) => element.tokenId === Number(token.id))) {
-              token.active = true;
-            } else {
               token.active = false;
+            } else {
+              token.active = true;
             }
             token.blockchain = crypto.blockchain;
             token.blockchain_coin = crypto.coin;
