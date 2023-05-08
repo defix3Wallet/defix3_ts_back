@@ -42,6 +42,17 @@ export class SwapController {
 
       const swapResult = await this.swapService.sendSwap(defixId, fromCoin, toCoin, priceRoute, privateKey, blockchain, address);
 
+      this.mailService.emailSuccessSwap(
+        defixId,
+        fromCoin,
+        swapResult.amount,
+        toCoin,
+        swapResult.destAmount,
+        blockchain,
+        swapResult.hash,
+        swapResult.createdAt
+      );
+
       res.send(swapResult);
     } catch (error: any) {
       return res.status(500).send({ message: error.message });

@@ -16,6 +16,7 @@ export class WalletController {
   public createWalletDefix = async (req: Request, res: Response) => {
     try {
       const { defixId, seedPhrase, email } = req.body;
+
       if (!defixId || !seedPhrase) return res.status(400).send({ message: "Invalid data." });
 
       const mnemonic = CryptoShared.decrypt(seedPhrase);

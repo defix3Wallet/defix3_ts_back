@@ -37,13 +37,9 @@ export class WithdrawController {
 
       const withdrawal = await this.withdrawService.sendWithdraw(defixId, privateKey, toAddress, coin, amount, blockchain);
 
-      this.mailService.sendMail(defixId, toAddress, "envio", {
-        monto: amount,
-        moneda: coin,
-        receptor: toAddress,
-        emisor: defixId,
-        tipoEnvio: "wallet",
-      });
+      this.mailService.emailSuccessWithdrawal(defixId, toAddress, amount, coin, blockchain, withdrawal.hash);
+      this.mailService.emailReceivedPayment(defixId, toAddress, amount, coin, blockchain, withdrawal.hash);
+
       res.send(withdrawal);
     } catch (error: any) {
       return res.status(500).send({ message: error.message });

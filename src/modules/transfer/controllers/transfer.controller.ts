@@ -29,7 +29,6 @@ export class TransferController {
     try {
       const { defixId, pkEncrypt, toAddress, coin, amount, blockchain } = req.body;
 
-      console.log(defixId, pkEncrypt, toAddress, coin, amount, blockchain);
       if (!defixId || !pkEncrypt || !toAddress || !coin || !amount || !blockchain) return res.status(400).send({ message: "Invalid data." });
 
       const privateKey = CryptoShared.decrypt(pkEncrypt);
@@ -38,13 +37,9 @@ export class TransferController {
 
       const transaction = await this.transferService.sendTransfer(defixId, privateKey, toAddress, coin, amount, blockchain);
 
-      this.mailService.sendMail(defixId, toAddress, "envio", {
-        monto: amount,
-        moneda: coin,
-        receptor: toAddress,
-        emisor: defixId,
-        tipoEnvio: toAddress.includes(".defix3") ? "user" : "wallet",
-      });
+      this.mailService.emailSuccessWithdrawal(defixId, toAddress, amount, coin, blockchain, transaction.hash);
+      this.mailService.emailReceivedPayment(defixId, toAddress, amount, coin, blockchain, transaction.hash);
+
       res.send(transaction);
     } catch (error: any) {
       console.log(error.message);
