@@ -7,7 +7,7 @@ class MulterConfig {
 
   constructor() {
     this.storage = multer.diskStorage({
-      destination: path.join(__dirname, "../uploads"),
+      destination: path.resolve("./uploads/"),
       filename: (req, file, cb) => {
         const fileName = this.generateFileName(file.originalname);
         cb(null, fileName);

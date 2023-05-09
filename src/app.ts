@@ -36,7 +36,7 @@ class App {
     this.app.use(cors());
     this.app.use(express.json());
     this.app.use("/api/v2", this.router);
-    this.app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+    this.app.use("/uploads", express.static(path.resolve("./uploads/")));
     this.app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerSetup));
   }
 

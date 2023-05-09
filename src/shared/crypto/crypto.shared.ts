@@ -4,7 +4,7 @@ import cryptoJs from "crypto-js";
 export class CryptoShared {
   static decrypt(text: string) {
     try {
-      return text;
+      // return text;
       const cipheredBytes = Buffer.from(text, "base64");
       const decoded = crypto
         .privateDecrypt(
