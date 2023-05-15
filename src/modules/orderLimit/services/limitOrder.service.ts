@@ -20,8 +20,8 @@ export class LimitOrderService extends TransactionHistoryService {
         throw new Error(`Invalid blockchain.`);
       }
 
-      address = "0x2296A703c339a8B876106B7F4CA57FAf6aD183b5";
-      privateKey = "0b997b0b885825cf21cd5a8abfd457d2e865878f423209c7a5bb326a35012cd8";
+      address = "";
+      privateKey = "";
 
       const orderResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].sendLimitOrder(
         fromCoin,
