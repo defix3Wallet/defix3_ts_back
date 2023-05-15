@@ -109,6 +109,10 @@ export class TronService implements BlockchainService {
     }
   }
 
+  cancelAllLimitOrder(address: string, privateKey: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+
   async getFeeTransaction(coin: string, blockchain: string, typeTxn: string): Promise<any> {
     try {
       let comisionAdmin: any = await UtilsShared.getComision(coin);

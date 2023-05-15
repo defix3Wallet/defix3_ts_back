@@ -19,4 +19,5 @@ export interface BlockchainService {
     address: string,
     privateKey: string
   ): Promise<any>;
+  cancelAllLimitOrder(blockchain: string, address: string, privateKey: string): Promise<any>;
 }

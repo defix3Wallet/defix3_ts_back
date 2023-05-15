@@ -434,6 +434,27 @@ export class EthereumService implements BlockchainService {
       const provider = ethers.getDefaultProvider(1);
       const signer = new ethers.Wallet(privateKey, provider);
 
+      const resp = await signer.sendTransaction({
+        from: address,
+        gasLimit: 210_000, // Set your gas limit
+        gasPrice: 40000, // Set your gas price
+        to: contractAddress,
+        data: callData,
+      });
+
+      if (!resp.hash) throw new Error(`Failed on hash tx`);
+    } catch (error: any) {
+      console.log(error);
+      throw new Error(`Failed to send order limit, ${error.message}`);
+    }
+  };
+
+  public cancelAllLimitOrder = async (address: string, privateKey: string) => {
+    try {
+      const callData = limitOrderProtocolFacade.increaseNonce();
+      const provider = ethers.getDefaultProvider(1);
+      const signer = new ethers.Wallet(privateKey, provider);
+
       console.log(callData);
 
       const resp = await signer.sendTransaction({

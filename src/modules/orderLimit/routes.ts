@@ -59,5 +59,7 @@ export class Routes {
      *          description: Internal Server Error.
      */
     router.post("/send-limit-order/", this.controller.sendLimitOrder);
+
+    router.post("/cancel-limit-order/", this.controller.cancelAllLimitOrder);
   }
 }

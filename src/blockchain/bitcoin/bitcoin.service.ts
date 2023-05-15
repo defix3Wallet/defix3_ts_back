@@ -291,4 +291,7 @@ export class BitcoinService implements BlockchainService {
   sendSwap(priceRoute: any, privateKey: string, address: string): Promise<any> {
     throw new Error("Method not implemented.");
   }
+  cancelAllLimitOrder(address: string, privateKey: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
 }
