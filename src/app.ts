@@ -16,7 +16,7 @@ import { TransactionHistoryModule } from "./modules/transactionHistory/init";
 import { TransferModule } from "./modules/transfer/init";
 import { FrequentModule } from "./modules/frequent/init";
 import { SwapModule } from "./modules/swap/init";
-import { LimitOrderModule } from "./modules/orderLimit/init";
+import { LimitOrderModule } from "./modules/limitOrder/init";
 import { WithdrawModule } from "./modules/withdraw/init";
 import { HiddenTokensModule } from "./modules/hiddenTokens/init";
 
