@@ -36,11 +36,11 @@ export class LimitOrderController {
     }
   };
 
-  public cancelAllLimitOrder = async (req: Request, res: Response) => {
+  public cancelLimitOrder = async (req: Request, res: Response) => {
     try {
-      const { defixId, pkEncrypt, blockchain } = req.body;
+      const { defixId, pkEncrypt, orderHash, blockchain } = req.body;
 
-      if (!defixId || !pkEncrypt || !blockchain) return res.status(400).send({ message: "Invalid data." });
+      if (!defixId || !pkEncrypt || !blockchain || !orderHash) return res.status(400).send({ message: "Invalid data." });
 
       const privateKey = CryptoShared.decrypt(pkEncrypt);
 
@@ -50,9 +50,27 @@ export class LimitOrderController {
 
       if (!address) return res.status(400).send({ message: "Address invalid." });
 
-      const limitOrder = await this.limitOrderService.cancelAllLimitOrder(blockchain, address, privateKey);
+      const limitOrder = await this.limitOrderService.cancelLimitOrder(blockchain, orderHash, privateKey);
 
       res.json(limitOrder);
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
+    }
+  };
+
+  public getAllLimitOrder = async (req: Request, res: Response) => {
+    try {
+      const { defixId, blockchain } = req.body;
+
+      if (!defixId || !blockchain) return res.status(400).send({ message: "Invalid data." });
+
+      const address = await UtilsShared.getAddressUser(defixId, blockchain);
+
+      if (!address) return res.status(400).send({ message: "Address invalid." });
+
+      const orders = await this.limitOrderService.getAllLimitOrder(blockchain, address);
+
+      res.json(orders);
     } catch (error: any) {
       return res.status(500).send({ message: error.message });
     }

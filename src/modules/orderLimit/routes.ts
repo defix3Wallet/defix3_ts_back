@@ -60,6 +60,74 @@ export class Routes {
      */
     router.post("/send-limit-order/", this.controller.sendLimitOrder);
 
-    router.post("/cancel-limit-order/", this.controller.cancelAllLimitOrder);
+    /**
+     * @swagger
+     * /cancel-limit-order/:
+     *    post:
+     *      tags:
+     *        - LimitOrder
+     *      summary: Envia el hash del order limit para cancelarlo
+     *      description: Manda campos requeridos para cancelar un order limit.
+     *      requestBody:
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: "object"
+     *                required: [fromCoin, toCoin, amount, blockchain]
+     *                properties: {
+     *                  defixId: {
+     *                    type: "string"
+     *                  },
+     *                  pkEncrypt: {
+     *                    type: "string"
+     *                  },
+     *                  orderHash: {
+     *                    type: "string"
+     *                  },
+     *                  blockchain: {
+     *                    type: "string"
+     *                  }
+     *                }
+     *      responses:
+     *        '200':
+     *          description: Order Limit cancelado.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Internal Server Error.
+     */
+    router.post("/cancel-limit-order/", this.controller.cancelLimitOrder);
+
+    /**
+     * @swagger
+     * /get-limit-orders/:
+     *    post:
+     *      tags:
+     *        - LimitOrder
+     *      summary: Obtiene los limit orders del usuario
+     *      description: Manda campos requeridos para obetener los limit orders.
+     *      requestBody:
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: "object"
+     *                required: [fromCoin, toCoin, amount, blockchain]
+     *                properties: {
+     *                  defixId: {
+     *                    type: "string"
+     *                  },
+     *                  blockchain: {
+     *                    type: "string"
+     *                  }
+     *                }
+     *      responses:
+     *        '200':
+     *          description: Order Limit cancelado.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Internal Server Error.
+     */
+    router.post("/get-limit-orders/", this.controller.getAllLimitOrder);
   }
 }

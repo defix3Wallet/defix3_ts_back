@@ -20,9 +20,6 @@ export class LimitOrderService extends TransactionHistoryService {
         throw new Error(`Invalid blockchain.`);
       }
 
-      address = "";
-      privateKey = "";
-
       const orderResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].sendLimitOrder(
         fromCoin,
         toCoin,
@@ -34,6 +31,24 @@ export class LimitOrderService extends TransactionHistoryService {
       );
 
       if (!orderResult) {
+        throw new Error(`Internal error send limit order.`);
+      }
+
+      return orderResult;
+    } catch (error: any) {
+      throw new Error(`Failed to send order limit, ${error.message}`);
+    }
+  };
+
+  public cancelLimitOrder = async (blockchain: string, orderHash: string, privateKey: string) => {
+    try {
+      if (blockchain !== "ETH") {
+        throw new Error(`Invalid blockchain.`);
+      }
+
+      const orderResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].cancelLimitOrder(orderHash, privateKey);
+
+      if (!orderResult) {
         throw new Error(`Internal error swap preview.`);
       }
 
@@ -43,27 +58,21 @@ export class LimitOrderService extends TransactionHistoryService {
     }
   };
 
-  public cancelAllLimitOrder = async (blockchain: string, address: string, privateKey: string) => {
+  public getAllLimitOrder = async (blockchain: string, address: string) => {
     try {
       if (blockchain !== "ETH") {
         throw new Error(`Invalid blockchain.`);
       }
 
-      address = "";
-      privateKey = "";
+      const ordersResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].getAllLimitOrder(address);
 
-      const orderResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].cancelAllLimitOrder(
-        address,
-        privateKey
-      );
-
-      if (!orderResult) {
+      if (!ordersResult) {
         throw new Error(`Internal error swap preview.`);
       }
 
-      return orderResult;
+      return ordersResult;
     } catch (error: any) {
-      throw new Error(`Failed to send order limit, ${error.message}`);
+      throw new Error(`Failed to get all order limit, ${error.message}`);
     }
   };
 }

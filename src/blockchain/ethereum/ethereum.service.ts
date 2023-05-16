@@ -4,24 +4,22 @@ import Web3 from "web3";
 import web3Utils from "web3-utils";
 import { CredentialInterface } from "../../interfaces/credential.interface";
 import axios from "axios";
-import { constructSimpleSDK, OptimalRate } from "@paraswap/sdk";
+import { constructCancelLimitOrder, constructGetLimitOrders, constructSimpleSDK, OptimalRate, SwapSide } from "@paraswap/sdk";
 import abi from "../abi.json";
 import { UtilsShared } from "../../shared/utils/utils.shared";
 import {
-  limirOrderProtocolAdresses,
-  seriesNonceManagerContractAddresses,
-  ChainId,
-  Erc20Facade,
-  LimitOrderBuilder,
-  LimitOrderProtocolFacade,
-  LimitOrderPredicateBuilder,
-  NonceSeriesV2,
-  SeriesNonceManagerFacade,
-  SeriesNonceManagerPredicateBuilder,
-  Web3ProviderConnector,
-  LimitOrderPredicateCallData,
-  PrivateKeyProviderConnector,
-} from "@1inch/limit-order-protocol-utils";
+  // swap methods
+  constructPartialSDK,
+  constructEthersContractCaller,
+  constructAxiosFetcher,
+  // limitOrders methods
+  constructBuildLimitOrder,
+  constructSignLimitOrder,
+  constructPostLimitOrder,
+  // extra types
+  SignableOrderData,
+  LimitOrderToSend,
+} from "@paraswap/sdk";
 
 const ETHEREUM_NETWORK = process.env.ETHEREUM_NETWORK;
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
@@ -29,16 +27,6 @@ const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
 const ETHERSCAN = process.env.ETHERSCAN;
 
 const web3 = new Web3(new Web3.providers.HttpProvider(`https://${ETHEREUM_NETWORK}.infura.io/v3/${INFURA_PROJECT_ID}`));
-
-const chainId = 1; // suggested, or use your own number
-const connector = new Web3ProviderConnector(web3);
-const contractAddress = limirOrderProtocolAdresses[chainId];
-const seriesContractAddress = seriesNonceManagerContractAddresses[chainId];
-
-const limitOrderBuilder = new LimitOrderBuilder(seriesContractAddress, chainId, connector);
-const limitOrderProtocolFacade = new LimitOrderProtocolFacade(contractAddress, chainId, connector);
-
-const seriesNonceManagerFacade = new SeriesNonceManagerFacade(seriesContractAddress, chainId, connector);
 
 const paraSwap = constructSimpleSDK({
   chainId: Number(process.env.PARASWAP_ETH),
@@ -49,6 +37,9 @@ const dataToken = {
   decimals: 18,
   contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
 };
+
+const fetcher = constructAxiosFetcher(axios);
+const provider = ethers.getDefaultProvider(1);
 
 export class EthereumService implements BlockchainService {
   async fromMnemonic(mnemonic: string): Promise<CredentialInterface> {
@@ -367,14 +358,28 @@ export class EthereumService implements BlockchainService {
     privateKey: string
   ) => {
     try {
-      console.log(address, privateKey, fromCoin, toCoin, srcAmount, destAmount, blockchain);
-      let privateKeyOx;
+      const signer = new ethers.Wallet(privateKey, provider);
+      const account = signer.address;
+      const contractCaller = constructEthersContractCaller(
+        {
+          ethersProviderOrSigner: signer,
+          EthersContract: ethers.Contract,
+        },
+        account
+      );
 
-      if (privateKey.length > 64 && privateKey.includes("0x")) {
-        privateKeyOx = privateKey.split("0x").pop() as string;
-      } else {
-        privateKeyOx = privateKey;
-      }
+      const paraSwapLimitOrderSDK = constructPartialSDK(
+        {
+          chainId: 1,
+          fetcher,
+          contractCaller,
+        },
+        constructBuildLimitOrder,
+        constructSignLimitOrder,
+        constructPostLimitOrder
+      );
+
+      console.log(privateKey);
 
       let fromToken: any = await UtilsShared.getTokenContract(fromCoin, blockchain);
       let toToken: any = await UtilsShared.getTokenContract(toCoin, blockchain);
@@ -392,151 +397,93 @@ export class EthereumService implements BlockchainService {
       let toValue = Math.pow(10, toToken.decimals);
       const destAmountLimit = Math.round(destAmount * toValue);
 
-      console.log(srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }));
-      console.log(destAmountLimit.toLocaleString("fullwide", { useGrouping: false }));
+      const orderInput = {
+        nonce: 1,
+        expiry: 0, //Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // week from now, in sec
+        makerAsset: fromToken.contract,
+        takerAsset: toToken.contract,
+        makerAmount: srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
+        takerAmount: destAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
+        maker: account,
+      };
 
-      const limitOrder = limitOrderBuilder.buildLimitOrder({
-        makerAssetAddress: fromToken.contract,
-        takerAssetAddress: toToken.contract,
-        makerAddress: address,
-        makingAmount: srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
-        takingAmount: destAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
-        // predicate,
-        // permit: "0x",
-        // receiver = ZERO_ADDRESS,
-        // allowedSender = ZERO_ADDRESS,
-        // getMakingAmount = ZERO_ADDRESS,
-        // getTakingAmount = ZERO_ADDRESS,
-        // preInteraction  = '0x',
-        // postInteraction = '0x',
-      });
+      const signableOrderData: SignableOrderData = await paraSwapLimitOrderSDK.buildLimitOrder(orderInput);
 
-      const limitOrderTypedData = limitOrderBuilder.buildLimitOrderTypedData(limitOrder);
+      console.log(signableOrderData);
 
-      const privateKeyProviderConnector = new PrivateKeyProviderConnector(privateKeyOx, web3);
+      // const signature = await signer._signTypedData(signableOrderData.domain, signableOrderData.types, signableOrderData.data);
 
-      console.log(limitOrderTypedData);
+      const signature: string = await paraSwapLimitOrderSDK.signLimitOrder(signableOrderData);
 
-      const limitOrderSignature = await privateKeyProviderConnector.signTypedData(address, limitOrderTypedData);
+      console.log(signature);
 
-      console.log("Signature");
-      // console.log(limitOrderSignature);
-      // console.log(limitOrderSignature);
+      const orderToPostToApi: LimitOrderToSend = {
+        ...signableOrderData.data,
+        signature,
+      };
+      console.log(orderToPostToApi);
 
-      const callData = limitOrderProtocolFacade.fillLimitOrder({
-        order: limitOrder,
-        signature: limitOrderSignature,
-        makingAmount: srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
-        takingAmount: destAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
-        thresholdAmount: "50",
-      });
+      const newOrder = await paraSwapLimitOrderSDK.postLimitOrder(orderToPostToApi);
+      console.log(newOrder);
 
-      const provider = ethers.getDefaultProvider(1);
-      const signer = new ethers.Wallet(privateKey, provider);
-
-      const resp = await signer.sendTransaction({
-        from: address,
-        gasLimit: 210_000, // Set your gas limit
-        gasPrice: 40000, // Set your gas price
-        to: contractAddress,
-        data: callData,
-      });
-
-      if (!resp.hash) throw new Error(`Failed on hash tx`);
+      return newOrder;
     } catch (error: any) {
       console.log(error);
       throw new Error(`Failed to send order limit, ${error.message}`);
     }
   };
 
-  public cancelAllLimitOrder = async (address: string, privateKey: string) => {
+  public getAllLimitOrder = async (address: string) => {
     try {
-      const callData = limitOrderProtocolFacade.increaseNonce();
-      const provider = ethers.getDefaultProvider(1);
-      const signer = new ethers.Wallet(privateKey, provider);
+      const paraSwapLimitOrderSDK = constructPartialSDK(
+        {
+          chainId: 1,
+          fetcher,
+        },
+        constructGetLimitOrders
+      );
 
-      console.log(callData);
-
-      const resp = await signer.sendTransaction({
-        from: address,
-        gasLimit: 210_000, // Set your gas limit
-        gasPrice: 40000, // Set your gas price
-        to: contractAddress,
-        data: callData,
+      const orders = await paraSwapLimitOrderSDK.getLimitOrders({
+        maker: address,
+        type: "LIMIT",
       });
 
-      console.log("RES", resp);
-
-      return resp;
+      return orders;
     } catch (error: any) {
-      throw new Error(`Failed to send order limit, ${error.message}`);
+      throw new Error(`Failed to get all order limit, ${error.message}`);
     }
   };
 
-  public cancelLimitOrder = async (
-    fromCoin: string,
-    toCoin: string,
-    srcAmount: number,
-    destAmount: number,
-    blockchain: string,
-    address: string,
-    privateKey: string
-  ) => {
+  public cancelLimitOrder = async (orderHash: string, privateKey: string) => {
     try {
-      console.log(address, privateKey, fromCoin, toCoin, srcAmount, destAmount, blockchain);
-
-      let fromToken: any = await UtilsShared.getTokenContract(fromCoin, blockchain);
-      let toToken: any = await UtilsShared.getTokenContract(toCoin, blockchain);
-
-      if (!fromToken) {
-        fromToken = dataToken;
-      }
-      if (!toToken) {
-        toToken = dataToken;
-      }
-
-      let fromValue = Math.pow(10, fromToken.decimals);
-      const srcAmountLimit = Math.round(srcAmount * fromValue);
-
-      let toValue = Math.pow(10, toToken.decimals);
-      const destAmountLimit = Math.round(destAmount * toValue);
-
-      const limitOrder = limitOrderBuilder.buildLimitOrder({
-        makerAssetAddress: fromToken.contract,
-        takerAssetAddress: toToken.contract,
-        makerAddress: address,
-        makingAmount: srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
-        takingAmount: destAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
-        // predicate,
-        // permit = '0x',
-        // receiver = ZERO_ADDRESS,
-        // allowedSender = ZERO_ADDRESS,
-        // getMakingAmount = ZERO_ADDRESS,
-        // getTakingAmount = ZERO_ADDRESS,
-        // preInteraction  = '0x',
-        // postInteraction = '0x',
-      });
-
-      const callData = limitOrderProtocolFacade.cancelLimitOrder(limitOrder);
-
-      const provider = ethers.getDefaultProvider(1);
       const signer = new ethers.Wallet(privateKey, provider);
+      const account = signer.address;
 
-      console.log(callData);
+      const contractCaller = constructEthersContractCaller(
+        {
+          ethersProviderOrSigner: signer,
+          EthersContract: ethers.Contract,
+        },
+        account
+      );
 
-      const resp = await signer.sendTransaction({
-        from: address,
-        gasLimit: 210_000, // Set your gas limit
-        gasPrice: 40000, // Set your gas price
-        to: contractAddress,
-        data: callData,
-      });
+      const paraSwapLimitOrderSDK = constructPartialSDK(
+        {
+          chainId: 1,
+          fetcher,
+          contractCaller,
+        },
+        constructGetLimitOrders,
+        constructCancelLimitOrder
+      );
 
-      console.log("RES", resp);
+      const deleteTx: ethers.ContractTransaction = await paraSwapLimitOrderSDK.cancelLimitOrder(orderHash);
 
-      return resp;
+      console.log("deleteTx", deleteTx);
+
+      return deleteTx;
     } catch (error: any) {
-      throw new Error(`Failed to send order limit, ${error.message}`);
+      throw new Error(`Failed to cancel order limit, ${error.message}`);
     }
   };
 }

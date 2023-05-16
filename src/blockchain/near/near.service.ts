@@ -441,7 +441,10 @@ export class NearService implements BlockchainService {
       throw new Error(`Failed to send swap, ${err.message}`);
     }
   }
-  cancelAllLimitOrder(address: string, privateKey: string): Promise<any> {
+  cancelLimitOrder(address: string, privateKey: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  getAllLimitOrder(address: string): Promise<any> {
     throw new Error("Method not implemented.");
   }
 }

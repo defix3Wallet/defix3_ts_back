@@ -109,7 +109,10 @@ export class TronService implements BlockchainService {
     }
   }
 
-  cancelAllLimitOrder(address: string, privateKey: string): Promise<any> {
+  cancelLimitOrder(address: string, privateKey: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  getAllLimitOrder(address: string): Promise<any> {
     throw new Error("Method not implemented.");
   }
 
