@@ -111,12 +111,9 @@ export class Routes {
      *            application/json:
      *              schema:
      *                type: "object"
-     *                required: [fromCoin, toCoin, amount, blockchain]
+     *                required: [fromCoin, toCoin, amount]
      *                properties: {
      *                  defixId: {
-     *                    type: "string"
-     *                  },
-     *                  blockchain: {
      *                    type: "string"
      *                  }
      *                }

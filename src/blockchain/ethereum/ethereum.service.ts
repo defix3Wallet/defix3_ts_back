@@ -97,6 +97,8 @@ export class EthereumService implements BlockchainService {
 
       const balance = await contract.methods.balanceOf(address).call();
 
+      console.log(balance);
+
       let balanceTotal = 0;
 
       if (balance) {
@@ -435,6 +437,9 @@ export class EthereumService implements BlockchainService {
 
   public getAllLimitOrder = async (address: string) => {
     try {
+      const web3Main = new Web3(new Web3.providers.HttpProvider(`https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`));
+
+      address = "0x856d78cde2a7e361bf528c72c5d130bc0da91e58";
       const paraSwapLimitOrderSDK = constructPartialSDK(
         {
           chainId: 1,
@@ -443,10 +448,40 @@ export class EthereumService implements BlockchainService {
         constructGetLimitOrders
       );
 
-      const orders = await paraSwapLimitOrderSDK.getLimitOrders({
+      const ordersData = await paraSwapLimitOrderSDK.getLimitOrders({
         maker: address,
         type: "LIMIT",
       });
+
+      const orders: any[] = [];
+
+      for (let order of ordersData.orders) {
+        let orderFin: any = order;
+        const makerContract = new web3Main.eth.Contract(abi as web3Utils.AbiItem[], order.makerAsset);
+
+        const fromSymbol = await makerContract.methods.symbol().call();
+        const fromDecimals = await makerContract.methods.decimals().call();
+        // const fromName = await makerContract.methods.name().call();
+
+        const takerContract = new web3Main.eth.Contract(abi as web3Utils.AbiItem[], order.takerAsset);
+
+        const toSymbol = await takerContract.methods.symbol().call();
+        const toDecimals = await takerContract.methods.decimals().call();
+        // const toName = await takerContract.methods.name().call();
+
+        orderFin.blockchain = "ETHEREUM";
+        orderFin.blockchainCoin = "ETH";
+
+        orderFin.fromSymbol = fromSymbol;
+        orderFin.toSymbol = toSymbol;
+
+        console.log();
+
+        orderFin.fromAmount = Number(orderFin.makerAmount) / Math.pow(10, fromDecimals);
+        orderFin.toAmount = Number(orderFin.takerAmount) / Math.pow(10, toDecimals);
+
+        orders.push(orderFin);
+      }
 
       return orders;
     } catch (error: any) {

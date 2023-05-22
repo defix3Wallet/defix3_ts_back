@@ -60,15 +60,15 @@ export class LimitOrderController {
 
   public getAllLimitOrder = async (req: Request, res: Response) => {
     try {
-      const { defixId, blockchain } = req.body;
+      const { defixId } = req.body;
 
-      if (!defixId || !blockchain) return res.status(400).send({ message: "Invalid data." });
+      if (!defixId) return res.status(400).send({ message: "Invalid data." });
 
-      const address = await UtilsShared.getAddressUser(defixId, blockchain);
+      const address = await UtilsShared.getAddressUser(defixId, "ETH");
 
       if (!address) return res.status(400).send({ message: "Address invalid." });
 
-      const orders = await this.limitOrderService.getAllLimitOrder(blockchain, address);
+      const orders = await this.limitOrderService.getAllLimitOrder("ETH", address);
 
       res.json(orders);
     } catch (error: any) {
