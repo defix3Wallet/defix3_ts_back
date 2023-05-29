@@ -126,5 +126,37 @@ export class Routes {
      *          description: Internal Server Error.
      */
     router.post("/get-limit-orders/", this.controller.getAllLimitOrder);
+
+    /**
+     * @swagger
+     * /get-order-book/:
+     *    post:
+     *      tags:
+     *        - LimitOrder
+     *      summary: Obtiene los limit orders de una moneda a otra.
+     *      description: Manda campos requeridos para obetener los limit orders.
+     *      requestBody:
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: "object"
+     *                required: [fromCoin, toCoin, amount]
+     *                properties: {
+     *                  fromCoin: {
+     *                    type: "string"
+     *                  },
+     *                  toCoin: {
+     *                    type: "string"
+     *                  }
+     *                }
+     *      responses:
+     *        '200':
+     *          description: Order Limits.
+     *        '400':
+     *          description: Bad Request.
+     *        '500':
+     *          description: Internal Server Error.
+     */
+    router.post("/get-order-book/", this.controller.getOrderBook);
   }
 }

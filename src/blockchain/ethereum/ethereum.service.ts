@@ -480,6 +480,8 @@ export class EthereumService implements BlockchainService {
         orderFin.fromAmount = Number(orderFin.makerAmount) / Math.pow(10, fromDecimals);
         orderFin.toAmount = Number(orderFin.takerAmount) / Math.pow(10, toDecimals);
 
+        orderFin.linkHash = UtilsShared.getLinkTransaction(orderFin.blockchainCoin, orderFin.orderHash);
+
         orders.push(orderFin);
       }
 

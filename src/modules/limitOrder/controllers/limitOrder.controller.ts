@@ -75,4 +75,24 @@ export class LimitOrderController {
       return res.status(500).send({ message: error.message });
     }
   };
+
+  public getOrderBook = async (req: Request, res: Response) => {
+    try {
+      const { fromCoin, toCoin } = req.body;
+
+      if (!fromCoin || !toCoin) return res.status(400).send({ message: "Invalid data." });
+
+      let fromToken: any = await UtilsShared.getTokenContract(fromCoin, "ETH");
+
+      let toToken: any = await UtilsShared.getTokenContract(toCoin, "ETH");
+
+      if (!fromToken || !toToken) return res.status(400).send({ message: "Tokens invalid." });
+
+      const orders = await this.limitOrderService.getOrderBook("ETH", fromToken.contract, toToken.contract);
+
+      res.json(orders);
+    } catch (error: any) {
+      return res.status(500).send({ message: error.message });
+    }
+  };
 }
