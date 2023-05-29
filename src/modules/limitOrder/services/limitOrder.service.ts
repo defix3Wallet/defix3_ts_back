@@ -80,12 +80,20 @@ export class LimitOrderService extends TransactionHistoryService {
 
   public getOrderBook = async (blockchain: string, fromToken: string, toToken: string) => {
     try {
-      console.log(fromToken, toToken);
-      fromToken = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-      toToken = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
-      const orders = await axios.get("https://api.paraswap.io/ft/orders/1/orderbook/?makerAsset=" + fromToken + "&takerAsset=" + toToken);
-      console.log(orders.data);
-      return orders.data.orders;
+      if (blockchain !== "ETH") {
+        throw new Error(`Invalid blockchain.`);
+      }
+
+      const ordersResult = await blockchainService[blockchain.toLowerCase() as keyof typeof blockchainService].getOrderBookCoinToCoin(
+        fromToken,
+        toToken
+      );
+
+      if (!ordersResult) {
+        throw new Error(`Internal error order book.`);
+      }
+
+      return ordersResult;
     } catch (error: any) {
       throw new Error(`Failed to get order book, ${error.message}`);
     }

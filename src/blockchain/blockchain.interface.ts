@@ -21,4 +21,5 @@ export interface BlockchainService {
   ): Promise<any>;
   cancelLimitOrder(blockchain: string, address: string, privateKey: string): Promise<any>;
   getAllLimitOrder(address: string): Promise<any>;
+  getOrderBookCoinToCoin(fromCoin: string, toCoin: string): Promise<any>;
 }

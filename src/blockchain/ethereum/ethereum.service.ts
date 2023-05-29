@@ -523,4 +523,46 @@ export class EthereumService implements BlockchainService {
       throw new Error(`Failed to cancel order limit, ${error.message}`);
     }
   };
+
+  public getOrderBookCoinToCoin = async (fromCoin: string, toCoin: string) => {
+    try {
+      const web3Main = new Web3(new Web3.providers.HttpProvider(`https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`));
+
+      const ordersData = await axios.get("https://api.paraswap.io/ft/orders/1/orderbook/?makerAsset=" + fromCoin + "&takerAsset=" + toCoin);
+
+      const orders: any[] = [];
+
+      for (let order of ordersData.data.orders) {
+        let orderFin: any = order;
+        const makerContract = new web3Main.eth.Contract(abi as web3Utils.AbiItem[], order.makerAsset);
+
+        const fromSymbol = await makerContract.methods.symbol().call();
+        const fromDecimals = await makerContract.methods.decimals().call();
+        // const fromName = await makerContract.methods.name().call();
+
+        const takerContract = new web3Main.eth.Contract(abi as web3Utils.AbiItem[], order.takerAsset);
+
+        const toSymbol = await takerContract.methods.symbol().call();
+        const toDecimals = await takerContract.methods.decimals().call();
+        // const toName = await takerContract.methods.name().call();
+
+        orderFin.blockchain = "ETHEREUM";
+        orderFin.blockchainCoin = "ETH";
+
+        orderFin.fromSymbol = fromSymbol;
+        orderFin.toSymbol = toSymbol;
+
+        orderFin.fromAmount = Number(orderFin.makerAmount) / Math.pow(10, fromDecimals);
+        orderFin.toAmount = Number(orderFin.takerAmount) / Math.pow(10, toDecimals);
+
+        orderFin.linkHash = UtilsShared.getLinkTransaction(orderFin.blockchainCoin, orderFin.orderHash);
+
+        orders.push(orderFin);
+      }
+
+      return orders;
+    } catch (error: any) {
+      throw new Error(`Failed to get order book, ${error.message}`);
+    }
+  };
 }

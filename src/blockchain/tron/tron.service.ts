@@ -18,6 +18,9 @@ const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
 tronWeb.setHeader({ "TRON-PRO-API-KEY": TRON_PRO_API_KEY });
 
 export class TronService implements BlockchainService {
+  getOrderBookCoinToCoin(fromCoin: string, toCoin: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
   sendLimitOrder(
     fromCoin: string,
     toCoin: string,

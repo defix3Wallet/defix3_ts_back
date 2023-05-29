@@ -29,6 +29,9 @@ const dataToken = {
 };
 
 export class BinanceService implements BlockchainService {
+  getOrderBookCoinToCoin(fromCoin: string, toCoin: string): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
   sendLimitOrder(
     fromCoin: string,
     toCoin: string,
