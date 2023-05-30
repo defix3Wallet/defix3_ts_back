@@ -232,11 +232,22 @@ export class EthereumService implements BlockchainService {
       const wallet = new ethers.Wallet(privateKey);
       const signer = wallet.connect(provider);
 
+      console.log(srcToken.contract);
+
       const contract = new ethers.Contract(srcToken.contract, minABI, signer);
       let value = Math.pow(10, srcToken.decimals);
       let srcAmount = amount * value;
 
-      const tx = await contract.transfer(toAddress, srcAmount.toLocaleString("fullwide", { useGrouping: false }));
+      const gasPrice = signer.getGasPrice();
+
+      const gasLimit = contract.estimateGas.transfer(toAddress, srcAmount.toLocaleString("fullwide", { useGrouping: false }));
+
+      const tx = await contract.transfer(toAddress, srcAmount.toLocaleString("fullwide", { useGrouping: false }), {
+        gasLimit: gasLimit,
+        gasPrice: gasPrice,
+      });
+
+      console.log("PASOOO");
 
       if (!tx.hash) throw new Error(`Error tx hash.`);
 
@@ -475,8 +486,6 @@ export class EthereumService implements BlockchainService {
         orderFin.fromSymbol = fromSymbol;
         orderFin.toSymbol = toSymbol;
 
-        console.log();
-
         orderFin.fromAmount = Number(orderFin.makerAmount) / Math.pow(10, fromDecimals);
         orderFin.toAmount = Number(orderFin.takerAmount) / Math.pow(10, toDecimals);
 
@@ -526,6 +535,8 @@ export class EthereumService implements BlockchainService {
 
   public getOrderBookCoinToCoin = async (fromCoin: string, toCoin: string) => {
     try {
+      fromCoin = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+      toCoin = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
       const web3Main = new Web3(new Web3.providers.HttpProvider(`https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`));
 
       const ordersData = await axios.get("https://api.paraswap.io/ft/orders/1/orderbook/?makerAsset=" + fromCoin + "&takerAsset=" + toCoin);
