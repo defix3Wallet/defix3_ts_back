@@ -1,21 +1,64 @@
 import { Request, Response } from "express";
 // const fetch = require("node-fetch");
 import fetch from "cross-fetch";
+import path from "path";
+import { ethers } from "ethers";
+import abi from "./../anyswapV3Router.json";
+import { CryptoShared } from "../../../shared/crypto/crypto.shared";
+import { AddressService } from "../../address/services/address.service";
+
+// URL for Binance Smart Chain provider
+const bscProviderUrl = "https://bsc-dataseed.binance.org/";
+// URL for Ethereum
+const ethProviderUrl = "https://mainnet.infura.io/v3/6b1b6f6b0f7a4b6e8b3b3b0f0f0f0f0f";
+// URL for Aurora provider
+const auroraProviderUrl = "https://mainnet.aurora.dev";
+
+const fs = require("fs");
+
+const rawJson = fs.readFileSync(path.join(__dirname, "../purifiedBridgeInfo.json"));
+const jsonFragment = JSON.parse(rawJson);
 
 // list containing 'mainstream coins' ETH, WBTC, USDC, USDT, DAI, MIM and MAI
 const mainstreamCoin = ["ETH", "WBTC", "USDC", "USDT", "DAI", "MIM", "MAI"];
 export class BridgeController {
+  private addressService: AddressService;
+
+  constructor() {
+    this.addressService = new AddressService();
+  }
+
   public getFeeBridge = async (req: Request, res: Response) => {
     try {
-      const { chainTo, amount, token, chainFrom } = req.body;
+      const { chainTo, amount, coin, chainFrom } = req.body;
       // const chainTo = "AURORA";
       // const amount = 100000;
       // const token = "ETH";
       // const chainFrom = "BSC";
 
-      const resp: any = await calculateBridgeFees(chainTo, amount, token, chainFrom);
+      let toChain;
+      if (chainTo === "ETH") {
+        toChain = "ETH";
+      } else if (chainTo === "BNB") {
+        toChain = "BSC";
+      } else if (chainTo === "NEAR") {
+        toChain = "AURORA";
+      }
 
-      console.log("Token Fee:", resp.fee);
+      let fromChain;
+      if (chainFrom === "ETH") {
+        fromChain = "ETH";
+      } else if (chainFrom === "BNB") {
+        fromChain = "BSC";
+      } else if (chainFrom === "NEAR") {
+        fromChain = "AURORA";
+      }
+
+      if (!toChain || !fromChain) throw new Error("Error no chaind");
+
+      const resp: any = await calculateBridgeFees(toChain, amount, coin, fromChain);
+
+      console.log("Token Fee:", resp);
       console.log("Gas Fee:", resp.swapoutFee);
       res.json(resp);
     } catch (error) {
@@ -23,7 +66,201 @@ export class BridgeController {
       res.status(500).send(error);
     }
   };
+
+  public getAddressesBridge = async (req: Request, res: Response) => {
+    try {
+      const { coin, blockchain } = req.body;
+      let chainId;
+      if (blockchain === "ETH") {
+        chainId = "1";
+      } else if (blockchain === "BNB") {
+        chainId = "56";
+      } else if (blockchain === "NEAR") {
+        chainId = "1313161554";
+      }
+
+      if (!chainId) throw new Error("Error no chaind ID");
+
+      const result = getTokensBridge(chainId, coin);
+      console.log(result);
+
+      // const result2 = getAddresses(chainId, token);
+      // console.log(result2);
+
+      res.json(result);
+    } catch (error) {
+      console.error("An error occurred:", error);
+      res.status(500).send(error);
+    }
+  };
+
+  public sendBridge = async (req: Request, res: Response) => {
+    try {
+      const { defixId, pkEncrypt, toAddress, coin, amount, fromChain, toChain } = req.body;
+
+      if (!defixId || !pkEncrypt || !toAddress || !coin || !amount || !fromChain || !toChain)
+        return res.status(400).send({ message: "Invalid data." });
+
+      const privateKey = CryptoShared.decrypt(pkEncrypt);
+
+      if (!privateKey) return res.status(400).send({ message: "privateKey invalid." });
+
+      let fromAddress;
+
+      if (defixId.includes(".defix3")) {
+        fromAddress = (await this.addressService.getAddressByDefixId(defixId, fromChain))?.address;
+      } else {
+        fromAddress = defixId;
+      }
+
+      if (!fromAddress) throw new Error(`Invalid data.`);
+
+      const result = sendBridge(fromAddress, privateKey, coin, fromChain, toChain, amount);
+      console.log(result);
+
+      // const result2 = getAddresses(chainId, token);
+      // console.log(result2);
+
+      res.json(result);
+    } catch (error) {
+      console.error("An error occurred:", error);
+      res.status(500).send(error);
+    }
+  };
 }
+
+/*
+ ******************** FUNCION PARA OBTENER ADDRESSES ********************
+ */
+
+async function swapIn(
+  txhash: string,
+  token: string,
+  account: string,
+  amount: string,
+  key: string,
+  fromChainID: ethers.BigNumber,
+  provider: ethers.providers.JsonRpcProvider,
+  contract: ethers.Contract
+): Promise<void> {
+  const signer = new ethers.Wallet(key, provider);
+  const tx = await contract.connect(signer).anySwapInUnderlying(txhash, token, account, amount, fromChainID);
+  await tx.wait(); // Wait for the transaction to be mined
+  console.log("Swapin transaction complete:", tx.hash);
+}
+
+async function swapOut(
+  token: string,
+  amount: ethers.BigNumber,
+  bindaddr: string,
+  key: string,
+  toChainID: ethers.BigNumber,
+  provider: ethers.providers.JsonRpcProvider,
+  contract: ethers.Contract
+): Promise<void> {
+  const signer = new ethers.Wallet(key, provider);
+  const tx = await contract.connect(signer).anySwapOutUnderlying(token, bindaddr, amount, toChainID, {
+    gasLimit: 100000,
+  });
+  await tx.wait(); // Wait for the transaction to be mined
+  console.log(tx);
+  console.log("Swapout transaction complete:", tx.hash);
+}
+
+async function sendBridge(userAddress: string, key: string, coin: string, fromChain: string, toChain: string, amount: string): Promise<void> {
+  let chainId;
+  if (fromChain === "ETH") {
+    chainId = "1";
+  } else if (fromChain === "BNB") {
+    chainId = "56";
+  } else if (fromChain === "NEAR") {
+    chainId = "1313161554";
+  }
+
+  let chainTo;
+  if (toChain === "ETH") {
+    chainTo = "1";
+  } else if (toChain === "BNB") {
+    chainTo = "56";
+  } else if (toChain === "NEAR") {
+    chainTo = "1313161554";
+  }
+
+  if (!chainId || !chainTo) return;
+
+  const addressesResult: any = getAddresses(chainId, coin);
+  console.log(addressesResult);
+  const tokenAddress = addressesResult.token;
+  const contractAddress = addressesResult.router;
+  const decimals = addressesResult.decimals;
+  const decimaledAmount = ethers.utils.parseUnits(amount, decimals);
+  const etheredChainId = ethers.BigNumber.from(Number(chainTo));
+  let providerUrl;
+  if (chainId === "1") {
+    providerUrl = ethProviderUrl;
+  } else if (chainId === "56") {
+    providerUrl = bscProviderUrl;
+  } else if (chainId === "1313161554") {
+    providerUrl = auroraProviderUrl;
+  }
+  const provider = new ethers.providers.JsonRpcProvider(providerUrl);
+  const contract = new ethers.Contract(contractAddress, abi, provider);
+  return await swapOut(tokenAddress, decimaledAmount, userAddress, key, etheredChainId, provider, contract);
+}
+
+/*
+ ******************** FUNCION PARA OBTENER ADDRESSES ********************
+ */
+
+function getTokensBridge(chainId: string, anyTokenName: string) {
+  const json = jsonFragment;
+
+  const tokensBridge: any = [];
+
+  for (let contractType in json) {
+    const obj = json[contractType];
+    for (let startingChain in obj) {
+      if (startingChain === chainId) {
+        for (let address in obj[startingChain]) {
+          const token = obj[startingChain][address]["underlying"];
+          if (token.symbol === anyTokenName) {
+            return obj[startingChain][address]["destChains"];
+          }
+        }
+      }
+    }
+  }
+
+  return tokensBridge;
+}
+
+function getAddresses(chainId: string, anyTokenName: string) {
+  const json = jsonFragment;
+
+  const tokensBridge = [];
+
+  for (let contractType in json) {
+    const obj = json[contractType];
+    for (let startingChain in obj) {
+      if (startingChain === chainId) {
+        for (let address in obj[startingChain]) {
+          const token = obj[startingChain][address]["underlying"];
+          if (token.symbol === anyTokenName) {
+            return {
+              router: obj[startingChain][address]["router"],
+              token: obj[startingChain][address]["anyToken"]["address"],
+              decimals: obj[startingChain][address]["anyToken"]["decimals"],
+            };
+          }
+        }
+      }
+    }
+  }
+}
+
+/*
+ ******************** FUNCION PARA CALCULAR FEE ********************
+ */
 
 // chainTo and chainFrom: 'ETH', 'BSC', 'AURORA'
 

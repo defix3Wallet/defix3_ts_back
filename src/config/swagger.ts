@@ -68,6 +68,10 @@ const swaggerDefinition: OAS3Definition = {
       name: "Subscription",
       description: "EndPoint para guardar correo de usuario que quiera recibir notificaciones de Defix3",
     },
+    {
+      name: "Bridge",
+      description: "EndPoint asociados a al Bridge.",
+    },
   ],
   components: {
     securitySchemes: {
