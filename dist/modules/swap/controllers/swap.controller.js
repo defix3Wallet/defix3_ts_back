@@ -31,6 +31,7 @@ class SwapController {
                 if (!address)
                     return res.status(400).send({ message: "Address invalid." });
                 const swapResult = await this.swapService.sendSwap(defixId, fromCoin, toCoin, priceRoute, privateKey, blockchain, address);
+                this.mailService.emailSuccessSwap(defixId, fromCoin, swapResult.amount, toCoin, swapResult.destAmount, blockchain, swapResult.hash, swapResult.createdAt);
                 res.send(swapResult);
             }
             catch (error) {

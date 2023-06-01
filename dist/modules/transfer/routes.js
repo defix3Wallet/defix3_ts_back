@@ -43,7 +43,7 @@ class Routes {
          *        '400':
          *          description: Bad Request.
          *        '500':
-         *          description: Bad Request.
+         *          description: Internal Server Error.
          */
         router.post("/get-fee-transfer/", this.controller.getFeeTransfer);
         /**

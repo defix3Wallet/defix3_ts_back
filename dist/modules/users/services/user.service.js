@@ -23,6 +23,9 @@ class UserService {
         this.getUserByDefixId = async (defixId) => {
             return await user_entity_1.UserEntity.findOneBy({ defixId });
         };
+        this.getUserByEmail = async (email) => {
+            return await user_entity_1.UserEntity.findOneBy({ email });
+        };
         this.getUsers = async () => {
             return await user_entity_1.UserEntity.find({ select: ["defixId", "id"] });
         };
@@ -40,7 +43,6 @@ class UserService {
                 "user.lastname",
                 "user.avatar",
                 "user.legalDocument",
-                "user.passcode",
                 "user.typeDocument",
                 "user.closeSessions",
             ])

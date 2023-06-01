@@ -10,18 +10,11 @@ const axios_1 = __importDefault(require("axios"));
 const sdk_1 = require("@paraswap/sdk");
 const abi_json_1 = __importDefault(require("../abi.json"));
 const utils_shared_1 = require("../../shared/utils/utils.shared");
-const limit_order_protocol_utils_1 = require("@1inch/limit-order-protocol-utils");
+const sdk_2 = require("@paraswap/sdk");
 const ETHEREUM_NETWORK = process.env.ETHEREUM_NETWORK;
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
 const ETHERSCAN = process.env.ETHERSCAN;
 const web3 = new web3_1.default(new web3_1.default.providers.HttpProvider(`https://${ETHEREUM_NETWORK}.infura.io/v3/${INFURA_PROJECT_ID}`));
-const chainId = 1; // suggested, or use your own number
-const connector = new limit_order_protocol_utils_1.Web3ProviderConnector(web3);
-const contractAddress = limit_order_protocol_utils_1.limirOrderProtocolAdresses[chainId];
-const seriesContractAddress = limit_order_protocol_utils_1.seriesNonceManagerContractAddresses[chainId];
-const limitOrderBuilder = new limit_order_protocol_utils_1.LimitOrderBuilder(seriesContractAddress, chainId, connector);
-const limitOrderProtocolFacade = new limit_order_protocol_utils_1.LimitOrderProtocolFacade(contractAddress, chainId, connector);
-const seriesNonceManagerFacade = new limit_order_protocol_utils_1.SeriesNonceManagerFacade(seriesContractAddress, chainId, connector);
 const paraSwap = (0, sdk_1.constructSimpleSDK)({
     chainId: Number(process.env.PARASWAP_ETH),
     axios: axios_1.default,
@@ -30,10 +23,24 @@ const dataToken = {
     decimals: 18,
     contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
 };
+const fetcher = (0, sdk_2.constructAxiosFetcher)(axios_1.default);
+const provider = ethers_1.ethers.getDefaultProvider(1);
 class EthereumService {
     constructor() {
         this.sendLimitOrder = async (fromCoin, toCoin, srcAmount, destAmount, blockchain, address, privateKey) => {
             try {
+                const signer = new ethers_1.ethers.Wallet(privateKey, provider);
+                const account = signer.address;
+                const contractCaller = (0, sdk_2.constructEthersContractCaller)({
+                    ethersProviderOrSigner: signer,
+                    EthersContract: ethers_1.ethers.Contract,
+                }, account);
+                const paraSwapLimitOrderSDK = (0, sdk_2.constructPartialSDK)({
+                    chainId: 1,
+                    fetcher,
+                    contractCaller,
+                }, sdk_2.constructBuildLimitOrder, sdk_2.constructSignLimitOrder, sdk_2.constructPostLimitOrder);
+                console.log(privateKey);
                 let fromToken = await utils_shared_1.UtilsShared.getTokenContract(fromCoin, blockchain);
                 let toToken = await utils_shared_1.UtilsShared.getTokenContract(toCoin, blockchain);
                 if (!fromToken) {
@@ -46,50 +53,120 @@ class EthereumService {
                 const srcAmountLimit = Math.round(srcAmount * fromValue);
                 let toValue = Math.pow(10, toToken.decimals);
                 const destAmountLimit = Math.round(destAmount * toValue);
-                const limitOrder = limitOrderBuilder.buildLimitOrder({
-                    makerAssetAddress: fromToken.contract,
-                    takerAssetAddress: toToken.contract,
-                    makerAddress: address,
-                    makingAmount: String(srcAmountLimit),
-                    takingAmount: String(destAmountLimit),
-                    // predicate,
-                    // permit = '0x',
-                    // receiver = ZERO_ADDRESS,
-                    // allowedSender = ZERO_ADDRESS,
-                    // getMakingAmount = ZERO_ADDRESS,
-                    // getTakingAmount = ZERO_ADDRESS,
-                    // preInteraction  = '0x',
-                    // postInteraction = '0x',
-                });
-                const limitOrderTypedData = limitOrderBuilder.buildLimitOrderTypedData(limitOrder);
-                const privateKeyProviderConnector = new limit_order_protocol_utils_1.PrivateKeyProviderConnector(privateKey, web3);
-                const limitOrderSignature = await privateKeyProviderConnector.signTypedData(address, limitOrderTypedData);
-                console.log("Signature");
-                console.log(limitOrderSignature);
-                // console.log(limitOrderSignature);
-                const callData = limitOrderProtocolFacade.fillLimitOrder({
-                    order: limitOrder,
-                    signature: limitOrderSignature,
-                    makingAmount: String(srcAmountLimit),
-                    takingAmount: String(destAmountLimit),
-                    thresholdAmount: "50",
-                });
-                console.log("BRRRRRRr");
-                console.log(callData);
-                const provider = ethers_1.ethers.getDefaultProvider(1);
-                const signer = new ethers_1.ethers.Wallet(privateKey, provider);
-                const resp = await signer.sendTransaction({
-                    from: address,
-                    gasLimit: 210000,
-                    gasPrice: 40000,
-                    to: contractAddress,
-                    data: callData,
-                });
-                console.log("RES", resp);
-                return resp;
+                const orderInput = {
+                    nonce: 1,
+                    expiry: 0,
+                    makerAsset: fromToken.contract,
+                    takerAsset: toToken.contract,
+                    makerAmount: srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
+                    takerAmount: destAmountLimit.toLocaleString("fullwide", { useGrouping: false }),
+                    maker: account,
+                };
+                const signableOrderData = await paraSwapLimitOrderSDK.buildLimitOrder(orderInput);
+                console.log(signableOrderData);
+                // const signature = await signer._signTypedData(signableOrderData.domain, signableOrderData.types, signableOrderData.data);
+                const signature = await paraSwapLimitOrderSDK.signLimitOrder(signableOrderData);
+                console.log(signature);
+                const orderToPostToApi = Object.assign(Object.assign({}, signableOrderData.data), { signature });
+                console.log(orderToPostToApi);
+                const newOrder = await paraSwapLimitOrderSDK.postLimitOrder(orderToPostToApi);
+                console.log(newOrder);
+                return newOrder;
             }
             catch (error) {
+                console.log(error);
                 throw new Error(`Failed to send order limit, ${error.message}`);
+            }
+        };
+        this.getAllLimitOrder = async (address) => {
+            try {
+                const web3Main = new web3_1.default(new web3_1.default.providers.HttpProvider(`https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`));
+                address = "0x856d78cde2a7e361bf528c72c5d130bc0da91e58";
+                const paraSwapLimitOrderSDK = (0, sdk_2.constructPartialSDK)({
+                    chainId: 1,
+                    fetcher,
+                }, sdk_1.constructGetLimitOrders);
+                const ordersData = await paraSwapLimitOrderSDK.getLimitOrders({
+                    maker: address,
+                    type: "LIMIT",
+                });
+                const orders = [];
+                for (let order of ordersData.orders) {
+                    let orderFin = order;
+                    const makerContract = new web3Main.eth.Contract(abi_json_1.default, order.makerAsset);
+                    const fromSymbol = await makerContract.methods.symbol().call();
+                    const fromDecimals = await makerContract.methods.decimals().call();
+                    // const fromName = await makerContract.methods.name().call();
+                    const takerContract = new web3Main.eth.Contract(abi_json_1.default, order.takerAsset);
+                    const toSymbol = await takerContract.methods.symbol().call();
+                    const toDecimals = await takerContract.methods.decimals().call();
+                    // const toName = await takerContract.methods.name().call();
+                    orderFin.blockchain = "ETHEREUM";
+                    orderFin.blockchainCoin = "ETH";
+                    orderFin.fromSymbol = fromSymbol;
+                    orderFin.toSymbol = toSymbol;
+                    orderFin.fromAmount = Number(orderFin.makerAmount) / Math.pow(10, fromDecimals);
+                    orderFin.toAmount = Number(orderFin.takerAmount) / Math.pow(10, toDecimals);
+                    orderFin.linkHash = utils_shared_1.UtilsShared.getLinkTransaction(orderFin.blockchainCoin, orderFin.orderHash);
+                    orders.push(orderFin);
+                }
+                return orders;
+            }
+            catch (error) {
+                throw new Error(`Failed to get all order limit, ${error.message}`);
+            }
+        };
+        this.cancelLimitOrder = async (orderHash, privateKey) => {
+            try {
+                const signer = new ethers_1.ethers.Wallet(privateKey, provider);
+                const account = signer.address;
+                const contractCaller = (0, sdk_2.constructEthersContractCaller)({
+                    ethersProviderOrSigner: signer,
+                    EthersContract: ethers_1.ethers.Contract,
+                }, account);
+                const paraSwapLimitOrderSDK = (0, sdk_2.constructPartialSDK)({
+                    chainId: 1,
+                    fetcher,
+                    contractCaller,
+                }, sdk_1.constructGetLimitOrders, sdk_1.constructCancelLimitOrder);
+                const deleteTx = await paraSwapLimitOrderSDK.cancelLimitOrder(orderHash);
+                console.log("deleteTx", deleteTx);
+                return deleteTx;
+            }
+            catch (error) {
+                throw new Error(`Failed to cancel order limit, ${error.message}`);
+            }
+        };
+        this.getOrderBookCoinToCoin = async (fromCoin, toCoin) => {
+            try {
+                fromCoin = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+                toCoin = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
+                const web3Main = new web3_1.default(new web3_1.default.providers.HttpProvider(`https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`));
+                const ordersData = await axios_1.default.get("https://api.paraswap.io/ft/orders/1/orderbook/?makerAsset=" + fromCoin + "&takerAsset=" + toCoin);
+                const orders = [];
+                for (let order of ordersData.data.orders) {
+                    let orderFin = order;
+                    const makerContract = new web3Main.eth.Contract(abi_json_1.default, order.makerAsset);
+                    const fromSymbol = await makerContract.methods.symbol().call();
+                    const fromDecimals = await makerContract.methods.decimals().call();
+                    // const fromName = await makerContract.methods.name().call();
+                    const takerContract = new web3Main.eth.Contract(abi_json_1.default, order.takerAsset);
+                    const toSymbol = await takerContract.methods.symbol().call();
+                    const toDecimals = await takerContract.methods.decimals().call();
+                    // const toName = await takerContract.methods.name().call();
+                    orderFin.blockchain = "ETHEREUM";
+                    orderFin.blockchainCoin = "ETH";
+                    orderFin.fromSymbol = fromSymbol;
+                    orderFin.toSymbol = toSymbol;
+                    orderFin.fromAmount = Number(orderFin.makerAmount) / Math.pow(10, fromDecimals);
+                    orderFin.toAmount = Number(orderFin.takerAmount) / Math.pow(10, toDecimals);
+                    orderFin.linkHash = utils_shared_1.UtilsShared.getLinkTransaction(orderFin.blockchainCoin, orderFin.orderHash);
+                    orders.push(orderFin);
+                }
+                return orders;
+            }
+            catch (error) {
+                throw new Error(`Failed to get order book, ${error.message}`);
             }
         };
     }
@@ -143,6 +220,7 @@ class EthereumService {
         try {
             let contract = new web3.eth.Contract(abi_json_1.default, srcContract);
             const balance = await contract.methods.balanceOf(address).call();
+            console.log(balance);
             let balanceTotal = 0;
             if (balance) {
                 let value = Math.pow(10, decimals);
@@ -207,7 +285,7 @@ class EthereumService {
             const rawTransaction = {
                 from: fromAddress,
                 to: toAddress,
-                value: web3.utils.toHex(web3.utils.toWei(amount.toString(), "ether")),
+                value: web3.utils.toHex(web3.utils.toWei(amount.toLocaleString("fullwide", { useGrouping: false }), "ether")),
                 gasPrice: web3.utils.toHex(gasPrice),
                 gasLimit: web3.utils.toHex(gasLimit),
                 nonce: nonce,
@@ -255,10 +333,17 @@ class EthereumService {
             const minABI = abi_json_1.default;
             const wallet = new ethers_1.ethers.Wallet(privateKey);
             const signer = wallet.connect(provider);
+            console.log(srcToken.contract);
             const contract = new ethers_1.ethers.Contract(srcToken.contract, minABI, signer);
             let value = Math.pow(10, srcToken.decimals);
             let srcAmount = amount * value;
-            const tx = await contract.transfer(toAddress, String(srcAmount));
+            const gasPrice = signer.getGasPrice();
+            const gasLimit = contract.estimateGas.transfer(toAddress, srcAmount.toLocaleString("fullwide", { useGrouping: false }));
+            const tx = await contract.transfer(toAddress, srcAmount.toLocaleString("fullwide", { useGrouping: false }), {
+                gasLimit: gasLimit,
+                gasPrice: gasPrice,
+            });
+            console.log("PASOOO");
             if (!tx.hash)
                 throw new Error(`Error tx hash.`);
             return tx.hash;
@@ -282,7 +367,7 @@ class EthereumService {
             const priceRoute = await paraSwap.swap.getRate({
                 srcToken: fromToken.contract,
                 destToken: toToken.contract,
-                amount: String(srcAmount),
+                amount: srcAmount.toLocaleString("fullwide", { useGrouping: false }),
             });
             const response = await axios_1.default.get("https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6");
             let wei = response.data.result.SafeGasPrice;

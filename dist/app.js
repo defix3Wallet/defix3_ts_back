@@ -21,8 +21,10 @@ const init_7 = require("./modules/transactionHistory/init");
 const init_8 = require("./modules/transfer/init");
 const init_9 = require("./modules/frequent/init");
 const init_10 = require("./modules/swap/init");
-const init_11 = require("./modules/orderLimit/init");
+const init_11 = require("./modules/limitOrder/init");
 const init_12 = require("./modules/withdraw/init");
+const init_13 = require("./modules/hiddenTokens/init");
+const init_14 = require("./modules/bridge/init");
 class App {
     constructor() {
         this.app = (0, express_1.default)();
@@ -35,7 +37,7 @@ class App {
         this.app.use((0, cors_1.default)());
         this.app.use(express_1.default.json());
         this.app.use("/api/v2", this.router);
-        this.app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "uploads")));
+        this.app.use("/uploads", express_1.default.static(path_1.default.resolve("./uploads/")));
         this.app.use("/swagger", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.default));
     }
     initModules() {
@@ -51,6 +53,8 @@ class App {
         new init_10.SwapModule(this.router);
         new init_11.LimitOrderModule(this.router);
         new init_9.FrequentModule(this.router);
+        new init_13.HiddenTokensModule(this.router);
+        new init_14.BridgeModule(this.router);
     }
 }
 exports.default = new App().app;

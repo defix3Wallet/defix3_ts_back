@@ -75,6 +75,9 @@ class BitcoinService {
             }
         };
     }
+    getOrderBookCoinToCoin(fromCoin, toCoin) {
+        throw new Error("Method not implemented.");
+    }
     sendLimitOrder(fromCoin, toCoin, srcAmount, destAmount, blockchain, address, privateKey) {
         throw new Error("Method not implemented.");
     }
@@ -285,6 +288,12 @@ class BitcoinService {
         throw new Error("Method not implemented.");
     }
     sendSwap(priceRoute, privateKey, address) {
+        throw new Error("Method not implemented.");
+    }
+    cancelLimitOrder(address, privateKey) {
+        throw new Error("Method not implemented.");
+    }
+    getAllLimitOrder(address) {
         throw new Error("Method not implemented.");
     }
 }

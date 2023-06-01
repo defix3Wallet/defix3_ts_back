@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import abi from "./../anyswapV3Router.json";
 import { CryptoShared } from "../../../shared/crypto/crypto.shared";
 import { AddressService } from "../../address/services/address.service";
+import rawJson from "./../purifiedBridgeInfo.json";
 
 // URL for Binance Smart Chain provider
 const bscProviderUrl = "https://bsc-dataseed.binance.org/";
@@ -14,10 +15,7 @@ const ethProviderUrl = "https://mainnet.infura.io/v3/6b1b6f6b0f7a4b6e8b3b3b0f0f0
 // URL for Aurora provider
 const auroraProviderUrl = "https://mainnet.aurora.dev";
 
-const fs = require("fs");
-
-const rawJson = fs.readFileSync(path.join(__dirname, "../purifiedBridgeInfo.json"));
-const jsonFragment = JSON.parse(rawJson);
+const jsonFragment = rawJson;
 
 // list containing 'mainstream coins' ETH, WBTC, USDC, USDT, DAI, MIM and MAI
 const mainstreamCoin = ["ETH", "WBTC", "USDC", "USDT", "DAI", "MIM", "MAI"];
@@ -115,7 +113,7 @@ export class BridgeController {
 
       if (!fromAddress) throw new Error(`Invalid data.`);
 
-      const result = sendBridge(fromAddress, privateKey, coin, fromChain, toChain, amount);
+      const result = await sendBridge(fromAddress, privateKey, coin, fromChain, toChain, amount);
       console.log(result);
 
       // const result2 = getAddresses(chainId, token);
@@ -158,17 +156,23 @@ async function swapOut(
   provider: ethers.providers.JsonRpcProvider,
   contract: ethers.Contract
 ): Promise<void> {
+  console.log("AQUI VA 5");
   const signer = new ethers.Wallet(key, provider);
   const tx = await contract.connect(signer).anySwapOutUnderlying(token, bindaddr, amount, toChainID, {
     gasLimit: 100000,
   });
-  await tx.wait(); // Wait for the transaction to be mined
+  const resu = await tx.wait(); // Wait for the transaction to be mined
+
+  console.log("AQUI VA 6");
   console.log(tx);
   console.log("Swapout transaction complete:", tx.hash);
+
+  return resu;
 }
 
 async function sendBridge(userAddress: string, key: string, coin: string, fromChain: string, toChain: string, amount: string): Promise<void> {
   let chainId;
+  console.log("AQUI VA 1");
   if (fromChain === "ETH") {
     chainId = "1";
   } else if (fromChain === "BNB") {
@@ -188,13 +192,17 @@ async function sendBridge(userAddress: string, key: string, coin: string, fromCh
 
   if (!chainId || !chainTo) return;
 
-  const addressesResult: any = getAddresses(chainId, coin);
+  console.log("AQUI VA 2");
+
+  const addressesResult: any = await getAddresses(chainId, coin);
   console.log(addressesResult);
   const tokenAddress = addressesResult.token;
   const contractAddress = addressesResult.router;
   const decimals = addressesResult.decimals;
   const decimaledAmount = ethers.utils.parseUnits(amount, decimals);
   const etheredChainId = ethers.BigNumber.from(Number(chainTo));
+
+  console.log("AQUI VA 3");
   let providerUrl;
   if (chainId === "1") {
     providerUrl = ethProviderUrl;
@@ -205,6 +213,8 @@ async function sendBridge(userAddress: string, key: string, coin: string, fromCh
   }
   const provider = new ethers.providers.JsonRpcProvider(providerUrl);
   const contract = new ethers.Contract(contractAddress, abi, provider);
+
+  console.log("AQUI VA 4");
   return await swapOut(tokenAddress, decimaledAmount, userAddress, key, etheredChainId, provider, contract);
 }
 
@@ -213,7 +223,7 @@ async function sendBridge(userAddress: string, key: string, coin: string, fromCh
  */
 
 function getTokensBridge(chainId: string, anyTokenName: string) {
-  const json = jsonFragment;
+  const json: any = jsonFragment;
 
   const tokensBridge: any = [];
 
@@ -235,9 +245,7 @@ function getTokensBridge(chainId: string, anyTokenName: string) {
 }
 
 function getAddresses(chainId: string, anyTokenName: string) {
-  const json = jsonFragment;
-
-  const tokensBridge = [];
+  const json: any = jsonFragment;
 
   for (let contractType in json) {
     const obj = json[contractType];

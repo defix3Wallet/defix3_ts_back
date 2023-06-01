@@ -25,6 +25,9 @@ const dataToken = {
     contract: "wrap.testnet",
 };
 class NearService {
+    getOrderBookCoinToCoin(fromCoin, toCoin) {
+        throw new Error("Method not implemented.");
+    }
     sendLimitOrder(fromCoin, toCoin, srcAmount, destAmount, blockchain, address, privateKey) {
         throw new Error("Method not implemented.");
     }
@@ -72,9 +75,11 @@ class NearService {
         const is_address = await account
             .state()
             .then((response) => {
+            console.log(response);
             return true;
         })
             .catch((error) => {
+            console.log(error);
             return false;
         });
         return is_address;
@@ -182,10 +187,11 @@ class NearService {
                 throw new Error(`Error: To activated account`);
             let value = Math.pow(10, srcToken.decimals);
             let srcAmount = Math.round(amount * value);
+            // console.log(srcAmount.toLocaleString("fullwide", { useGrouping: false }), (amount * value).toFixed());
             const trx = await near_utils_1.NearUtils.createTransaction(srcToken.contract, [
                 await (0, transaction_1.functionCall)("ft_transfer", {
                     receiver_id: toAddress,
-                    amount: String(srcAmount),
+                    amount: srcAmount.toLocaleString("fullwide", { useGrouping: false }),
                 }, new bn_js_1.default("30000000000000"), new bn_js_1.default("1")),
             ], fromAddress, near);
             const result = await account.signAndSendTrx(trx);
@@ -333,6 +339,12 @@ class NearService {
         catch (err) {
             throw new Error(`Failed to send swap, ${err.message}`);
         }
+    }
+    cancelLimitOrder(address, privateKey) {
+        throw new Error("Method not implemented.");
+    }
+    getAllLimitOrder(address) {
+        throw new Error("Method not implemented.");
     }
 }
 exports.NearService = NearService;

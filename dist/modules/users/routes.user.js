@@ -46,6 +46,35 @@ class RoutesUser {
         /**
          * Post track
          * @swagger
+         * /validate-email/:
+         *    post:
+         *      tags:
+         *        - User
+         *      summary: Validar si un email existe.
+         *      description: Response un Boolean si el email existe o no.
+         *      requestBody:
+         *          content:
+         *            application/json:
+         *              schema:
+         *                type: "object"
+         *                required: ["email"]
+         *                properties: {
+         *                  email: {
+         *                    type: "string"
+         *                  }
+         *                }
+         *      responses:
+         *        '200':
+         *          description: Responde un boolean.
+         *        '400':
+         *          description: Bad Request.
+         *        '500':
+         *          description: Bad Request.
+         */
+        router.post("/validate-email/", this.controller.validateEmail);
+        /**
+         * Post track
+         * @swagger
          * /get-users:
          *    get:
          *      tags:

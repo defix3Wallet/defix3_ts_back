@@ -24,6 +24,9 @@ const dataToken = {
     contract: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
 };
 class BinanceService {
+    getOrderBookCoinToCoin(fromCoin, toCoin) {
+        throw new Error("Method not implemented.");
+    }
     sendLimitOrder(fromCoin, toCoin, srcAmount, destAmount, blockchain, address, privateKey) {
         throw new Error("Method not implemented.");
     }
@@ -141,7 +144,7 @@ class BinanceService {
             const rawTransaction = {
                 from: fromAddress,
                 to: toAddress,
-                value: web3.utils.toHex(web3.utils.toWei(amount.toString(), "ether")),
+                value: web3.utils.toHex(web3.utils.toWei(amount.toLocaleString("fullwide", { useGrouping: false }), "ether")),
                 gasPrice: web3.utils.toHex(gasPrice),
                 gasLimit: web3.utils.toHex(gasLimit),
                 nonce: nonce,
@@ -171,7 +174,7 @@ class BinanceService {
             const contract = new ethers_1.ethers.Contract(srcToken.contract, minABI, signer);
             let value = Math.pow(10, srcToken.decimals);
             let srcAmount = amount * value;
-            const tx = await contract.transfer(toAddress, String(srcAmount));
+            const tx = await contract.transfer(toAddress, srcAmount.toLocaleString("fullwide", { useGrouping: false }));
             if (!tx.hash)
                 throw new Error(`Error tx hash.`);
             return tx.hash;
@@ -195,7 +198,7 @@ class BinanceService {
             const priceRoute = await paraSwap.swap.getRate({
                 srcToken: fromToken.contract,
                 destToken: toToken.contract,
-                amount: String(srcAmount),
+                amount: srcAmount.toLocaleString("fullwide", { useGrouping: false }),
             });
             const response = await axios_1.default.get("https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=3SU1MAWAPX8X39UD6U8JBGTQ5C67EVVRSM");
             let wei = response.data.result.SafeGasPrice;
@@ -214,9 +217,7 @@ class BinanceService {
             const feeGas = web3.utils.fromWei(String(Number(priceRoute.gasCost) * wei), "gwei");
             const srcFee = String(Number(feeTransfer) + Number(feeGas));
             let feeDefix = String(Number(srcFee) * porcentFee);
-            const swapRate = String(Number(priceRoute.destAmount) /
-                Math.pow(10, toToken.decimals) /
-                (Number(priceRoute.srcAmount) / Math.pow(10, fromToken.decimals)));
+            const swapRate = String(Number(priceRoute.destAmount) / Math.pow(10, toToken.decimals) / (Number(priceRoute.srcAmount) / Math.pow(10, fromToken.decimals)));
             const dataSwap = {
                 exchange: priceRoute.bestRoute[0].swaps[0].swapExchanges[0].exchange,
                 fromAmount: priceRoute.srcAmount,
@@ -266,6 +267,12 @@ class BinanceService {
         catch (err) {
             throw new Error(`Failed to send swap, ${err.message}`);
         }
+    }
+    cancelLimitOrder(address, privateKey) {
+        throw new Error("Method not implemented.");
+    }
+    getAllLimitOrder(address) {
+        throw new Error("Method not implemented.");
     }
 }
 exports.BinanceService = BinanceService;

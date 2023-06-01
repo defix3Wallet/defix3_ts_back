@@ -21,23 +21,18 @@ class TransferController {
         this.sendTransfer = async (req, res) => {
             try {
                 const { defixId, pkEncrypt, toAddress, coin, amount, blockchain } = req.body;
-                console.log(defixId, pkEncrypt, toAddress, coin, amount, blockchain);
                 if (!defixId || !pkEncrypt || !toAddress || !coin || !amount || !blockchain)
                     return res.status(400).send({ message: "Invalid data." });
                 const privateKey = crypto_shared_1.CryptoShared.decrypt(pkEncrypt);
                 if (!privateKey)
                     return res.status(400).send({ message: "privateKey invalid." });
                 const transaction = await this.transferService.sendTransfer(defixId, privateKey, toAddress, coin, amount, blockchain);
-                this.mailService.sendMail(defixId, toAddress, "envio", {
-                    monto: amount,
-                    moneda: coin,
-                    receptor: toAddress,
-                    emisor: defixId,
-                    tipoEnvio: toAddress.includes(".defix3") ? "user" : "wallet",
-                });
+                this.mailService.emailSuccessWithdrawal(defixId, toAddress, amount, coin, blockchain, transaction.hash);
+                this.mailService.emailReceivedPayment(defixId, toAddress, amount, coin, blockchain, transaction.hash);
                 res.send(transaction);
             }
             catch (error) {
+                console.log(error.message);
                 return res.status(500).send({ message: error.message });
             }
         };

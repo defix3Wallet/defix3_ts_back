@@ -45,6 +45,24 @@ class Routes {
          *          description: Internal Server Error.
          */
         router.get("/get-cryptos-swap", this.controller.getCryptosSwap);
+        /**
+         * Post track
+         * @swagger
+         * /get-cryptos-limit:
+         *    get:
+         *      tags:
+         *        - General
+         *      summary: Obtiene las Cryptos y Tokens permitidos en Defix3.
+         *      description: Te da un array con las cryptos y tokens.
+         *      responses:
+         *        '200':
+         *          description: Array con las cryptos y tokens.
+         *        '400':
+         *          description: Bad Request.
+         *        '500':
+         *          description: Internal Server Error.
+         */
+        router.get("/get-cryptos-limit", this.controller.getCryptosLimit);
     }
 }
 exports.Routes = Routes;

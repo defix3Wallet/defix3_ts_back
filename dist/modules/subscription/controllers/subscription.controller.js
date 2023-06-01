@@ -9,7 +9,8 @@ class SubscriptionController {
                 const { email } = req.body;
                 if (!email)
                     return res.status(400).send({ message: "Invalid data." });
-                return await this.subscriptionService.createSubscription(email);
+                const resp = await this.subscriptionService.createSubscription(email);
+                return res.send(resp);
             }
             catch (error) {
                 return res.status(500).send({ message: error.message });

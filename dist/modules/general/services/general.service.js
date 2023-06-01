@@ -32,6 +32,22 @@ class GeneralService {
                 throw new Error(`Failed to get cryptos: ${err}`);
             }
         };
+        this.getCryptosLimit = async () => {
+            try {
+                const conexion = await (0, postgres_1.default)();
+                const cryptocurrencys = await conexion.query("select * from backend_cryptocurrency where limit_order=true");
+                const cryptos = [];
+                for (let cryptocurrency of cryptocurrencys.rows) {
+                    const tokens = await conexion.query("select * from backend_token where cryptocurrency_id = $1", [cryptocurrency.id]);
+                    cryptocurrency.tokens = tokens.rows;
+                    cryptos.push(cryptocurrency);
+                }
+                return cryptos;
+            }
+            catch (err) {
+                throw new Error(`Failed to get cryptos: ${err}`);
+            }
+        };
     }
 }
 exports.GeneralService = GeneralService;

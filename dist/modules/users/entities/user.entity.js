@@ -96,13 +96,6 @@ __decorate([
 ], UserEntity.prototype, "secret", void 0);
 __decorate([
     (0, typeorm_1.Column)({
-        nullable: true,
-        type: "integer",
-    }),
-    __metadata("design:type", String)
-], UserEntity.prototype, "passcode", void 0);
-__decorate([
-    (0, typeorm_1.Column)({
         name: "flag_news",
         nullable: true,
     }),

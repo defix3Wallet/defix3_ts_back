@@ -14,6 +14,9 @@ const eventServer = new HttpProvider(EVENT_SERVER);
 const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
 tronWeb.setHeader({ "TRON-PRO-API-KEY": TRON_PRO_API_KEY });
 class TronService {
+    getOrderBookCoinToCoin(fromCoin, toCoin) {
+        throw new Error("Method not implemented.");
+    }
     sendLimitOrder(fromCoin, toCoin, srcAmount, destAmount, blockchain, address, privateKey) {
         throw new Error("Method not implemented.");
     }
@@ -93,6 +96,12 @@ class TronService {
         catch (error) {
             return 0;
         }
+    }
+    cancelLimitOrder(address, privateKey) {
+        throw new Error("Method not implemented.");
+    }
+    getAllLimitOrder(address) {
+        throw new Error("Method not implemented.");
     }
     async getFeeTransaction(coin, blockchain, typeTxn) {
         try {
