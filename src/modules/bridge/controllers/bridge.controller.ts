@@ -157,13 +157,17 @@ async function swapOut(
   contract: ethers.Contract
 ): Promise<void> {
   console.log("AQUI VA 5");
+  console.log(key, provider);
   const signer = new ethers.Wallet(key, provider);
+  console.log("AQUI VA 6");
+  console.log(token, bindaddr, amount, toChainID);
   const tx = await contract.connect(signer).anySwapOutUnderlying(token, bindaddr, amount, toChainID, {
     gasLimit: 100000,
   });
+  console.log("AQUI VA 7");
   const resu = await tx.wait(); // Wait for the transaction to be mined
 
-  console.log("AQUI VA 6");
+  console.log("AQUI VA 8");
   console.log(tx);
   console.log("Swapout transaction complete:", tx.hash);
 
