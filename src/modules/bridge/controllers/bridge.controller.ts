@@ -4,6 +4,7 @@ import fetch from "cross-fetch";
 import path from "path";
 import { ethers } from "ethers";
 import abi from "./../anyswapV3Router.json";
+import abiToken from "./../abi.json";
 import { CryptoShared } from "../../../shared/crypto/crypto.shared";
 import { AddressService } from "../../address/services/address.service";
 import rawJson from "./../purifiedBridgeInfo.json";
@@ -113,7 +114,7 @@ export class BridgeController {
 
       if (!fromAddress) throw new Error(`Invalid data.`);
 
-      const result = await sendBridge(fromAddress, privateKey, coin, fromChain, toChain, amount);
+      const result = await sendBridgeFN(toAddress, privateKey, coin, fromChain, toChain, amount);
       console.log(result);
 
       // const result2 = getAddresses(chainId, token);
@@ -176,7 +177,7 @@ async function swapOut(
   return resu;
 }
 
-async function sendBridge(userAddress: string, key: string, coin: string, fromChain: string, toChain: string, amount: string): Promise<void> {
+async function sendBridgeFN(userAddress: string, key: string, coin: string, fromChain: string, toChain: string, amount: string): Promise<void> {
   let chainId;
   console.log("AQUI VA 1");
   if (fromChain === "ETH") {
@@ -219,6 +220,20 @@ async function sendBridge(userAddress: string, key: string, coin: string, fromCh
   }
   const provider = new ethers.providers.JsonRpcProvider(providerUrl);
   const contract = new ethers.Contract(contractAddress, abi, provider);
+
+  const contractToken = new ethers.Contract(tokenAddress, abiToken, provider);
+
+  console.log(contractAddress, decimaledAmount);
+
+  const signer = new ethers.Wallet(key, provider);
+
+  const approve = await contractToken.connect(signer).approve(contractAddress, decimaledAmount);
+
+  console.log("APPROVE", approve);
+
+  const re = await approve.wait();
+
+  console.log(re);
 
   console.log("AQUI VA 4");
   return await swapOut(tokenAddress, decimaledAmount, userAddress, key, etheredChainId, provider, contract);
