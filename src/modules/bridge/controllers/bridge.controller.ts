@@ -164,12 +164,14 @@ async function swapOut(
   const tx = await contract.connect(signer).anySwapOutUnderlying(token, bindaddr, amount, toChainID, {
     gasLimit: 100000,
   });
+  console.log(tx);
   console.log("AQUI VA 7");
   const resu = await tx.wait(); // Wait for the transaction to be mined
 
   console.log("AQUI VA 8");
-  console.log(tx);
   console.log("Swapout transaction complete:", tx.hash);
+
+  console.log(resu);
 
   return resu;
 }
