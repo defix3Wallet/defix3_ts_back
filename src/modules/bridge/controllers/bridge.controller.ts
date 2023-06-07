@@ -16,27 +16,27 @@ export class BridgeController {
     try {
       const { chainTo, amount, coin, chainFrom } = req.body;
 
-      let toChain;
-      if (chainTo === "ETH") {
-        toChain = "ETH";
-      } else if (chainTo === "BNB") {
-        toChain = "BSC";
-      } else if (chainTo === "NEAR") {
-        toChain = "AURORA";
-      }
+      // let toChain;
+      // if (chainTo === "ETH") {
+      //   toChain = "ETH";
+      // } else if (chainTo === "BNB") {
+      //   toChain = "BSC";
+      // } else if (chainTo === "NEAR") {
+      //   toChain = "AURORA";
+      // }
 
-      let fromChain;
-      if (chainFrom === "ETH") {
-        fromChain = "ETH";
-      } else if (chainFrom === "BNB") {
-        fromChain = "BSC";
-      } else if (chainFrom === "NEAR") {
-        fromChain = "AURORA";
-      }
+      // let fromChain;
+      // if (chainFrom === "ETH") {
+      //   fromChain = "ETH";
+      // } else if (chainFrom === "BNB") {
+      //   fromChain = "BSC";
+      // } else if (chainFrom === "NEAR") {
+      //   fromChain = "AURORA";
+      // }
 
-      if (!toChain || !fromChain) throw new Error("Error no chaind");
+      // if (!toChain || !fromChain) throw new Error("Error no chaind");
 
-      const resp: any = await this.bridgeService.getFeeBridge(toChain, amount, coin, fromChain);
+      const resp: any = await this.bridgeService.getFeeBridge(chainTo, amount, coin, chainFrom);
 
       res.json(resp);
     } catch (error) {
