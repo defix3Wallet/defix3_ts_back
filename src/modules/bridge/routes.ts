@@ -48,6 +48,8 @@ export class Routes {
      */
     router.post("/get-fee-bridge/", this.controller.getFeeBridge);
 
+    router.post("/get-limit-bridge/", this.controller.getFeeLimitBridge);
+
     /**
      * @swagger
      * /get-tokens-bridge/:

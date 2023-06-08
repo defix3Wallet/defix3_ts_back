@@ -45,21 +45,36 @@ export class BridgeController {
     }
   };
 
+  public getFeeLimitBridge = async (req: Request, res: Response) => {
+    try {
+      const { coin, chainTo } = req.body;
+
+      const resp: any = await this.bridgeService.getFeeLimitBridge(coin, chainTo);
+
+      res.json(resp);
+    } catch (error) {
+      console.error("An error occurred:", error);
+      res.status(500).send(error);
+    }
+  };
+
   public getAddressesBridge = async (req: Request, res: Response) => {
     try {
       const { coin, blockchain } = req.body;
-      let chainId;
-      if (blockchain === "ETH") {
-        chainId = "1";
-      } else if (blockchain === "BNB") {
-        chainId = "56";
-      } else if (blockchain === "NEAR") {
-        chainId = "1313161554";
-      }
+      // let chainId;
+      // if (blockchain === "ETH") {
+      //   chainId = "1";
+      // } else if (blockchain === "BNB") {
+      //   chainId = "56";
+      // } else if (blockchain === "NEAR") {
+      //   chainId = "1313161554";
+      // }
 
-      if (!chainId) throw new Error("Error no chaind ID");
+      // if (!chainId) throw new Error("Error no chaind ID");
 
-      const resp = this.bridgeService.getAddressesBridge(chainId, coin);
+      // console.log(chainId);
+
+      const resp = await this.bridgeService.getAddressesBridge(coin, blockchain);
 
       res.json(resp);
     } catch (error) {

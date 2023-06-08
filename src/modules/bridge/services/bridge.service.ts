@@ -56,6 +56,23 @@ export class BridgeService extends TransactionHistoryService {
     return resp;
   };
 
+  public getFeeLimitBridge = async (coin: string, chainFrom: string) => {
+    let fromChain;
+    if (chainFrom === "ETH") {
+      fromChain = "ETH";
+    } else if (chainFrom === "BNB") {
+      fromChain = "BSC";
+    } else if (chainFrom === "NEAR") {
+      fromChain = "AURORA";
+    }
+
+    if (!fromChain) throw new Error("Error no chaind");
+
+    const resp: any = await calculateBridgeLimits(coin, fromChain);
+
+    return resp;
+  };
+
   public getAddressesBridge = async (coin: string, blockchain: string) => {
     let chainId;
     if (blockchain === "ETH") {
@@ -66,11 +83,11 @@ export class BridgeService extends TransactionHistoryService {
       chainId = "1313161554";
     }
 
-    if (!chainId) throw new Error("Error no chaind ID");
+    if (!chainId) return [];
 
     const result = getTokensBridge(chainId, coin);
 
-    // const result2 = getAddresses(chainId, token);
+    // const result2 = getAddresses(chainId, coin);
     // console.log(result2);
 
     return result;
@@ -238,7 +255,23 @@ function getTokensBridge(chainId: string, anyTokenName: string) {
         for (let address in obj[startingChain]) {
           const token = obj[startingChain][address]["underlying"];
           if (token.symbol === anyTokenName) {
-            return obj[startingChain][address];
+            for (let chain of Object.keys(obj[startingChain][address]["destChains"])) {
+              let tokenItem = obj[startingChain][address]["destChains"][chain];
+              if (chain === "1") {
+                tokenItem.blockchainCoin = "ETH";
+                tokenItem.blockchain = "Ethereum";
+              } else if (chain === "56") {
+                tokenItem.blockchain = "Binance Smart Chain";
+                tokenItem.blockchainCoin = "BNB";
+              } else if (chain === "1313161554") {
+                tokenItem.blockchain = "Aurora";
+                tokenItem.blockchainCoin = "AURORA";
+              }
+              if (tokenItem.blockchain) {
+                tokensBridge.push(tokenItem);
+              }
+            }
+            return tokensBridge;
           }
         }
       }
@@ -292,6 +325,72 @@ function getAddresses(chainId: string, anyTokenName: string) {
 /*
  ******************** FUNCION PARA CALCULAR FEE ********************
  */
+
+function calculateBridgeLimits(token: string, chain: string) {
+  const altcoinMinFee = 5; // Minimum cross-chain fee for altcoins
+  const altcoinMaxFee = 1000; // Maximum cross-chain fee for altcoins
+  const altcoinMinAmount = 10; // Minimum cross-chain amount for altcoins
+  const altcoinMaxAmount = 5000000; // Maximum cross-chain amount for altcoins
+  const altcoinMaxAmountDelay = 12; // Maximum delay for cross-chain amount larger than $1M for altcoins (in hours)
+
+  const altcoinEthMinFee = 80; // Minimum cross-chain fee for altcoins
+  const altcoinEthMaxFee = 1000; // Maximum cross-chain fee for altcoins
+  const altcoinEthMinAmount = 90; // Minimum cross-chain amount for altcoins
+  const altcoinEthMaxAmount = 5000000; // Maximum cross-chain amount for altcoins
+  const altcoinEthMaxAmountDelay = 12; // Maximum delay for cross-chain amount larger than $1M for altcoins (in hours)
+
+  const ethMinFee = 40; // Minimum cross-chain fee to ETH for mainstream tokens
+  const ethMaxFee = 1000; // Maximum cross-chain fee to ETH for mainstream tokens
+  const ethMinAmount = 12; // Minimum cross-chain amount to ETH for mainstream tokens
+  const ethMaxAmount = 20000000; // Maximum cross-chain amount to ETH for mainstream tokens
+  const ethMaxAmountDelay = 12; // Maximum delay for cross-chain amount larger than $5M to ETH (in hours)
+
+  const nonEthMinFee = 0.9; // Minimum cross-chain fee to non-ETH chains for mainstream tokens
+  const nonEthMaxFee = 1.9; // Maximum cross-chain fee to non-ETH chains for mainstream tokens
+  const nonEthMinAmount = 12; // Minimum cross-chain amount to non-ETH chains for mainstream tokens
+  const nonEthMaxAmount = 20000000; // Maximum cross-chain amount to non-ETH chains for mainstream tokens
+  const nonEthMaxAmountDelay = 12; // Maximum delay for cross-chain amount larger than $5M to non-ETH chains (in hours)
+
+  let minAmount, maxAmount, minFee, maxFee, maxDelay;
+
+  if (chain === "ETH") {
+    if (mainstreamCoin.includes(token)) {
+      minAmount = ethMinAmount;
+      maxAmount = ethMaxAmount;
+      minFee = ethMinFee;
+      maxFee = ethMaxFee;
+      maxDelay = maxAmount > 5000000 ? ethMaxAmountDelay : 0;
+    } else {
+      minAmount = altcoinEthMinAmount;
+      maxAmount = altcoinEthMaxAmount;
+      minFee = altcoinEthMinFee;
+      maxFee = altcoinEthMaxFee;
+      maxDelay = maxAmount > 1000000 ? altcoinEthMaxAmountDelay : 0;
+    }
+  } else {
+    if (mainstreamCoin.includes(token)) {
+      minAmount = nonEthMinAmount;
+      maxAmount = nonEthMaxAmount;
+      minFee = nonEthMinFee;
+      maxFee = nonEthMaxFee;
+      maxDelay = maxAmount > 5000000 ? nonEthMaxAmountDelay : 0;
+    } else {
+      minAmount = altcoinMinAmount;
+      maxAmount = altcoinMaxAmount;
+      minFee = altcoinMinFee;
+      maxFee = altcoinMaxFee;
+      maxDelay = maxAmount > 1000000 ? altcoinMaxAmountDelay : 0;
+    }
+  }
+
+  return {
+    minAmount,
+    maxAmount,
+    minFee,
+    maxFee,
+    maxDelay,
+  };
+}
 
 // chainTo and chainFrom: 'ETH', 'BSC', 'AURORA'
 
