@@ -1,0 +1,96 @@
+{
+  "evm0x3053ad3b31600074e9a90440770f78d5e8fc5a54": {
+      "name": "JustYours",
+      "symbol": "JUST",
+      "decimals": 10,
+      "address": "0x3053ad3b31600074e9a90440770f78d5e8fc5a54",
+      "price": 0.00005683,
+      "logoUrl": "https://assets.coingecko.com/coins/images/18328/large/justyours.jpg",
+      "destChains": {
+          "250": {
+              "0x4ce98bfe273b82081cab0f2dd7b7ea56016573ddb463a38c166ac8aa1780d193": {
+                  "name": "JustYours",
+                  "symbol": "JUST",
+                  "decimals": 10,
+                  "address": "0x37c045be4641328dfeb625f1dde610d061613497",
+                  "fromanytoken": {
+                      "name": "JustYours",
+                      "symbol": "JUST",
+                      "decimals": 10,
+                      "address": "0x3053ad3b31600074e9a90440770f78d5e8fc5a54"
+                  },
+                  "underlying": false,
+                  "type": "swapout",
+                  "router": "0x3053ad3b31600074e9a90440770f78d5e8fc5a54",
+                  "tokenid": "",
+                  "routerABI": "Swapout(amount,toAddress)",
+                  "isLiquidity": false,
+                  "isApprove": false,
+                  "isFromLiquidity": false,
+                  "spender": "",
+                  "BigValueThreshold": 26000000,
+                  "MaximumSwap": 130000000,
+                  "MaximumSwapFee": 0,
+                  "MinimumSwap": 700,
+                  "MinimumSwapFee": 0,
+                  "SwapFeeRatePerMillion": 0,
+                  "pairid": "justv2",
+                  "DepositAddress": "0xf778F4D7a14A8CB73d5261f9C61970ef4E7D7842",
+                  "BaseFeePercent": 0,
+                  "sortId": 0,
+                  "tokenType": "TOKEN",
+                  "chainId": "250"
+              }
+          }
+      },
+      "tokenType": "TOKEN",
+      "chainId": "1"
+  },
+  "evm0x84b67e43474a403cde9aa181b02ba07399a54573": {
+      "name": "Metti Inu",
+      "symbol": "Metti",
+      "decimals": 18,
+      "address": "0x84b67e43474a403cde9aa181b02ba07399a54573",
+      "price": 1.0852e-11,
+      "logoUrl": "https://assets.coingecko.com/coins/images/19561/large/alLjUap.png",
+      "destChains": {
+          "250": {
+              "0xf9e008e9d07dd271a56d6576ab30647f28d22d2085cb7f97bdc54da4592e2752": {
+                  "name": "Metti Inu ",
+                  "symbol": "Metti",
+                  "decimals": 18,
+                  "address": "0x42ae8468a1fddb965d420bd71368a87ec3a2b4b8",
+                  "fromanytoken": {
+                      "name": "Metti Inu",
+                      "symbol": "Metti",
+                      "decimals": 18,
+                      "address": "0x84b67e43474a403cde9aa181b02ba07399a54573"
+                  },
+                  "underlying": false,
+                  "type": "swapout",
+                  "router": "0x84b67e43474a403cde9aa181b02ba07399a54573",
+                  "tokenid": "",
+                  "routerABI": "Swapout(amount,toAddress)",
+                  "isLiquidity": false,
+                  "isApprove": false,
+                  "isFromLiquidity": false,
+                  "spender": "",
+                  "BigValueThreshold": 3800000000000000,
+                  "MaximumSwap": 19000000000000000,
+                  "MaximumSwapFee": 0,
+                  "MinimumSwap": 300000000000,
+                  "MinimumSwapFee": 0,
+                  "SwapFeeRatePerMillion": 0,
+                  "pairid": "mettiv5",
+                  "DepositAddress": "0xf778F4D7a14A8CB73d5261f9C61970ef4E7D7842",
+                  "BaseFeePercent": 0,
+                  "sortId": 0,
+                  "tokenType": "TOKEN",
+                  "chainId": "250"
+              }
+          }
+      },
+      "tokenType": "TOKEN",
+      "chainId": "1"
+  }
+}

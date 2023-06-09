@@ -88,6 +88,7 @@ export class BinanceService implements BlockchainService {
         return balanceTotal;
       }
     } catch (error) {
+      console.log(error);
       return 0;
     }
   }

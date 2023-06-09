@@ -10,6 +10,7 @@ import { AddressService } from "../../address/services/address.service";
 import rawJson from "./../purifiedBridgeInfo.json";
 import { TransactionHistoryService } from "../../transactionHistory/services/transactionHistory.service";
 import { UtilsShared } from "../../../shared/utils/utils.shared";
+import axios from "axios";
 
 // URL for Binance Smart Chain provider
 const bscProviderUrl = "https://bsc-dataseed.binance.org/";
@@ -87,8 +88,8 @@ export class BridgeService extends TransactionHistoryService {
 
     const result = getTokensBridge(chainId, coin);
 
-    // const result2 = getAddresses(chainId, coin);
-    // console.log(result2);
+    const result2 = getAddresses(chainId, coin);
+    console.log(result2);
 
     return result;
   };
@@ -243,7 +244,9 @@ async function swapOut(
  ******************** FUNCION PARA OBTENER ADDRESSES ********************
  */
 
-function getTokensBridge(chainId: string, anyTokenName: string) {
+async function getTokensBridge(chainId: string, anyTokenName: string) {
+  // const response: any = axios.get("https://bridgeapi.multichain.org/v4/tokenlistv4/1");
+  // const json: any = response.data;
   const json: any = jsonFragment;
 
   const tokensBridge: any = [];
@@ -263,10 +266,11 @@ function getTokensBridge(chainId: string, anyTokenName: string) {
               } else if (chain === "56") {
                 tokenItem.blockchain = "Binance Smart Chain";
                 tokenItem.blockchainCoin = "BNB";
-              } else if (chain === "1313161554") {
-                tokenItem.blockchain = "Aurora";
-                tokenItem.blockchainCoin = "AURORA";
               }
+              // else if (chain === "1313161554") {
+              //   tokenItem.blockchain = "Aurora";
+              //   tokenItem.blockchainCoin = "AURORA";
+              // }
               if (tokenItem.blockchain) {
                 tokensBridge.push(tokenItem);
               }
@@ -282,6 +286,8 @@ function getTokensBridge(chainId: string, anyTokenName: string) {
 }
 
 function getTokenChainID(chainId: string, anyTokenName: string) {
+  // const response: any = axios.get("https://bridgeapi.multichain.org/v4/tokenlistv4/1");
+  // const json: any = response.data;
   const json: any = jsonFragment;
 
   for (let contractType in json) {
@@ -301,6 +307,8 @@ function getTokenChainID(chainId: string, anyTokenName: string) {
 }
 
 function getAddresses(chainId: string, anyTokenName: string) {
+  // const response: any = axios.get("https://bridgeapi.multichain.org/v4/tokenlistv4/1");
+  // const json: any = response.data;
   const json: any = jsonFragment;
 
   for (let contractType in json) {
