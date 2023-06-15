@@ -3,8 +3,8 @@ import { UserEntity } from "../../users/entities/user.entity";
 
 @Entity({ name: "hidden_tokens_limit" })
 export class HiddenTokensLimitEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
   @Column({
     nullable: false,

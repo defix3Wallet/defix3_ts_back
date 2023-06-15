@@ -50,7 +50,7 @@ export class FrequentService extends UserService {
     }
   };
 
-  public deleteFrequentById = async (id: number) => {
+  public deleteFrequentById = async (id: string) => {
     try {
       return await FrequentEntity.delete({ id });
     } catch (err) {

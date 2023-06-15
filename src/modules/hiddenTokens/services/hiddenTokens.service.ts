@@ -55,7 +55,7 @@ export class HiddenTokensService {
     }
   };
 
-  public deleteHiddenToken = async (id: number) => {
+  public deleteHiddenToken = async (id: string) => {
     try {
       return await HiddenTokensLimitEntity.delete({ id });
     } catch (err) {

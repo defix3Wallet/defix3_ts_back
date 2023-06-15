@@ -3,8 +3,8 @@ import { UserEntity } from "../../users/entities/user.entity";
 
 @Entity({ name: "adresses" })
 export class AddressEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
   @ManyToOne(() => UserEntity)
   user!: UserEntity;

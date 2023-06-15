@@ -3,8 +3,8 @@ import { UserEntity } from "../../users/entities/user.entity";
 
 @Entity({ name: "transaction_history" })
 export class TransactionHistoryEntity extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
   @Column({
     name: "from_defix",
