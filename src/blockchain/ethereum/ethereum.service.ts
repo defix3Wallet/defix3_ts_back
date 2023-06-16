@@ -450,7 +450,6 @@ export class EthereumService implements BlockchainService {
     try {
       const web3Main = new Web3(new Web3.providers.HttpProvider(`https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`));
 
-      address = "0x856d78cde2a7e361bf528c72c5d130bc0da91e58";
       const paraSwapLimitOrderSDK = constructPartialSDK(
         {
           chainId: 1,

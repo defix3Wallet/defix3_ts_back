@@ -187,7 +187,7 @@ class BitcoinService {
         try {
             if (!amount || !address)
                 throw new Error(`Failed to amount tx btc`);
-            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(coin);
+            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(blockchain);
             const feeMain = {
                 coin,
                 blockchain,

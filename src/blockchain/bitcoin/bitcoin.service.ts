@@ -179,7 +179,7 @@ export class BitcoinService implements BlockchainService {
   async getFeeTransaction(coin: string, blockchain: string, typeTxn: string, amount: number | undefined, address: string | undefined): Promise<any> {
     try {
       if (!amount || !address) throw new Error(`Failed to amount tx btc`);
-      let comisionAdmin: any = await UtilsShared.getComision(coin);
+      let comisionAdmin: any = await UtilsShared.getComision(blockchain);
 
       const feeMain = {
         coin,

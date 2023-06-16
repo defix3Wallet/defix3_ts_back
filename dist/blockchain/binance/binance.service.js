@@ -73,6 +73,7 @@ class BinanceService {
             }
         }
         catch (error) {
+            console.log(error);
             return 0;
         }
     }

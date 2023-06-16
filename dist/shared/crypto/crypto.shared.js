@@ -14,7 +14,7 @@ class CryptoShared {
             const decoded = crypto_1.default
                 .privateDecrypt({
                 key: process.env.PRIVATE_KEY,
-                passphrase: process.env.PASSWORD_DB,
+                passphrase: process.env.PASSWORD_CRYPTO,
                 padding: crypto_1.default.constants.RSA_PKCS1_OAEP_PADDING,
             }, cipheredBytes)
                 .toString();
