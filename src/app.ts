@@ -32,7 +32,7 @@ class App {
     this.initModules();
   }
 
-  private async config(): Promise<void> {
+  private config(){
     this.app.use(morgan("dev"));
     this.app.use(cors());
     this.app.use(express.json());

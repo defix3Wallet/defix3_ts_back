@@ -9,7 +9,7 @@ const crypto_js_1 = __importDefault(require("crypto-js"));
 class CryptoShared {
     static decrypt(text) {
         try {
-            // return text;
+            return text;
             const cipheredBytes = Buffer.from(text, "base64");
             const decoded = crypto_1.default
                 .privateDecrypt({

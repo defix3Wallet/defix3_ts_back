@@ -36,18 +36,6 @@ const app_1 = __importDefault(require("./app"));
 const socket_io_1 = __importDefault(require("socket.io"));
 const node_cache_1 = __importDefault(require("node-cache"));
 const process_1 = require("./process");
-const TronWeb = require("tronweb");
-const HttpProvider = TronWeb.providers.HttpProvider;
-const TRON_PRO_API_KEY = process.env.TRON_PRO_API_KEY;
-const FULL_NODE = process.env.FULL_NODE;
-const SOLIDITY_NODE = process.env.SOLIDITY_NODE;
-const EVENT_SERVER = process.env.EVENT_SERVER;
-const fullNode = new HttpProvider(FULL_NODE);
-const solidityNode = new HttpProvider(SOLIDITY_NODE);
-const eventServer = new HttpProvider(EVENT_SERVER);
-const tronWeb = new TronWeb(fullNode, solidityNode, eventServer);
-tronWeb.setHeader({ "TRON-PRO-API-KEY": TRON_PRO_API_KEY });
-console.log(tronWeb);
 const nodeCache = new node_cache_1.default();
 const fs = require("fs");
 class Server {

@@ -81,7 +81,6 @@ class EthereumService {
         this.getAllLimitOrder = async (address) => {
             try {
                 const web3Main = new web3_1.default(new web3_1.default.providers.HttpProvider(`https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`));
-                address = "0x856d78cde2a7e361bf528c72c5d130bc0da91e58";
                 const paraSwapLimitOrderSDK = (0, sdk_2.constructPartialSDK)({
                     chainId: 1,
                     fetcher,

@@ -22,6 +22,7 @@ export class SwapController {
       const previewData = await this.swapService.getPreviewSwap(fromCoin, toCoin, amount, blockchain, address);
       res.send(previewData);
     } catch (error: any) {
+      console.log(error);
       return res.status(500).send({ message: error.message });
     }
   };

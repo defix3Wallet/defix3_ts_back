@@ -17,17 +17,18 @@ const NETWORK = process.env.NETWORK || "testnet";
 const ETHERSCAN = process.env.ETHERSCAN;
 
 let NEAR: string;
+let dataToken = {
+  decimals: 24,
+  contract: "",
+};
 
 if (process.env.NEAR_ENV === "testnet") {
   NEAR = "testnet";
+  dataToken.contract = "wrap.testnet";
 } else {
   NEAR = "near";
+  dataToken.contract = "wrap.near";
 }
-
-const dataToken = {
-  decimals: 24,
-  contract: "wrap.testnet",
-};
 
 export class NearService implements BlockchainService {
   getOrderBookCoinToCoin(fromCoin: string, toCoin: string): Promise<any> {
@@ -287,7 +288,7 @@ export class NearService implements BlockchainService {
       }
 
       let txMain: any;
-      let minAmountOut: number = 0;
+      let minAmountOut: any = 0;
 
       if (minAmountRef && !minAmountDcl) {
         console.log("REF");
@@ -330,8 +331,15 @@ export class NearService implements BlockchainService {
 
       let feeDefix = String(Number(amount) * porcentFee);
 
+      let secondNum;
+      if (tokenOut === `wrap.${NEAR}`) {
+        secondNum = minAmountOut;
+        minAmountOut = utils.format.parseNearAmount(String(minAmountOut));
+      } else {
+        secondNum = minAmountOut / Math.pow(10, Number(tokensMetadata[tokenOut].decimals));
+      }
+
       const firstNum = Number(amountIn) / Math.pow(10, Number(tokensMetadata[tokenIn].decimals));
-      const secondNum = minAmountOut / Math.pow(10, Number(tokensMetadata[tokenOut].decimals));
 
       const swapRate = String(secondNum / firstNum);
 
@@ -339,7 +347,7 @@ export class NearService implements BlockchainService {
         exchange: "Ref Finance",
         fromAmount: amountIn,
         fromDecimals: tokensMetadata[tokenIn].decimals,
-        toAmount: minAmountOut,
+        toAmount: String(minAmountOut),
         toDecimals: tokensMetadata[tokenOut].decimals,
         block: null,
         swapRate,
@@ -349,8 +357,10 @@ export class NearService implements BlockchainService {
         feeTotal: String(Number(feeDefix)),
       };
 
-      return { dataSwap, priceRoute: { tokenIn, tokenOut, amountIn, minAmountOut, txMain } };
+      return { dataSwap, priceRoute: { tokenIn, tokenOut, amountIn, minAmountOut: String(minAmountOut), txMain } };
     } catch (error: any) {
+      console.log(error);
+
       throw new Error(`Feiled to get preview swap., ${error.message}`);
     }
   }
@@ -487,7 +497,6 @@ async function activateAccount(account: AccountService, fromAddress: string, toA
       near
     );
 
-    console.log(trx);
 
     const result = await account.signAndSendTrx(trx);
 

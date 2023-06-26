@@ -13,10 +13,10 @@ const swaggerDefinition: OAS3Definition = {
   },
   servers: [
     {
-      url: "https://defix3.com:3072/api/v2/",
+      url: `https://defix3.com:${process.env.PORT}/api/v2/`,
     },
     {
-      url: "http://localhost:3080/api/v2/",
+      url: `http://localhost:${process.env.PORT}/api/v2/`,
     },
   ],
   tags: [

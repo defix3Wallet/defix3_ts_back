@@ -10,6 +10,13 @@ const nearSEED = require("near-seed-phrase");
 
 const NETWORK = process.env.NETWORK || "testnet";
 
+let NEAR: string;
+if (process.env.NEAR_ENV === "testnet") {
+  NEAR = "testnet";
+} else {
+  NEAR = "near";
+}
+
 export class AccountService extends Account {
   public async signAndSendTrx(trx: any) {
     return await this.signAndSendTransaction(trx);
@@ -143,8 +150,6 @@ export class NearUtils {
 
     if (!transaction) return false;
 
-    console.log("TXXX");
-
     const argsMsg = JSON.parse(transaction.functionCalls[0].args.msg);
 
     console.log(argsMsg);
@@ -153,11 +158,20 @@ export class NearUtils {
       let minAmountOut = 0;
       for (const action of argsMsg.actions) {
         if (action.token_out === tokenOut) {
-          minAmountOut += Number(action.min_amount_out);
+          if (action.token_out === `wrap.${NEAR}`) {
+            minAmountOut += Number(utils.format.formatNearAmount(action.min_amount_out));
+          } else {
+            console.log(Number(action.min_amount_out));
+            minAmountOut += Number(action.min_amount_out);
+          }
         }
       }
       return minAmountOut;
     } else if (Object.keys(argsMsg).includes("Swap")) {
+      if (tokenOut === `wrap.${NEAR}`) {
+        return Number(utils.format.formatNearAmount(argsMsg.Swap.min_output_amount));
+      
+      }
       return Number(argsMsg.Swap.min_output_amount);
     } else {
       return 0;

@@ -21,6 +21,8 @@ export class SwapService extends TransactionHistoryService {
         blockchain,
         address
       );
+      console.log("Brrr");
+      console.log(swapResult);
 
       if (!swapResult) {
         throw new Error(`Internal error swap preview.`);
