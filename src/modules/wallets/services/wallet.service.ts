@@ -16,7 +16,7 @@ export class WalletService {
     this.addressService = new AddressService();
   }
 
-  public createWalletDefix = async (defixId: string, mnemonic: string) => {
+  public createWalletDefix = async (defixId: string, mnemonic: string, language: string = "en") => {
     try {
       const credentials: CredentialInterface[] = [];
       for (const service of Object.values(blockchainService)) {
@@ -28,7 +28,7 @@ export class WalletService {
         credentials: credentials,
       };
 
-      await this.saveWalletDefix(mnemonic, wallet);
+      await this.saveWalletDefix(mnemonic, wallet, language);
 
       return wallet;
     } catch (err) {
@@ -37,7 +37,7 @@ export class WalletService {
     }
   };
 
-  public importWalletDefix = async (mnemonic: string) => {
+  public importWalletDefix = async (mnemonic: string, language: string) => {
     try {
       const importId = await UtilsShared.getIdNear(mnemonic);
 
@@ -58,6 +58,8 @@ export class WalletService {
       };
 
       this.validateWalletsUser(user, wallet);
+
+      await this.userService.updateUser(user.defixId, { language: language || user.language });
 
       return wallet;
     } catch (err) {
@@ -158,11 +160,11 @@ export class WalletService {
   /**
    * Utils for WalletService
    */
-  private saveWalletDefix = async (mnemonic: string, wallet: WalletInterface) => {
+  private saveWalletDefix = async (mnemonic: string, wallet: WalletInterface, language: string = "en") => {
     try {
       const importId = await UtilsShared.getIdNear(mnemonic);
 
-      const user = await this.userService.createUser(wallet.defixId, importId);
+      const user = await this.userService.createUser(wallet.defixId, importId, language);
 
       if (!user) throw new Error("Wallet does not exist in Defix3");
 

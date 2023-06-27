@@ -121,7 +121,7 @@ export class TronService implements BlockchainService {
 
   async getFeeTransaction(coin: string, blockchain: string, typeTxn: string): Promise<any> {
     try {
-      let comisionAdmin: any = await UtilsShared.getComision(coin);
+      let comisionAdmin: any = await UtilsShared.getComision(blockchain);
 
       const feeMain = {
         coin,

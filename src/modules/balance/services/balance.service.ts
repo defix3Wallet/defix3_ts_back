@@ -1,4 +1,5 @@
 import { blockchainService } from "../../../blockchain";
+import { CacheConfig } from "../../../config/cacheConfig";
 import { Balance } from "../../../interfaces/balance.interface";
 import { BalanceCrypto } from "../../../interfaces/balance_crypto.interface";
 import { UtilsShared } from "../../../shared/utils/utils.shared";
@@ -17,6 +18,9 @@ export class BalanceService {
       const balances: BalanceCrypto[] = [];
 
       const cryptos = await UtilsShared.getCryptos();
+
+      const pnlArray: any = [];
+      let pnl = 0;
 
       for (let crypto of cryptos) {
         const balanceCrypto: BalanceCrypto = {
@@ -51,8 +55,32 @@ export class BalanceService {
           balanceCrypto.tokens.push(itemToken);
         }
 
+        const coinMarket: any = CacheConfig.nodeCache.get("getRanking");
+
+        if (coinMarket) {
+          // const coin = coinMarket.find(() => element);
+          const coin = coinMarket.find((element: any) => element.symbol === balanceCrypto.coin.toLowerCase());
+          if (coin) {
+            const price7d = coin.current_price - (coin.price_change_percentage_7d_in_currency / 100) * coin.current_price;
+
+            pnlArray.push((price7d - coin.current_price) * balanceCrypto.balance);
+            pnl += (price7d - coin.current_price) * balanceCrypto.balance;
+          }
+          for (let crypto of balanceCrypto.tokens) {
+            const coin = coinMarket.find((element: any) => element.symbol === crypto.coin.toLowerCase());
+            if (coin) {
+              const price7d = coin.current_price - (coin.price_change_percentage_7d_in_currency / 100) * coin.current_price;
+
+              pnlArray.push((price7d - coin.current_price) * crypto.balance);
+              pnl = (price7d - coin.current_price) * crypto.balance;
+            }
+          }
+        }
+
         balances.push(balanceCrypto);
       }
+      console.log(pnlArray);
+      console.log(pnl);
       return balances;
     } catch (err) {
       throw new Error(`Failed to get address: ${err}`);

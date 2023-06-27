@@ -4,6 +4,7 @@ import { Server, Socket, ServerOptions } from "socket.io";
 import serialize from "serialize-javascript";
 import * as http from "http";
 import NodeCache from "node-cache";
+import { CacheConfig } from "../config/cacheConfig";
 
 const PATH_ROUTER = `${__dirname}`;
 
@@ -23,8 +24,8 @@ const Process = (routeDemon: string, io: Server, nodeCache: NodeCache) => {
 
   demon.on("message", (message) => {
     io.emit("getRanking", message);
-
-    nodeCache.set("getRanking", message);
+    // nodeCache.set("getRanking", message);
+    CacheConfig.nodeCache.set("getRanking", message);
   });
 
   demon.on("exit", () => {

@@ -38,6 +38,9 @@ export class Routes {
      *                  email: {
      *                    type: "string"
      *                  },
+     *                  language: {
+     *                    type: "string"
+     *                  },
      *                }
      *      responses:
      *        '200':

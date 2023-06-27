@@ -27,7 +27,12 @@ export class WithdrawController {
 
   public sendWithdraw = async (req: Request, res: Response) => {
     try {
-      const { defixId, pkEncrypt, toAddress, coin, amount, blockchain } = req.body;
+      const { defixId, pkEncrypt, toAddress, coin, amount, blockchain, language } = req.body;
+
+      let lang = language;
+      if (lang !== "en" && lang !== "es") {
+        lang = "en";
+      }
 
       if (!defixId || !pkEncrypt || !toAddress || !coin || !amount || !blockchain) return res.status(400).send({ message: "Invalid data." });
 
@@ -37,8 +42,8 @@ export class WithdrawController {
 
       const withdrawal = await this.withdrawService.sendWithdraw(defixId, privateKey, toAddress, coin, amount, blockchain);
 
-      this.mailService.emailSuccessWithdrawal(defixId, toAddress, amount, coin, blockchain, withdrawal.hash);
-      this.mailService.emailReceivedPayment(defixId, toAddress, amount, coin, blockchain, withdrawal.hash);
+      this.mailService.emailSuccessWithdrawal(defixId, toAddress, amount, coin, blockchain, withdrawal.hash, lang);
+      this.mailService.emailReceivedPayment(defixId, toAddress, amount, coin, blockchain, withdrawal.hash, lang);
 
       res.send(withdrawal);
     } catch (error: any) {

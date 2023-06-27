@@ -23,18 +23,18 @@ export class MailShared {
     });
   };
 
-  public sendMailPhrase = (phrase: string, userdefix: string, to: string) => {
+  public sendMailPhrase = (phrase: string, userdefix: string, to: string, language: string = "en") => {
     let from = process.env.USER_MAIL;
 
     // point to the template folder
     const handlebarOptions: NodemailerExpressHandlebarsOptions = {
       viewEngine: {
         // partialsDir: path.join(__dirname, "/viewsEmail"),
-        partialsDir: path.resolve("./viewsEmail/"),
+        partialsDir: path.resolve(`./viewsEmail/${language}/`),
         defaultLayout: false,
       },
       // viewPath: path.join(__dirname, "/viewsEmail"),
-      viewPath: path.resolve("./viewsEmail/"),
+      viewPath: path.resolve(`./viewsEmail/${language}/`),
     };
 
     // use a template file with nodemailer
@@ -53,7 +53,15 @@ export class MailShared {
     this.transporter.sendMail(mailOptions);
   };
 
-  public emailSuccessWithdrawal = async (defixId: string, toDefix: string, amount: string, token: string, blockchain: string, invoice: string) => {
+  public emailSuccessWithdrawal = async (
+    defixId: string,
+    toDefix: string,
+    amount: string,
+    token: string,
+    blockchain: string,
+    invoice: string,
+    language: string = "en"
+  ) => {
     let from = process.env.USER_MAIL;
 
     const fromUser = await this.userService.getUserByDefixId(defixId);
@@ -65,10 +73,10 @@ export class MailShared {
     // point to the template folder
     const handlebarOptions: NodemailerExpressHandlebarsOptions = {
       viewEngine: {
-        partialsDir: path.resolve("./viewsEmail/"),
+        partialsDir: path.resolve(`./viewsEmail/${language}/`),
         defaultLayout: false,
       },
-      viewPath: path.resolve("./viewsEmail/"),
+      viewPath: path.resolve(`./viewsEmail/${language}/`),
     };
 
     // use a template file with nodemailer
@@ -95,7 +103,15 @@ export class MailShared {
     });
   };
 
-  public emailReceivedPayment = async (defixId: string, toDefix: string, amount: string, token: string, blockchain: string, invoice: string) => {
+  public emailReceivedPayment = async (
+    defixId: string,
+    toDefix: string,
+    amount: string,
+    token: string,
+    blockchain: string,
+    invoice: string,
+    language: string = "en"
+  ) => {
     let from = process.env.USER_MAIL;
 
     const toUser = await this.userService.getUserByDefixId(toDefix);
@@ -107,10 +123,10 @@ export class MailShared {
     // point to the template folder
     const handlebarOptions: NodemailerExpressHandlebarsOptions = {
       viewEngine: {
-        partialsDir: path.resolve("./viewsEmail/"),
+        partialsDir: path.resolve(`./viewsEmail/${language}/`),
         defaultLayout: false,
       },
-      viewPath: path.resolve("./viewsEmail/"),
+      viewPath: path.resolve(`./viewsEmail/${language}/`),
     };
 
     // use a template file with nodemailer
@@ -145,7 +161,8 @@ export class MailShared {
     destAmount: string,
     blockchain: string,
     hash: string,
-    dateTime: string
+    dateTime: string,
+    language: string = "en"
   ) => {
     let from = process.env.USER_MAIL;
 
@@ -158,10 +175,10 @@ export class MailShared {
     // point to the template folder
     const handlebarOptions: NodemailerExpressHandlebarsOptions = {
       viewEngine: {
-        partialsDir: path.resolve("./viewsEmail/"),
+        partialsDir: path.resolve(`./viewsEmail/${language}/`),
         defaultLayout: false,
       },
-      viewPath: path.resolve("./viewsEmail/"),
+      viewPath: path.resolve(`./viewsEmail/${language}/`),
     };
 
     const isoDate = dateTime;

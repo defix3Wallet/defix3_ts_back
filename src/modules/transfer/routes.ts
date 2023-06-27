@@ -86,7 +86,10 @@ export class Routes {
      *                  },
      *                  code2fa: {
      *                    type: "string"
-     *                  }
+     *                  },
+     *                  language: {
+     *                    type: "string"
+     *                  },
      *                }
      *      responses:
      *        '200':

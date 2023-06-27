@@ -118,7 +118,7 @@ export class EthereumService implements BlockchainService {
 
   async getFeeTransaction(coin: string, blockchain: string, typeTxn: string): Promise<any> {
     try {
-      let comisionAdmin: any = await UtilsShared.getComision(coin);
+      let comisionAdmin: any = await UtilsShared.getComision(blockchain);
 
       const response = await axios.get("https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6");
       const wei = response.data.result.SafeGasPrice;

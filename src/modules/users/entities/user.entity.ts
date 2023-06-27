@@ -101,6 +101,12 @@ export class UserEntity extends BaseEntity {
   })
   flagEvolution!: boolean;
 
+  @Column({
+    default: "en",
+    nullable: true,
+  })
+  language!: string;
+
   @CreateDateColumn({
     name: "created_at",
   })

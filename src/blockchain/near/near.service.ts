@@ -151,7 +151,7 @@ export class NearService implements BlockchainService {
 
   async getFeeTransaction(coin: string, blockchain: string, typeTxn: string): Promise<any> {
     try {
-      let comisionAdmin: any = await UtilsShared.getComision(coin);
+      let comisionAdmin: any = await UtilsShared.getComision(blockchain);
 
       const feeMain = {
         coin,
@@ -168,9 +168,9 @@ export class NearService implements BlockchainService {
       }
 
       if (!comision) {
-        feeMain.fee = "0";
+        feeMain.fee = "0.01";
       } else {
-        feeMain.fee = "0";
+        feeMain.fee = "0.01";
       }
       return feeMain;
     } catch (err: any) {
@@ -287,28 +287,33 @@ export class NearService implements BlockchainService {
         minAmountDcl = await NearUtils.getMinAmountOut(transactionsDcl, tokenOut);
       }
 
+      console.log(minAmountRef, minAmountDcl);
+
       let txMain: any;
       let minAmountOut: any = 0;
 
-      if (minAmountRef && !minAmountDcl) {
-        console.log("REF");
-        txMain = transactionsRef;
-        minAmountOut = minAmountRef;
-      } else if (!minAmountRef && minAmountDcl) {
-        console.log("DCL");
-        txMain = transactionsDcl;
-        minAmountOut = minAmountDcl;
-      } else if (minAmountRef && minAmountDcl) {
-        if (minAmountRef > minAmountDcl) {
-          console.log("REF");
-          txMain = transactionsRef;
-          minAmountOut = minAmountRef;
-        } else {
-          console.log("DCL");
-          txMain = transactionsDcl;
-          minAmountOut = minAmountDcl;
-        }
-      }
+      // if (minAmountRef && !minAmountDcl) {
+      //   console.log("REF");
+      //   txMain = transactionsRef;
+      //   minAmountOut = minAmountRef;
+      // } else if (!minAmountRef && minAmountDcl) {
+      //   console.log("DCL");
+      //   txMain = transactionsDcl;
+      //   minAmountOut = minAmountDcl;
+      // } else if (minAmountRef && minAmountDcl) {
+      //   if (minAmountRef > minAmountDcl) {
+      //     console.log("REF");
+      //     txMain = transactionsRef;
+      //     minAmountOut = minAmountRef;
+      //   } else {
+      //     console.log("DCL");
+      //     txMain = transactionsDcl;
+      //     minAmountOut = minAmountDcl;
+      //   }
+      // }
+
+      txMain = transactionsRef;
+      minAmountOut = minAmountRef;
 
       if (!txMain || !minAmountOut) return;
 
@@ -322,8 +327,8 @@ export class NearService implements BlockchainService {
       const amountIn = transfer.amount;
 
       const comision = await UtilsShared.getComision(blockchain);
-      let feeTransfer = "0";
-      let porcentFee = 0;
+      let feeTransfer = "0.1";
+      let porcentFee = 0.1;
 
       if (comision.swap) {
         porcentFee = comision.swap / 100;
@@ -451,6 +456,7 @@ export class NearService implements BlockchainService {
         block,
       };
     } catch (err: any) {
+      console.log(err);
       throw new Error(`Failed to send swap, ${err.message}`);
     }
   }
@@ -496,7 +502,6 @@ async function activateAccount(account: AccountService, fromAddress: string, toA
       fromAddress,
       near
     );
-
 
     const result = await account.signAndSendTrx(trx);
 
