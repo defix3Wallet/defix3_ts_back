@@ -18,8 +18,6 @@ export class WalletController {
       const { defixId, seedPhrase, email, language } = req.body;
       let lang = language;
 
-      console.log(language);
-
       if (!defixId || !seedPhrase) return res.status(400).send({ message: "Invalid data." });
 
       const mnemonic = CryptoShared.decrypt(seedPhrase);
@@ -36,8 +34,6 @@ export class WalletController {
 
       if (!wallet) return res.status(400).send({ message: "Internal server error." });
 
-      console.log(lang);
-
       if (await UtilsShared.validateEmail(email)) {
         this.mailService.sendMailPhrase(mnemonic, defixID, email, lang);
       }
@@ -50,17 +46,6 @@ export class WalletController {
   public importWalletDefix = async (req: Request, res: Response) => {
     try {
       const { seedPhrase, language } = req.body;
-
-      console.log(language);
-      console.log(language);
-      console.log(language);
-      console.log(language);
-      console.log(language);
-      console.log(language);
-      console.log(language);
-      console.log(language);
-      console.log(language);
-      console.log(language);
 
       let lang = language;
 

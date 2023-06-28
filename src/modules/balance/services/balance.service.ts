@@ -82,7 +82,7 @@ export class BalanceService {
         balances.push(balanceCrypto);
       }
       const pnlTotal = (pnl / pnlSum) * 100;
-      return { pnl: pnlTotal, balances };
+      return { pnl: { percentage: pnlTotal, dollar: pnl }, balances };
     } catch (err) {
       throw new Error(`Failed to get address: ${err}`);
     }
