@@ -6,9 +6,10 @@ import * as https from "https";
 import dbConnect from "./config/postgres";
 import App from "./app";
 import socketIo from "socket.io";
-import NodeCache from "node-cache";
+// import NodeCache from "node-cache";
 import { startProcess } from "./process";
-const nodeCache = new NodeCache();
+import { CacheConfig } from "./config/cacheConfig";
+// const nodeCache = new NodeCache();
 const fs = require("fs");
 
 class Server {
@@ -48,13 +49,14 @@ class Server {
     this.io.on("connection", (socket: socketIo.Socket) => {
       console.log("User APP " + socket.id + " connected");
 
-      if (nodeCache.has("getRanking")) {
-        const data = nodeCache.get("getRanking");
+      if (CacheConfig.nodeCache.has("getRanking")) {
+        const data = CacheConfig.nodeCache.get("getRanking");
+        // const data = nodeCache.get("getRanking");
         this.io.emit("getRanking", data);
       }
     });
 
-    startProcess(this.io, nodeCache);
+    startProcess(this.io);
   }
 
   public listen() {

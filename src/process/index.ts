@@ -18,7 +18,7 @@ const cleanFileName = (fileName: string) => {
   return file;
 };
 
-const Process = (routeDemon: string, io: Server, nodeCache: NodeCache) => {
+const Process = (routeDemon: string, io: Server) => {
   console.log("Starting demon...");
   const demon = fork(routeDemon);
 
@@ -30,15 +30,15 @@ const Process = (routeDemon: string, io: Server, nodeCache: NodeCache) => {
 
   demon.on("exit", () => {
     console.log("Demon died. Restarting demon " + routeDemon);
-    Process(routeDemon, io, nodeCache);
+    Process(routeDemon, io);
   });
 };
 
-const startProcess = (io: Server, nodeCache: NodeCache) => {
+const startProcess = (io: Server) => {
   readdirSync(PATH_ROUTER).filter((fileName) => {
     const cleanName = cleanFileName(fileName);
     if (cleanName !== "index") {
-      Process(PATH_ROUTER + "/" + cleanName, io, nodeCache);
+      Process(PATH_ROUTER + "/" + cleanName, io);
     }
   });
 };

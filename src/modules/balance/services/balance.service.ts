@@ -21,6 +21,7 @@ export class BalanceService {
 
       const pnlArray: any = [];
       let pnl = 0;
+      let pnlSum = 0;
 
       for (let crypto of cryptos) {
         const balanceCrypto: BalanceCrypto = {
@@ -65,23 +66,23 @@ export class BalanceService {
 
             pnlArray.push((price7d - coin.current_price) * balanceCrypto.balance);
             pnl += (price7d - coin.current_price) * balanceCrypto.balance;
+            pnlSum += price7d * balanceCrypto.balance;
           }
           for (let crypto of balanceCrypto.tokens) {
             const coin = coinMarket.find((element: any) => element.symbol === crypto.coin.toLowerCase());
             if (coin) {
               const price7d = coin.current_price - (coin.price_change_percentage_7d_in_currency / 100) * coin.current_price;
-
               pnlArray.push((price7d - coin.current_price) * crypto.balance);
-              pnl = (price7d - coin.current_price) * crypto.balance;
+              pnl += (price7d - coin.current_price) * crypto.balance;
+              pnlSum += price7d * crypto.balance;
             }
           }
         }
 
         balances.push(balanceCrypto);
       }
-      console.log(pnlArray);
-      console.log(pnl);
-      return balances;
+      const pnlTotal = (pnl / pnlSum) * 100;
+      return { pnl: pnlTotal, balances };
     } catch (err) {
       throw new Error(`Failed to get address: ${err}`);
     }
