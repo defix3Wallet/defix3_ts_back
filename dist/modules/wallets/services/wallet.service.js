@@ -8,7 +8,7 @@ const address_service_1 = require("../../address/services/address.service");
 const crypto_shared_1 = require("../../../shared/crypto/crypto.shared");
 class WalletService {
     constructor() {
-        this.createWalletDefix = async (defixId, mnemonic) => {
+        this.createWalletDefix = async (defixId, mnemonic, language = "en") => {
             try {
                 const credentials = [];
                 for (const service of Object.values(blockchain_1.blockchainService)) {
@@ -18,7 +18,7 @@ class WalletService {
                     defixId: defixId,
                     credentials: credentials,
                 };
-                await this.saveWalletDefix(mnemonic, wallet);
+                await this.saveWalletDefix(mnemonic, wallet, language);
                 return wallet;
             }
             catch (err) {
@@ -26,7 +26,7 @@ class WalletService {
                 throw new Error(`Failed to create wallet: ${err}`);
             }
         };
-        this.importWalletDefix = async (mnemonic) => {
+        this.importWalletDefix = async (mnemonic, language) => {
             try {
                 const importId = await utils_shared_1.UtilsShared.getIdNear(mnemonic);
                 const user = await this.userService.getUserByImportId(importId);
@@ -42,6 +42,7 @@ class WalletService {
                     credentials: credentials,
                 };
                 this.validateWalletsUser(user, wallet);
+                await this.userService.updateUser(user.defixId, { language: language || user.language });
                 return wallet;
             }
             catch (err) {
@@ -139,10 +140,10 @@ class WalletService {
         /**
          * Utils for WalletService
          */
-        this.saveWalletDefix = async (mnemonic, wallet) => {
+        this.saveWalletDefix = async (mnemonic, wallet, language = "en") => {
             try {
                 const importId = await utils_shared_1.UtilsShared.getIdNear(mnemonic);
-                const user = await this.userService.createUser(wallet.defixId, importId);
+                const user = await this.userService.createUser(wallet.defixId, importId, language);
                 if (!user)
                     throw new Error("Wallet does not exist in Defix3");
                 for (let credential of wallet.credentials) {

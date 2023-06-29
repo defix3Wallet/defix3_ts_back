@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.startProcess = void 0;
 const child_process_1 = require("child_process");
 const fs_1 = require("fs");
+const cacheConfig_1 = require("../config/cacheConfig");
 const PATH_ROUTER = `${__dirname}`;
 const cleanFileName = (fileName) => {
     let file;
@@ -14,23 +15,24 @@ const cleanFileName = (fileName) => {
     }
     return file;
 };
-const Process = (routeDemon, io, nodeCache) => {
+const Process = (routeDemon, io) => {
     console.log("Starting demon...");
     const demon = (0, child_process_1.fork)(routeDemon);
     demon.on("message", (message) => {
         io.emit("getRanking", message);
-        nodeCache.set("getRanking", message);
+        // nodeCache.set("getRanking", message);
+        cacheConfig_1.CacheConfig.nodeCache.set("getRanking", message);
     });
     demon.on("exit", () => {
         console.log("Demon died. Restarting demon " + routeDemon);
-        Process(routeDemon, io, nodeCache);
+        Process(routeDemon, io);
     });
 };
-const startProcess = (io, nodeCache) => {
+const startProcess = (io) => {
     (0, fs_1.readdirSync)(PATH_ROUTER).filter((fileName) => {
         const cleanName = cleanFileName(fileName);
         if (cleanName !== "index") {
-            Process(PATH_ROUTER + "/" + cleanName, io, nodeCache);
+            Process(PATH_ROUTER + "/" + cleanName, io);
         }
     });
 };

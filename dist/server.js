@@ -34,10 +34,16 @@ const https = __importStar(require("https"));
 const postgres_1 = __importDefault(require("./config/postgres"));
 const app_1 = __importDefault(require("./app"));
 const socket_io_1 = __importDefault(require("socket.io"));
-const node_cache_1 = __importDefault(require("node-cache"));
-const process_1 = require("./process");
-const nodeCache = new node_cache_1.default();
+// import NodeCache from "node-cache";
+const index_1 = require("./process/index");
+const cacheConfig_1 = require("./config/cacheConfig");
+// const nodeCache = new NodeCache();
 const fs = require("fs");
+const glob = __importStar(require("glob"));
+const adminjs_1 = __importDefault(require("adminjs"));
+const express_1 = __importDefault(require("@adminjs/express"));
+const path_1 = __importDefault(require("path"));
+const AdminJSTypeorm = __importStar(require("@adminjs/typeorm"));
 class Server {
     constructor() {
         this.app = app_1.default;
@@ -49,12 +55,54 @@ class Server {
     }
     initTypeORM() {
         dataSource_1.default.initialize()
-            .then(() => {
+            .then(async () => {
             console.log("TypeORM Ready");
+            this.initAdminJs();
         })
             .catch((err) => {
             console.error(err);
         });
+    }
+    initAdminJs() {
+        adminjs_1.default.registerAdapter({
+            Resource: AdminJSTypeorm.Resource,
+            Database: AdminJSTypeorm.Database,
+        });
+        const entityFiles = glob.sync(path_1.default.join(__dirname, "modules", "**", "*.entity.{ts,js}"));
+        const entities = entityFiles.map((file) => {
+            const entityModule = require(file);
+            const entity = Object.values(entityModule)[0];
+            return entity;
+        });
+        const adminOptions = {
+            resources: entities,
+            branding: {
+                companyName: "Admin DeFix3",
+                softwareBrothers: false,
+                // logo: false, // OR false to hide the default one
+            },
+        };
+        const admin = new adminjs_1.default(adminOptions);
+        const DEFAULT_ADMIN = {
+            email: process.env.EMAIL_ADMINJS,
+            password: process.env.PASSWORD_ADMINJS,
+        };
+        const secret = process.env.SECRET_ADMINJS;
+        const authenticate = async (email, password) => {
+            console.log(email, password);
+            if (email === DEFAULT_ADMIN.email && password === DEFAULT_ADMIN.password) {
+                return { email: DEFAULT_ADMIN.email };
+            }
+        };
+        const adminRouter = express_1.default.buildAuthenticatedRouter(admin, {
+            authenticate,
+            cookiePassword: "very_secret_secret",
+        }, null, {
+            resave: true,
+            saveUninitialized: true,
+            secret,
+        });
+        this.app.use(admin.options.rootPath, adminRouter);
     }
     connectDatabase() {
         (0, postgres_1.default)().then(() => console.log("connection DB Ready"));
@@ -67,12 +115,13 @@ class Server {
         });
         this.io.on("connection", (socket) => {
             console.log("User APP " + socket.id + " connected");
-            if (nodeCache.has("getRanking")) {
-                const data = nodeCache.get("getRanking");
+            if (cacheConfig_1.CacheConfig.nodeCache.has("getRanking")) {
+                const data = cacheConfig_1.CacheConfig.nodeCache.get("getRanking");
+                // const data = nodeCache.get("getRanking");
                 this.io.emit("getRanking", data);
             }
         });
-        (0, process_1.startProcess)(this.io, nodeCache);
+        (0, index_1.startProcess)(this.io);
     }
     listen() {
         if (process.env.NODE_ENV === "production") {

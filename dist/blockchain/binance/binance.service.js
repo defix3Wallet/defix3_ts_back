@@ -100,7 +100,7 @@ class BinanceService {
     }
     async getFeeTransaction(coin, blockchain, typeTxn) {
         try {
-            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(coin);
+            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(blockchain);
             const response = await axios_1.default.get("https://api.bscscan.com/api?module=gastracker&action=gasoracle&apikey=3SU1MAWAPX8X39UD6U8JBGTQ5C67EVVRSM");
             const wei = response.data.result.SafeGasPrice;
             if (!wei)

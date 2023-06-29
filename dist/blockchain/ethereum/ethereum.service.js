@@ -239,7 +239,7 @@ class EthereumService {
     }
     async getFeeTransaction(coin, blockchain, typeTxn) {
         try {
-            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(coin);
+            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(blockchain);
             const response = await axios_1.default.get("https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=ZAXW568KING2VVBGAMBU7399KH7NBB8QX6");
             const wei = response.data.result.SafeGasPrice;
             if (!wei)

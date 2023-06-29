@@ -14,16 +14,18 @@ const utils_shared_1 = require("../../shared/utils/utils.shared");
 const NETWORK = process.env.NETWORK || "testnet";
 const ETHERSCAN = process.env.ETHERSCAN;
 let NEAR;
+let dataToken = {
+    decimals: 24,
+    contract: "",
+};
 if (process.env.NEAR_ENV === "testnet") {
     NEAR = "testnet";
+    dataToken.contract = "wrap.testnet";
 }
 else {
     NEAR = "near";
+    dataToken.contract = "wrap.near";
 }
-const dataToken = {
-    decimals: 24,
-    contract: "wrap.testnet",
-};
 class NearService {
     getOrderBookCoinToCoin(fromCoin, toCoin) {
         throw new Error("Method not implemented.");
@@ -124,7 +126,7 @@ class NearService {
     }
     async getFeeTransaction(coin, blockchain, typeTxn) {
         try {
-            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(coin);
+            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(blockchain);
             const feeMain = {
                 coin,
                 blockchain,
@@ -138,10 +140,10 @@ class NearService {
                 comision = comisionAdmin.withdraw;
             }
             if (!comision) {
-                feeMain.fee = "0";
+                feeMain.fee = "0.01";
             }
             else {
-                feeMain.fee = "0";
+                feeMain.fee = "0.01";
             }
             return feeMain;
         }
@@ -226,30 +228,30 @@ class NearService {
             else {
                 minAmountDcl = await near_utils_1.NearUtils.getMinAmountOut(transactionsDcl, tokenOut);
             }
+            console.log(minAmountRef, minAmountDcl);
             let txMain;
             let minAmountOut = 0;
-            if (minAmountRef && !minAmountDcl) {
-                console.log("REF");
-                txMain = transactionsRef;
-                minAmountOut = minAmountRef;
-            }
-            else if (!minAmountRef && minAmountDcl) {
-                console.log("DCL");
-                txMain = transactionsDcl;
-                minAmountOut = minAmountDcl;
-            }
-            else if (minAmountRef && minAmountDcl) {
-                if (minAmountRef > minAmountDcl) {
-                    console.log("REF");
-                    txMain = transactionsRef;
-                    minAmountOut = minAmountRef;
-                }
-                else {
-                    console.log("DCL");
-                    txMain = transactionsDcl;
-                    minAmountOut = minAmountDcl;
-                }
-            }
+            // if (minAmountRef && !minAmountDcl) {
+            //   console.log("REF");
+            //   txMain = transactionsRef;
+            //   minAmountOut = minAmountRef;
+            // } else if (!minAmountRef && minAmountDcl) {
+            //   console.log("DCL");
+            //   txMain = transactionsDcl;
+            //   minAmountOut = minAmountDcl;
+            // } else if (minAmountRef && minAmountDcl) {
+            //   if (minAmountRef > minAmountDcl) {
+            //     console.log("REF");
+            //     txMain = transactionsRef;
+            //     minAmountOut = minAmountRef;
+            //   } else {
+            //     console.log("DCL");
+            //     txMain = transactionsDcl;
+            //     minAmountOut = minAmountDcl;
+            //   }
+            // }
+            txMain = transactionsRef;
+            minAmountOut = minAmountRef;
             if (!txMain || !minAmountOut)
                 return;
             const transaction = txMain.find((element) => element.functionCalls[0].methodName === "ft_transfer_call");
@@ -258,20 +260,27 @@ class NearService {
             const transfer = transaction.functionCalls[0].args;
             const amountIn = transfer.amount;
             const comision = await utils_shared_1.UtilsShared.getComision(blockchain);
-            let feeTransfer = "0";
-            let porcentFee = 0;
+            let feeTransfer = "0.1";
+            let porcentFee = 0.1;
             if (comision.swap) {
                 porcentFee = comision.swap / 100;
             }
             let feeDefix = String(Number(amount) * porcentFee);
+            let secondNum;
+            if (tokenOut === `wrap.${NEAR}`) {
+                secondNum = minAmountOut;
+                minAmountOut = near_api_js_1.utils.format.parseNearAmount(String(minAmountOut));
+            }
+            else {
+                secondNum = minAmountOut / Math.pow(10, Number(tokensMetadata[tokenOut].decimals));
+            }
             const firstNum = Number(amountIn) / Math.pow(10, Number(tokensMetadata[tokenIn].decimals));
-            const secondNum = minAmountOut / Math.pow(10, Number(tokensMetadata[tokenOut].decimals));
             const swapRate = String(secondNum / firstNum);
             const dataSwap = {
                 exchange: "Ref Finance",
                 fromAmount: amountIn,
                 fromDecimals: tokensMetadata[tokenIn].decimals,
-                toAmount: minAmountOut,
+                toAmount: String(minAmountOut),
                 toDecimals: tokensMetadata[tokenOut].decimals,
                 block: null,
                 swapRate,
@@ -280,9 +289,10 @@ class NearService {
                 feeDefix: feeDefix,
                 feeTotal: String(Number(feeDefix)),
             };
-            return { dataSwap, priceRoute: { tokenIn, tokenOut, amountIn, minAmountOut, txMain } };
+            return { dataSwap, priceRoute: { tokenIn, tokenOut, amountIn, minAmountOut: String(minAmountOut), txMain } };
         }
         catch (error) {
+            console.log(error);
             throw new Error(`Feiled to get preview swap., ${error.message}`);
         }
     }
@@ -337,6 +347,7 @@ class NearService {
             };
         }
         catch (err) {
+            console.log(err);
             throw new Error(`Failed to send swap, ${err.message}`);
         }
     }
@@ -368,7 +379,6 @@ async function activateAccount(account, fromAddress, toAddress, srcToken, near) 
                 account_id: toAddress,
             }, new bn_js_1.default("300000000000000"), new bn_js_1.default("100000000000000000000000")),
         ], fromAddress, near);
-        console.log(trx);
         const result = await account.signAndSendTrx(trx);
         if (!result.transaction.hash)
             return false;

@@ -9,18 +9,22 @@ class WalletController {
     constructor() {
         this.createWalletDefix = async (req, res) => {
             try {
-                const { defixId, seedPhrase, email } = req.body;
+                const { defixId, seedPhrase, email, language } = req.body;
+                let lang = language;
                 if (!defixId || !seedPhrase)
                     return res.status(400).send({ message: "Invalid data." });
                 const mnemonic = crypto_shared_1.CryptoShared.decrypt(seedPhrase);
                 if (!mnemonic)
                     return res.status(400).send({ message: "Seed Phrase invalid." });
+                if (lang !== "en" && lang !== "es") {
+                    lang = "en";
+                }
                 const defixID = defixId.toLowerCase();
-                const wallet = await this.walletService.createWalletDefix(defixID, mnemonic);
+                const wallet = await this.walletService.createWalletDefix(defixID, mnemonic, lang);
                 if (!wallet)
                     return res.status(400).send({ message: "Internal server error." });
                 if (await utils_shared_1.UtilsShared.validateEmail(email)) {
-                    this.mailService.sendMailPhrase(mnemonic, defixID, email);
+                    this.mailService.sendMailPhrase(mnemonic, defixID, email, lang);
                 }
                 return res.send(wallet);
             }
@@ -30,13 +34,17 @@ class WalletController {
         };
         this.importWalletDefix = async (req, res) => {
             try {
-                const { seedPhrase } = req.body;
+                const { seedPhrase, language } = req.body;
+                let lang = language;
+                if (lang !== "en" && lang !== "es") {
+                    lang = "en";
+                }
                 if (!seedPhrase)
                     return res.status(400).send({ message: "Invalid data." });
                 const mnemonic = crypto_shared_1.CryptoShared.decrypt(seedPhrase);
                 if (!mnemonic)
                     return res.status(400).send({ message: "Seed Phrase invalid." });
-                const wallet = await this.walletService.importWalletDefix(mnemonic);
+                const wallet = await this.walletService.importWalletDefix(mnemonic, lang);
                 return res.send(wallet);
             }
             catch (error) {

@@ -105,7 +105,7 @@ class TronService {
     }
     async getFeeTransaction(coin, blockchain, typeTxn) {
         try {
-            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(coin);
+            let comisionAdmin = await utils_shared_1.UtilsShared.getComision(blockchain);
             const feeMain = {
                 coin,
                 blockchain,

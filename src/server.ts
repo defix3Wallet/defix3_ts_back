@@ -7,10 +7,17 @@ import dbConnect from "./config/postgres";
 import App from "./app";
 import socketIo from "socket.io";
 // import NodeCache from "node-cache";
-import { startProcess } from "./process";
+import { startProcess } from "./process/index";
 import { CacheConfig } from "./config/cacheConfig";
 // const nodeCache = new NodeCache();
 const fs = require("fs");
+
+import * as glob from "glob";
+
+import AdminJS from "adminjs";
+import AdminJSExpress from "@adminjs/express";
+import path from "path";
+import * as AdminJSTypeorm from "@adminjs/typeorm";
 
 class Server {
   private app = App;
@@ -27,12 +34,69 @@ class Server {
 
   private initTypeORM() {
     AppDataSource.initialize()
-      .then(() => {
+      .then(async () => {
         console.log("TypeORM Ready");
+        this.initAdminJs();
       })
       .catch((err: any) => {
         console.error(err);
       });
+  }
+
+  private initAdminJs() {
+    AdminJS.registerAdapter({
+      Resource: AdminJSTypeorm.Resource,
+      Database: AdminJSTypeorm.Database,
+    });
+
+    const entityFiles = glob.sync(path.join(__dirname, "modules", "**", "*.entity.{ts,js}"));
+
+    const entities = entityFiles.map((file) => {
+      const entityModule = require(file);
+      const entity = Object.values(entityModule)[0];
+      return entity;
+    });
+
+    const adminOptions = {
+      resources: entities,
+      branding: {
+        companyName: "Admin DeFix3",
+        softwareBrothers: false,
+        // logo: false, // OR false to hide the default one
+      },
+    };
+
+    const admin = new AdminJS(adminOptions);
+
+    const DEFAULT_ADMIN = {
+      email: process.env.EMAIL_ADMINJS,
+      password: process.env.PASSWORD_ADMINJS,
+    };
+
+    const secret = process.env.SECRET_ADMINJS;
+
+    const authenticate = async (email: string, password: string) => {
+      console.log(email, password);
+      if (email === DEFAULT_ADMIN.email && password === DEFAULT_ADMIN.password) {
+        return { email: DEFAULT_ADMIN.email };
+      }
+    };
+
+    const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
+      admin,
+      {
+        authenticate,
+        cookiePassword: "very_secret_secret",
+      },
+      null,
+      {
+        resave: true,
+        saveUninitialized: true,
+        secret,
+      }
+    );
+
+    this.app.use(admin.options.rootPath, adminRouter);
   }
 
   private connectDatabase() {

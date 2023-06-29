@@ -4,12 +4,13 @@ exports.UserService = void 0;
 const user_entity_1 = require("../entities/user.entity");
 class UserService {
     constructor() {
-        this.createUser = async (defixId, importId, email) => {
+        this.createUser = async (defixId, importId, language) => {
             try {
                 const user = new user_entity_1.UserEntity();
                 user.defixId = defixId;
                 user.importId = importId;
-                email ? (user.email = email) : undefined;
+                user.language = language;
+                // email ? (user.email = email) : undefined;
                 const userSaved = await user.save();
                 return userSaved;
             }

@@ -15,7 +15,7 @@ import axios from "axios";
 // URL for Binance Smart Chain provider
 const bscProviderUrl = "https://bsc-dataseed.binance.org/";
 // URL for Ethereum
-const ethProviderUrl = "https://mainnet.infura.io/v3/6b1b6f6b0f7a4b6e8b3b3b0f0f0f0f0f";
+const ethProviderUrl = `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`;
 // URL for Aurora provider
 const auroraProviderUrl = "https://mainnet.aurora.dev";
 
@@ -139,6 +139,7 @@ export class BridgeService extends TransactionHistoryService {
     const etheredChainId = ethers.BigNumber.from(Number(chainTo));
 
     console.log("AQUI VA 3");
+    console.log(chainId);
     let providerUrl;
     if (chainId === "1") {
       providerUrl = ethProviderUrl;
@@ -152,11 +153,16 @@ export class BridgeService extends TransactionHistoryService {
 
     console.log(tokenAddress);
 
+    console.log(providerUrl);
+    console.log(provider);
+
     const contractToken = new ethers.Contract(tokenAddressContract, abiToken, provider);
 
     console.log(contractAddress, decimaledAmount);
 
     const signer = new ethers.Wallet(key, provider);
+
+    console.log("BRR AQUI VA");
 
     const approve = await contractToken.connect(signer).approve(contractAddress, decimaledAmount);
 

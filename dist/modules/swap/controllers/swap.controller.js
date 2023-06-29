@@ -22,7 +22,11 @@ class SwapController {
         };
         this.sendSwap = async (req, res) => {
             try {
-                const { defixId, fromCoin, toCoin, pkEncrypt, priceRoute, blockchain } = req.body;
+                const { defixId, fromCoin, toCoin, pkEncrypt, priceRoute, blockchain, language } = req.body;
+                let lang = language;
+                if (lang !== "en" && lang !== "es") {
+                    lang = "en";
+                }
                 if (!fromCoin || !toCoin || !defixId || !priceRoute || !pkEncrypt || !blockchain)
                     return res.status(400).send({ message: "Invalid data." });
                 const privateKey = crypto_shared_1.CryptoShared.decrypt(pkEncrypt);
@@ -32,10 +36,11 @@ class SwapController {
                 if (!address)
                     return res.status(400).send({ message: "Address invalid." });
                 const swapResult = await this.swapService.sendSwap(defixId, fromCoin, toCoin, priceRoute, privateKey, blockchain, address);
-                this.mailService.emailSuccessSwap(defixId, fromCoin, swapResult.amount, toCoin, swapResult.destAmount, blockchain, swapResult.hash, swapResult.createdAt);
+                this.mailService.emailSuccessSwap(defixId, fromCoin, swapResult.amount, toCoin, swapResult.destAmount, blockchain, swapResult.hash, swapResult.createdAt, lang);
                 res.send(swapResult);
             }
             catch (error) {
+                console.log(error);
                 return res.status(500).send({ message: error.message });
             }
         };

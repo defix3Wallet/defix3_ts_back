@@ -13,6 +13,8 @@ class SwapService extends transactionHistory_service_1.TransactionHistoryService
                     throw new Error(`Invalid blockchain.`);
                 }
                 const swapResult = await blockchain_1.blockchainService[blockchain.toLowerCase()].previewSwap(fromCoin, toCoin, amount, blockchain, address);
+                console.log("Brrr");
+                console.log(swapResult);
                 if (!swapResult) {
                     throw new Error(`Internal error swap preview.`);
                 }
