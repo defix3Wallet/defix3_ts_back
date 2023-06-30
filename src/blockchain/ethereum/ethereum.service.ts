@@ -343,6 +343,10 @@ export class EthereumService implements BlockchainService {
 
       const result = web3.eth.sendSignedTransaction(txSigned.rawTransaction);
 
+      setTimeout(() => {
+        console.log("sleep");
+      }, 20000);
+
       const transactionHash = txSigned.transactionHash;
 
       if (!transactionHash) throw new Error(`Failed to send swap, transaction Hash.`);
