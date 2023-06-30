@@ -163,14 +163,30 @@ export class BridgeService extends TransactionHistoryService {
     const signer = new ethers.Wallet(key, provider);
 
     console.log("BRR AQUI VA");
+    const gasPrice = await signer.getGasPrice();
 
-    const approve = await contractToken.connect(signer).approve(contractAddress, decimaledAmount);
+    const gasLimit = await contractToken.estimateGas.approve(contractAddress, decimaledAmount);
+
+    // const tx = await contract.transfer(toAddress, srcAmount.toLocaleString("fullwide", { useGrouping: false }), {
+    //   gasLimit: gasLimit,
+    //   gasPrice: gasPrice,
+    // });
+
+    // console.log("GAS PRICE", gasPrice);
+    // console.log("GAS LIMIT", gasLimit);
+
+    const approve = await contractToken.connect(signer).approve(contractAddress, decimaledAmount, {
+      gasLimit: gasLimit,
+      gasPrice: gasPrice,
+    });
 
     console.log("APPROVE", approve);
 
     const re = await approve.wait();
 
     console.log(re);
+
+    console.log("EMPIEZA SWAP OUT");
 
     const respTx = await swapOut(tokenAddress, decimaledAmount, userAddress, key, etheredChainId, provider, contract);
 
@@ -230,18 +246,18 @@ async function swapOut(
   console.log("AQUI VA 6");
   console.log(token, bindaddr, amount, toChainID);
   const tx = await contract.connect(signer).anySwapOutUnderlying(token, bindaddr, amount, toChainID, {
-    gasLimit: 100000,
+    gasLimit: 150000,
   });
   console.log(tx);
   console.log("AQUI VA 7");
-  const resu = await tx.wait(); // Wait for the transaction to be mined
+  await tx.wait(); // Wait for the transaction to be mined
 
   console.log("AQUI VA 8");
   console.log("Swapout transaction complete:", tx.hash);
 
   if (!tx.hash) throw new Error(`Failed to tx hash`);
 
-  console.log(resu);
+  // console.log(resu);
 
   return tx;
 }

@@ -341,9 +341,9 @@ export class EthereumService implements BlockchainService {
 
       if (!txSigned.rawTransaction) throw new Error(`Failed to sign swap.`);
 
-      const result = await web3.eth.sendSignedTransaction(txSigned.rawTransaction);
+      const result = web3.eth.sendSignedTransaction(txSigned.rawTransaction);
 
-      const transactionHash = result.transactionHash;
+      const transactionHash = txSigned.transactionHash;
 
       if (!transactionHash) throw new Error(`Failed to send swap, transaction Hash.`);
 
