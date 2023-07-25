@@ -196,11 +196,14 @@ export class BinanceService implements BlockchainService {
         throw new Error(`Error: You do not have enough funds to make the transfer`);
       }
 
-      const provider = new ethers.providers.InfuraProvider(ETHEREUM_NETWORK, INFURA_PROJECT_ID);
+      // const provider = new ethers.providers.InfuraProvider(ETHEREUM_NETWORK, INFURA_PROJECT_ID);
+
+      const provider = new ethers.providers.JsonRpcProvider(WEB_BSC); // provider for signing transaction
+      let wallet = new ethers.Wallet(privateKey, provider);
 
       const minABI = abi;
 
-      const wallet = new ethers.Wallet(privateKey);
+      // const wallet = new ethers.Wallet(privateKey);
       const signer = wallet.connect(provider);
 
       const contract = new ethers.Contract(srcToken.contract, minABI, signer);
@@ -208,6 +211,8 @@ export class BinanceService implements BlockchainService {
       let srcAmount = amount * value;
 
       const tx = await contract.transfer(toAddress, srcAmount.toLocaleString("fullwide", { useGrouping: false }));
+
+      const txWait = await tx.wait();
 
       if (!tx.hash) throw new Error(`Error tx hash.`);
 

@@ -1,5 +1,5 @@
 import { BlockchainService } from "../blockchain.interface";
-import { ethers, Wallet } from "ethers";
+import { BigNumber, ethers, Wallet } from "ethers";
 import Web3 from "web3";
 import web3Utils from "web3-utils";
 import { CredentialInterface } from "../../interfaces/credential.interface";
@@ -341,13 +341,13 @@ export class EthereumService implements BlockchainService {
 
       if (!txSigned.rawTransaction) throw new Error(`Failed to sign swap.`);
 
-      const result = web3.eth.sendSignedTransaction(txSigned.rawTransaction);
+      const result = await web3.eth.sendSignedTransaction(txSigned.rawTransaction);
 
-      setTimeout(() => {
-        console.log("sleep");
-      }, 20000);
+      // setTimeout(() => {
+      //   console.log("sleep");
+      // }, 20000);
 
-      const transactionHash = txSigned.transactionHash;
+      const transactionHash = result.transactionHash;
 
       if (!transactionHash) throw new Error(`Failed to send swap, transaction Hash.`);
 
@@ -413,7 +413,11 @@ export class EthereumService implements BlockchainService {
 
       let toValue = Math.pow(10, toToken.decimals);
       const destAmountLimit = Math.round(destAmount * toValue);
-
+      console.log("AQUI VA");
+      console.log(fromToken.contract);
+      console.log(toToken.contract);
+      console.log(srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }));
+      console.log(destAmountLimit.toLocaleString("fullwide", { useGrouping: false }));
       const orderInput = {
         nonce: 1,
         expiry: 0, //Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // week from now, in sec
@@ -439,6 +443,30 @@ export class EthereumService implements BlockchainService {
         signature,
       };
       console.log(orderToPostToApi);
+
+      const contractToken = new ethers.Contract(fromToken.contract, abi, signer);
+
+      const allowance = await contractToken.allowance(account, signableOrderData.domain.verifyingContract);
+
+      if (allowance > srcAmountLimit.toLocaleString("fullwide", { useGrouping: false })) {
+        const gasPrice = await signer.getGasPrice();
+
+        const gasLimit = await contractToken.estimateGas.approve(
+          signableOrderData.domain.verifyingContract,
+          srcAmountLimit.toLocaleString("fullwide", { useGrouping: false })
+        );
+
+        const approve = await contractToken
+          .connect(signer)
+          .approve(signableOrderData.domain.verifyingContract, srcAmountLimit.toLocaleString("fullwide", { useGrouping: false }), {
+            gasLimit: gasLimit,
+            gasPrice: gasPrice,
+          });
+
+        console.log("APPROVE", approve);
+
+        await approve.wait();
+      }
 
       const newOrder = await paraSwapLimitOrderSDK.postLimitOrder(orderToPostToApi);
       console.log(newOrder);
@@ -466,6 +494,9 @@ export class EthereumService implements BlockchainService {
         maker: address,
         type: "LIMIT",
       });
+
+      console.log(address);
+      console.log("ORDERS", ordersData);
 
       const orders: any[] = [];
 
@@ -538,8 +569,6 @@ export class EthereumService implements BlockchainService {
 
   public getOrderBookCoinToCoin = async (fromCoin: string, toCoin: string) => {
     try {
-      fromCoin = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-      toCoin = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
       const web3Main = new Web3(new Web3.providers.HttpProvider(`https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`));
 
       const ordersData = await axios.get("https://api.paraswap.io/ft/orders/1/orderbook/?makerAsset=" + fromCoin + "&takerAsset=" + toCoin);

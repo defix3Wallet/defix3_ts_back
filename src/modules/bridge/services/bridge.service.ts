@@ -163,28 +163,23 @@ export class BridgeService extends TransactionHistoryService {
     const signer = new ethers.Wallet(key, provider);
 
     console.log("BRR AQUI VA");
-    const gasPrice = await signer.getGasPrice();
 
-    const gasLimit = await contractToken.estimateGas.approve(contractAddress, decimaledAmount);
+    const allowance = await contractToken.allowance(fromAddress, contractAddress);
 
-    // const tx = await contract.transfer(toAddress, srcAmount.toLocaleString("fullwide", { useGrouping: false }), {
-    //   gasLimit: gasLimit,
-    //   gasPrice: gasPrice,
-    // });
+    if (allowance > decimaledAmount) {
+      const gasPrice = await signer.getGasPrice();
 
-    // console.log("GAS PRICE", gasPrice);
-    // console.log("GAS LIMIT", gasLimit);
+      const gasLimit = await contractToken.estimateGas.approve(contractAddress, decimaledAmount);
 
-    const approve = await contractToken.connect(signer).approve(contractAddress, decimaledAmount, {
-      gasLimit: gasLimit,
-      gasPrice: gasPrice,
-    });
+      const approve = await contractToken.connect(signer).approve(contractAddress, decimaledAmount, {
+        gasLimit: gasLimit,
+        gasPrice: gasPrice,
+      });
 
-    console.log("APPROVE", approve);
+      console.log("APPROVE", approve);
 
-    const re = await approve.wait();
-
-    console.log(re);
+      await approve.wait();
+    }
 
     console.log("EMPIEZA SWAP OUT");
 
