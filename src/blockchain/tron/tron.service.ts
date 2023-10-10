@@ -201,24 +201,25 @@ export class TronService implements BlockchainService {
         throw new Error(`Error: You do not have enough funds to make the transfer`);
       }
 
-      tronWeb.setAddress(fromAddress);
+      const tronWebPK = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
+      tronWebPK.setHeader({ "TRON-PRO-API-KEY": TRON_PRO_API_KEY });
+
+      tronWebPK.setAddress(fromAddress);
 
       let value = Math.pow(10, srcToken.decimals);
       let srcAmount = parseInt(String(amount * value));
 
-      const contract = await tronWeb.contract().at(srcToken.contract);
-
-      const transaction = await contract.transfer(toAddress, srcAmount).send({
-        callValue: 0,
-        shouldPollResponse: true,
-        privateKey: privateKey,
-      });
-
-      console.log("TRANSACTION: ", transaction);
+      const contract = await tronWebPK.contract().at(srcToken.contract);
+      const transaction = await contract
+        .transfer(toAddress, srcAmount)
+        .send()
+        .then((output: any) => {
+          return output;
+        });
 
       return transaction;
     } catch (err: any) {
-      throw new Error(`Failed to send transfer, ${err.message}`);
+      throw new Error(`Failed to send transfer token, ${err.message}`);
     }
   }
 

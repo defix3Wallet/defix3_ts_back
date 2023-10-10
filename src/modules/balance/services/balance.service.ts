@@ -50,7 +50,7 @@ export class BalanceService {
           itemToken.balance = await blockchainService[crypto.coin.toLowerCase() as keyof typeof blockchainService].getBalanceToken(
             address,
             token.contract,
-            token.decimals
+            token.decimals,
           );
 
           balanceCrypto.tokens.push(itemToken);
@@ -81,7 +81,9 @@ export class BalanceService {
 
         balances.push(balanceCrypto);
       }
-      const pnlTotal = (pnl / pnlSum) * 100;
+      console.log("pnl", pnl);
+      console.log("pnlSum", pnlSum);
+      const pnlTotal = (pnl / pnlSum) * 100 || 0;
       return { pnl: { percentage: pnlTotal, dollar: pnl }, balances };
     } catch (err) {
       throw new Error(`Failed to get address: ${err}`);

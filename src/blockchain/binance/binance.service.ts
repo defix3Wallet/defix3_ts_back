@@ -291,6 +291,32 @@ export class BinanceService implements BlockchainService {
 
   async sendSwap(priceRoute: any, privateKey: string, address: string): Promise<any> {
     try {
+      // const provider = ethers.getDefaultProvider(56);
+      if (priceRoute.srcToken !== "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+        const provider = new ethers.providers.JsonRpcProvider(WEB_BSC);
+        const signerApprove = new ethers.Wallet(privateKey, provider);
+        const account = signerApprove.address;
+
+        const contractToken = new ethers.Contract(priceRoute.srcToken, abi, signerApprove);
+
+        const allowance = await contractToken.allowance(account, priceRoute.tokenTransferProxy);
+
+        // if (allowance > priceRoute.srcAmount) {
+        const gasPrice = await signerApprove.getGasPrice();
+
+        const gasLimit = await contractToken.estimateGas.approve(priceRoute.tokenTransferProxy, priceRoute.srcAmount);
+
+        const approve = await contractToken.connect(signerApprove).approve(priceRoute.tokenTransferProxy, priceRoute.srcAmount, {
+          gasLimit: gasLimit,
+          gasPrice: gasPrice,
+        });
+
+        console.log("APPROVE", approve);
+
+        await approve.wait();
+      }
+      // }
+
       const signer = web3.eth.accounts.privateKeyToAccount(privateKey);
 
       const txParams = await paraSwap.swap.buildTx({

@@ -4,3 +4,4 @@ storage/*
 .env
 .env.dev
 dist
+.git2
