@@ -81,8 +81,6 @@ export class BalanceService {
 
         balances.push(balanceCrypto);
       }
-      console.log("pnl", pnl);
-      console.log("pnlSum", pnlSum);
       const pnlTotal = (pnl / pnlSum) * 100 || 0;
       return { pnl: { percentage: pnlTotal, dollar: pnl }, balances };
     } catch (err) {
